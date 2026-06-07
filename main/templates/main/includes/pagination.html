@@ -1,0 +1,96 @@
+<style>
+  .site_pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 28px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+  }
+
+  .site_pagination_btn {
+    min-width: 38px;
+    height: 38px;
+    padding: 0 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: var(--fs-ui, 13px);
+    font-weight: 600;
+    color: rgba(241, 241, 241, 0.55);
+    font-family: "IBM Plex Mono", "JetBrains Mono", monospace;
+    transition: all 0.18s ease;
+    cursor: pointer;
+  }
+
+  .site_pagination_btn:hover {
+    border-color: var(--border-hover, var(--border-2, rgba(255, 255, 255, 0.15)));
+    color: var(--white);
+  }
+
+  .site_pagination_btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0b0b0c;
+  }
+
+  .site_pagination_btn:disabled {
+    opacity: 0.25;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .site_pagination_btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .site_pagination_dots {
+    font-size: var(--fs-ui, 13px);
+    color: rgba(241, 241, 241, 0.25);
+    padding: 0 2px;
+    line-height: 38px;
+  }
+
+  @media (max-width: 480px) {
+    .site_pagination {
+      gap: 4px;
+      margin-top: 24px;
+    }
+
+    .site_pagination_btn {
+      min-width: 34px;
+      height: 34px;
+      padding: 0 8px;
+      font-size: 11px;
+    }
+  }
+</style>
+
+<div class="site_pagination_component" data-pagination-component="{{ pagination_id }}">
+  <nav class="site_pagination{% if pagination_class %} {{ pagination_class }}{% endif %}" id="{{ pagination_id }}" data-pagination aria-label="{{ pagination_label|default:'Pagination' }}"></nav>
+
+  <template data-pagination-template="prev">
+    <button class="site_pagination_btn" type="button" data-pagination-prev aria-label="Previous page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6" /></svg>
+    </button>
+  </template>
+
+  <template data-pagination-template="page">
+    <button class="site_pagination_btn __ACTIVE_CLASS__" type="button" data-page="__PAGE__">__PAGE__</button>
+  </template>
+
+  <template data-pagination-template="dots">
+    <span class="site_pagination_dots">…</span>
+  </template>
+
+  <template data-pagination-template="next">
+    <button class="site_pagination_btn" type="button" data-pagination-next aria-label="Next page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6" /></svg>
+    </button>
+  </template>
+</div>

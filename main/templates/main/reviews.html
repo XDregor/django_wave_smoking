@@ -576,64 +576,6 @@
         font-size: 12px;
       }
 
-      .site_pagination,
-      .pagination {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        margin-top: 28px;
-        margin-bottom: 30px;
-        flex-wrap: wrap;
-      }
-      .site_pagination_btn,
-      .page-btn {
-        min-width: 38px;
-        height: 38px;
-        padding: 0 10px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 10px;
-        border: 1px solid var(--border);
-        background: var(--surface);
-        font-size: 13px;
-        font-weight: 600;
-        color: rgba(232, 232, 232, 0.55);
-        font-family: "JetBrains Mono", monospace;
-        transition: all 0.18s ease;
-        cursor: pointer;
-      }
-      .site_pagination_btn:hover,
-      .page-btn:hover {
-        border-color: var(--border-2);
-        color: var(--white);
-      }
-      .site_pagination_btn.active,
-      .page-btn.active {
-        background: var(--accent);
-        border-color: var(--accent);
-        color: #0b0b0c;
-      }
-      .site_pagination_btn:disabled,
-      .page-btn:disabled {
-        opacity: 0.25;
-        pointer-events: none;
-        visibility: hidden;
-      }
-      .site_pagination_btn svg,
-      .page-btn svg {
-        width: 16px;
-        height: 16px;
-      }
-      .site_pagination_dots,
-      .page-dots {
-        font-size: 13px;
-        color: rgba(232, 232, 232, 0.25);
-        padding: 0 2px;
-        line-height: 38px;
-      }
-
       @keyframes iconBounceUp {
         0% {
           transform: translateY(0);
@@ -940,16 +882,6 @@
           flex-direction: column;
           align-items: flex-start;
         }
-        .site_pagination,
-        .pagination {
-          gap: 4px;
-        }
-        .site_pagination_btn,
-        .page-btn {
-          min-width: 34px;
-          height: 34px;
-          font-size: 12px;
-        }
       }
       @media (max-width: 480px) {
         .rc-top {
@@ -1040,7 +972,7 @@
             <p class="toolbar-count"><em id="shownCount">8</em> из 247 отзывов</p>
           </div>
           <div id="reviewsList"></div>
-          <nav class="site_pagination pagination" id="reviewsPagination" data-pagination></nav>
+          {% include 'main/includes/pagination.html' with pagination_id='reviewsPagination' pagination_label='Reviews pagination' %}
         </main>
       </div>
     </div>
@@ -1264,13 +1196,24 @@
         var totalPages = Math.ceil(total / perPage);
         var el = document.getElementById("reviewsPagination");
         if (!el) return;
+        var paginationRoot = el.closest("[data-pagination-component]");
+        function renderPaginationTemplate(name, values) {
+          values = values || {};
+          var tpl = paginationRoot ? paginationRoot.querySelector('[data-pagination-template="' + name + '"]') : null;
+          if (!tpl) return "";
+          var markup = tpl.innerHTML.trim();
+          Object.keys(values).forEach(function (key) {
+            markup = markup.split("__" + key + "__").join(values[key]);
+          });
+          return markup;
+        }
         if (totalPages <= 1) {
           el.innerHTML = "";
           return;
         }
 
         var html = "";
-        html += '<button class="page-btn" id="pgPrev"' + (currentPage === 1 ? " disabled" : "") + '><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>';
+        html += renderPaginationTemplate("prev");
 
         var range = [];
         for (var i = 1; i <= totalPages; i++) {
@@ -1279,13 +1222,16 @@
         }
         range.forEach(function (r) {
           if (r === "…") {
-            html += '<span class="page-dots">…</span>';
+            html += renderPaginationTemplate("dots");
           } else {
-            html += '<button class="page-btn' + (r === currentPage ? " active" : "") + '" data-page="' + r + '">' + r + "</button>";
+            html += renderPaginationTemplate("page", {
+              PAGE: r,
+              ACTIVE_CLASS: r === currentPage ? "active" : "",
+            });
           }
         });
 
-        html += '<button class="page-btn" id="pgNext"' + (currentPage === totalPages ? " disabled" : "") + '><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>';
+        html += renderPaginationTemplate("next");
 
         el.innerHTML = html;
 
@@ -1295,18 +1241,22 @@
             showPage();
           });
         });
-        var prev = el.querySelector("#pgPrev");
-        var next = el.querySelector("#pgNext");
-        if (prev)
+        var prev = el.querySelector("[data-pagination-prev]");
+        var next = el.querySelector("[data-pagination-next]");
+        if (prev) {
+          prev.disabled = currentPage === 1;
           prev.addEventListener("click", function () {
             currentPage--;
             showPage();
           });
-        if (next)
+        }
+        if (next) {
+          next.disabled = currentPage === totalPages;
           next.addEventListener("click", function () {
             currentPage++;
             showPage();
           });
+        }
       }
 
       function showPage() {
@@ -1431,16 +1381,6 @@
       });
       stBtn.addEventListener("click", function () {
         window.scrollTo({ top: 0, behavior: "smooth" });
-      });
-
-      document.querySelectorAll(".page-btn").forEach(function (btn) {
-        btn.addEventListener("click", function () {
-          if (this.querySelector("svg")) return;
-          document.querySelectorAll(".page-btn").forEach(function (b) {
-            b.classList.remove("active");
-          });
-          this.classList.add("active");
-        });
       });
 
       window.addEventListener("load", function () {

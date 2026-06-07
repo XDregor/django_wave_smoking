@@ -1331,75 +1331,6 @@
         }
       }
 
-      /* ===================== ПАГИНАЦИЯ ===================== */
-      .catalog_pagination {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        margin-top: 36px;
-        flex-wrap: wrap;
-      }
-      .pagination_btn {
-        min-width: 38px;
-        height: 38px;
-        padding: 0 10px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 10px;
-        border: 1px solid var(--border);
-        background: var(--surface);
-        font-size: var(--fs-ui);
-        font-weight: 600;
-        color: rgba(241, 241, 241, 0.55);
-        font-family: "IBM Plex Mono", monospace;
-        transition: all 0.18s ease;
-      }
-      .pagination_btn:hover {
-        border-color: var(--border-hover);
-        color: var(--white);
-      }
-      .pagination_btn.active {
-        background: var(--accent);
-        border-color: var(--accent);
-        color: #0b0b0c;
-      }
-      .pagination_btn:disabled {
-        opacity: 0.25;
-        pointer-events: none;
-        visibility: hidden;
-      }
-      .pagination_btn svg {
-        width: 16px;
-        height: 16px;
-      }
-      .pagination_dots {
-        font-size: var(--fs-ui);
-        color: rgba(241, 241, 241, 0.25);
-        padding: 0 2px;
-        line-height: 38px;
-      }
-      .pagination_info {
-        width: 100%;
-        text-align: center;
-        font-size: var(--fs-micro);
-        color: rgba(241, 241, 241, 0.28);
-        margin-top: 6px;
-      }
-      @media (max-width: 480px) {
-        .catalog_pagination {
-          gap: 4px;
-          margin-top: 24px;
-        }
-        .pagination_btn {
-          min-width: 34px;
-          height: 34px;
-          padding: 0 8px;
-          font-size: 11px;
-        }
-      }
-
       /* ===================== КНОПКА ВВЕРХ ===================== */
       @keyframes iconBounceUp {
         0% {
@@ -1808,7 +1739,7 @@
         </div>
 
         <!-- Пагинация -->
-        <nav class="catalog_pagination" id="pagination"></nav>
+        {% include 'main/includes/pagination.html' with pagination_id='pagination' pagination_label='Catalog pagination' %}
       </main>
     </div>
 
@@ -2226,6 +2157,16 @@
           const totalPages = Math.ceil(total / state.perPage);
           const el = document.getElementById("pagination");
           if (!el) return;
+          const paginationRoot = el.closest("[data-pagination-component]");
+          function renderPaginationTemplate(name, values = {}) {
+            const tpl = paginationRoot?.querySelector(`[data-pagination-template="${name}"]`);
+            if (!tpl) return "";
+            let markup = tpl.innerHTML.trim();
+            Object.entries(values).forEach(([key, value]) => {
+              markup = markup.replaceAll(`__${key}__`, value);
+            });
+            return markup;
+          }
           if (totalPages <= 1) {
             el.innerHTML = "";
             return;
@@ -2233,9 +2174,7 @@
 
           let html = "";
           // Пред
-          html += `<button class="pagination_btn" id="pagePrev" ${state.page === 1 ? "disabled" : ""}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>`;
+          html += renderPaginationTemplate("prev");
 
           const range = [];
           for (let i = 1; i <= totalPages; i++) {
@@ -2244,16 +2183,17 @@
           }
           range.forEach((r) => {
             if (r === "…") {
-              html += `<span class="pagination_dots">…</span>`;
+              html += renderPaginationTemplate("dots");
             } else {
-              html += `<button class="pagination_btn${r === state.page ? " active" : ""}" data-page="${r}">${r}</button>`;
+              html += renderPaginationTemplate("page", {
+                PAGE: r,
+                ACTIVE_CLASS: r === state.page ? "active" : "",
+              });
             }
           });
 
           // След
-          html += `<button class="pagination_btn" id="pageNext" ${state.page === totalPages ? "disabled" : ""}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>`;
+          html += renderPaginationTemplate("next");
 
           const from = (state.page - 1) * state.perPage + 1;
           const to = Math.min(state.page * state.perPage, total);
@@ -2268,20 +2208,24 @@
               scrollToTop(false);
             });
           });
-          const prev = el.querySelector("#pagePrev");
-          const next = el.querySelector("#pageNext");
-          if (prev)
+          const prev = el.querySelector("[data-pagination-prev]");
+          const next = el.querySelector("[data-pagination-next]");
+          if (prev) {
+            prev.disabled = state.page === 1;
             prev.addEventListener("click", () => {
               state.page--;
               render();
               scrollToTop(false);
             });
-          if (next)
+          }
+          if (next) {
+            next.disabled = state.page === totalPages;
             next.addEventListener("click", () => {
               state.page++;
               render();
               scrollToTop(false);
             });
+          }
         }
 
         /* ============================================================
