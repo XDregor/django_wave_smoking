@@ -947,388 +947,7 @@
         }
       }
 
-      /* ===================== PRODUCT CARD ===================== */
-      .product_card {
-        background: linear-gradient(180deg, rgba(17, 17, 17, 0.96) 0%, rgba(10, 10, 10, 0.98) 100%);
-        border: 1px solid var(--border);
-        border-radius: 20px;
-        overflow: hidden;
-        transition:
-          transform 0.28s ease,
-          border-color 0.28s ease,
-          box-shadow 0.28s ease;
-        cursor: pointer;
-      }
-      .product_card:hover {
-        transform: translateY(-4px);
-        border-color: rgba(255, 255, 255, 0.12);
-        box-shadow: 0 26px 70px rgba(0, 0, 0, 0.36);
-      }
-      @media (max-width: 768px) {
-        .product_card {
-          border-radius: 16px;
-        }
-        .product_card:hover {
-          transform: translateY(-2px);
-        }
-      }
-      @media (max-width: 480px) {
-        .product_card {
-          border-radius: 12px;
-        }
-        .product_card:hover {
-          transform: none;
-        }
-      }
 
-      .product_card_media {
-        position: relative;
-        aspect-ratio: 3 / 4;
-        background: linear-gradient(135deg, #262626 0%, #1a1a1a 100%);
-        overflow: hidden;
-      }
-      /* На маленьких экранах менее вытянутые пропорции */
-      @media (max-width: 768px) {
-        .product_card_media {
-          aspect-ratio: 3 / 3.5;
-        }
-      }
-      @media (max-width: 480px) {
-        .product_card_media {
-          aspect-ratio: 1 / 1;
-        }
-      }
-
-      .product_card_media::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, transparent 42%), linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 58%, rgba(0, 0, 0, 0.22) 100%);
-        pointer-events: none;
-      }
-
-      /* Скелетон-анимация */
-      .product_card_skeleton {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, #1f1f1f 0%, #171717 100%);
-        overflow: hidden;
-      }
-      .product_card_skeleton::before {
-        content: "";
-        position: absolute;
-        inset: -12%;
-        background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.01) 38%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.01) 62%, transparent 100%);
-        transform: translate(-130%, -130%);
-        animation: skeletonSweep 2.8s ease-in-out infinite;
-      }
-      @keyframes skeletonSweep {
-        0% {
-          transform: translate(-130%, -130%);
-        }
-        100% {
-          transform: translate(130%, 130%);
-        }
-      }
-
-      .product_card_badge {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        z-index: 2;
-        padding: 4px 9px;
-        border-radius: 999px;
-        font-size: var(--fs-micro);
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-      @media (max-width: 480px) {
-        .product_card_badge {
-          top: 7px;
-          left: 7px;
-          padding: 3px 7px;
-          font-size: 9px;
-        }
-      }
-      .product_card_badge_new {
-        background: var(--accent);
-        color: #0b0b0c;
-      }
-      .product_card_badge_sale {
-        background: var(--danger);
-        color: var(--white);
-      }
-      .product_card_badge_hit {
-        background: var(--buda);
-        color: #0b0b0c;
-      }
-
-      .product_card_like {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        z-index: 2;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        min-height: 32px;
-        padding: 0 9px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 999px;
-        background: rgba(15, 15, 15, 0.82);
-        color: rgba(255, 255, 255, 0.86);
-        transition:
-          border-color 0.18s ease,
-          background 0.18s ease;
-      }
-      .product_card_like:hover {
-        background: rgba(20, 20, 20, 0.92);
-      }
-      .product_card_like svg {
-        width: 14px;
-        height: 14px;
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 1.9;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        transition:
-          fill 0.18s ease,
-          stroke 0.18s ease;
-      }
-      .product_card_like.active svg {
-        fill: var(--danger);
-        stroke: var(--danger);
-      }
-      .product_card_like_count {
-        font-size: var(--fs-micro);
-        font-weight: 700;
-      }
-      @media (max-width: 480px) {
-        .product_card_like {
-          top: 7px;
-          right: 7px;
-          min-height: 26px;
-          padding: 0 7px;
-          gap: 4px;
-        }
-        .product_card_like svg {
-          width: 12px;
-          height: 12px;
-        }
-        .product_card_like_count {
-          font-size: 9px;
-        }
-      }
-
-      .product_card_name_link {
-        cursor: pointer;
-        transition: color 0.18s ease;
-      }
-
-      .product_card_info {
-        padding: 12px 12px 14px;
-        background: rgba(17, 17, 17, 0.96);
-        border-top: 1px solid rgba(255, 255, 255, 0.06);
-      }
-      @media (max-width: 480px) {
-        .product_card_info {
-          padding: 9px 9px 11px;
-        }
-      }
-
-      .product_card_brand {
-        font-size: var(--fs-micro);
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: rgba(241, 241, 241, 0.35);
-        margin-bottom: 4px;
-      }
-      .product_card_name {
-        font-size: var(--fs-h3);
-        font-weight: 600;
-        line-height: 1.25;
-        color: rgba(255, 255, 255, 0.96);
-        margin-bottom: 8px;
-        display: -webkit-box;
-        line-clamp: 2;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        min-height: 2.5em;
-      }
-      @media (max-width: 480px) {
-        .product_card_name {
-          font-size: 12px;
-          margin-bottom: 6px;
-          min-height: 0;
-          -webkit-line-clamp: 2;
-          line-clamp: 2;
-        }
-      }
-
-      .product_card_price_row {
-        display: flex;
-        align-items: baseline;
-        gap: 6px;
-        margin-bottom: 10px;
-      }
-      .product_card_price {
-        font-size: var(--fs-price);
-        font-weight: 800;
-        color: var(--white);
-      }
-      .product_card_old_price {
-        font-size: var(--fs-micro);
-        font-weight: 500;
-        color: rgba(255, 255, 255, 0.35);
-        text-decoration: line-through;
-      }
-      @media (max-width: 480px) {
-        .product_card_price_row {
-          margin-bottom: 7px;
-          gap: 4px;
-        }
-      }
-
-      .product_card_sizes {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
-        margin-bottom: 10px;
-      }
-      .product_card_size {
-        min-width: 32px;
-        height: 24px;
-        padding: 0 6px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 999px;
-        background: transparent;
-        font-size: var(--fs-micro);
-        font-weight: 700;
-        color: rgba(255, 255, 255, 0.6);
-        transition: all 0.15s ease;
-      }
-      .product_card_size:hover {
-        color: var(--accent);
-        border-color: rgba(191, 247, 71, 0.32);
-      }
-      .product_card_size.out {
-        opacity: 0.25;
-        pointer-events: none;
-      }
-      @media (max-width: 480px) {
-        .product_card_sizes {
-          gap: 3px;
-          margin-bottom: 8px;
-        }
-        .product_card_size {
-          min-width: 28px;
-          height: 21px;
-          padding: 0 5px;
-          font-size: 9px;
-        }
-      }
-
-      .product_card_add {
-        width: 100%;
-        padding: 9px 10px;
-        border-radius: 9px;
-        border: 1px solid rgba(191, 247, 71, 0.2);
-        background: rgba(191, 247, 71, 0.05);
-        font-size: var(--fs-ui);
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--accent);
-        transition: all 0.18s ease;
-      }
-      .product_card_add:hover {
-        background: var(--accent);
-        border-color: var(--accent);
-        color: #0b0b0c;
-      }
-      @media (max-width: 480px) {
-        .product_card_add {
-          padding: 8px;
-          font-size: 10px;
-          border-radius: 7px;
-          letter-spacing: 0.03em;
-        }
-      }
-
-      /* ===================== VIEW_3 / VIEW_2 CARD ADAPTATIONS (desktop) ===================== */
-      .catalog_grid.view_3 .product_card_media {
-        aspect-ratio: 3 / 3.5;
-      }
-      .catalog_grid.view_3 .product_card_info {
-        padding: 11px 11px 13px;
-      }
-      .catalog_grid.view_3 .product_card_name {
-        font-size: 13px;
-        margin-bottom: 7px;
-        min-height: 0;
-        -webkit-line-clamp: 1;
-        line-clamp: 1;
-      }
-      .catalog_grid.view_3 .product_card_brand {
-        font-size: 10px;
-        margin-bottom: 3px;
-      }
-      .catalog_grid.view_3 .product_card_price {
-        font-size: 15px;
-      }
-      .catalog_grid.view_3 .product_card_price_row {
-        margin-bottom: 7px;
-      }
-      .catalog_grid.view_3 .product_card_sizes {
-        gap: 3px;
-        margin-bottom: 9px;
-      }
-      .catalog_grid.view_3 .product_card_size {
-        min-width: 28px;
-        height: 22px;
-        padding: 0 5px;
-        font-size: 10px;
-      }
-      .catalog_grid.view_3 .product_card_add {
-        padding: 8px;
-        font-size: 11px;
-      }
-
-      /* VIEW_1 — горизонтальная карточка на мобиле */
-      @media (max-width: 900px) {
-        .catalog_grid.view_1 .product_card {
-          display: flex;
-          flex-direction: row;
-          border-radius: 14px;
-        }
-        .catalog_grid.view_1 .product_card_media {
-          width: 120px;
-          min-width: 120px;
-          aspect-ratio: unset;
-          border-radius: 14px 0 0 14px;
-        }
-        .catalog_grid.view_1 .product_card_info {
-          flex: 1;
-          padding: 12px 14px;
-          border-top: none;
-          border-left: 1px solid rgba(255, 255, 255, 0.06);
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-        }
-        .catalog_grid.view_1 .product_card_name {
-          -webkit-line-clamp: 2;
-          line-clamp: 2;
-          min-height: 0;
-        }
-      }
 
       /* ===================== SORT OPTIONS ===================== */
       .sort_options {
@@ -1553,30 +1172,264 @@
         padding: 16px 20px 0;
       }
 
+      /* ===================== PRODUCT CARD ===================== */
+      .product_card {
+        background: linear-gradient(180deg, rgba(17, 17, 17, 0.96) 0%, rgba(10, 10, 10, 0.98) 100%);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        overflow: hidden;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+      }
+      .product_card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(255, 255, 255, 0.12);
+        box-shadow: 0 26px 70px rgba(0, 0, 0, 0.36);
+      }
+      .product_card_media {
+        position: relative;
+        aspect-ratio: 3 / 4;
+        background: linear-gradient(135deg, #262626 0%, #1a1a1a 100%);
+        overflow: hidden;
+      }
+      .product_card_media::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, transparent 42%),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 58%, rgba(0, 0, 0, 0.22) 100%);
+      }
+      .product_card_skeleton {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, #1f1f1f 0%, #171717 100%);
+        overflow: hidden;
+      }
+      .product_card_skeleton::before {
+        content: "";
+        position: absolute;
+        inset: -12%;
+        background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.01) 38%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.01) 62%, transparent 100%);
+        transform: translate(-130%, -130%);
+        animation: skeletonSweep 2.8s ease-in-out infinite;
+      }
+      .product_card_img {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .product_card_badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 2;
+        padding: 4px 9px;
+        border-radius: 999px;
+        font-size: var(--fs-micro);
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .product_card_badge_new { background: var(--accent); color: #0b0b0c; }
+      .product_card_badge_sale { background: var(--danger); color: var(--white); }
+      .product_card_badge_hit { background: var(--buda); color: #0b0b0c; }
+      .product_card_like {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 2;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        min-height: 32px;
+        padding: 0 9px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 999px;
+        background: rgba(15, 15, 15, 0.82);
+        color: rgba(255, 255, 255, 0.86);
+      }
+      .product_card_like svg {
+        width: 14px;
+        height: 14px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.9;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .product_card_like.active svg { fill: var(--danger); stroke: var(--danger); }
+      .product_card_like_count {
+        font-size: var(--fs-micro);
+        font-weight: 700;
+      }
+      .product_card_info {
+        padding: 12px 12px 14px;
+        background: rgba(17, 17, 17, 0.96);
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .product_card_brand {
+        margin-bottom: 4px;
+        color: rgba(241, 241, 241, 0.35);
+        font-size: var(--fs-micro);
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .product_card_name {
+        min-height: 2.5em;
+        margin-bottom: 8px;
+        color: rgba(255, 255, 255, 0.96);
+        font-size: var(--fs-h3);
+        font-weight: 600;
+        line-height: 1.25;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .product_card_price_row {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+      .product_card_price {
+        color: var(--white);
+        font-size: var(--fs-price);
+        font-weight: 800;
+      }
+      .product_card_old_price {
+        color: rgba(255, 255, 255, 0.35);
+        font-size: var(--fs-micro);
+        font-weight: 500;
+        text-decoration: line-through;
+      }
+      .product_card_sizes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: auto;
+        margin-bottom: 0;
+        padding-top: 2px;
+      }
+      .product_card_size {
+        min-width: 32px;
+        height: 24px;
+        padding: 0 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: var(--fs-micro);
+        font-weight: 700;
+        background: transparent;
+        cursor: pointer;
+        transition: color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+      }
+      .product_card_size:not(.out):hover {
+        color: var(--accent);
+        border-color: rgba(191, 247, 71, 0.32);
+      }
+      .product_card_size.out,
+      .product_card_size:disabled {
+        opacity: 0.25;
+        cursor: default;
+        pointer-events: none;
+      }
+      .product_card_add {
+        width: 100%;
+        padding: 9px 10px;
+        border: 1px solid rgba(191, 247, 71, 0.2);
+        border-radius: 9px;
+        background: rgba(191, 247, 71, 0.05);
+        color: var(--accent);
+        font-size: var(--fs-ui);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        transition: all 0.18s ease;
+      }
+      .product_card_add:hover {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #0b0b0c;
+      }
+      @media (max-width: 768px) {
+        .product_card { border-radius: 16px; }
+        .product_card_media { aspect-ratio: 3 / 3.5; }
+      }
+      @media (max-width: 480px) {
+        .product_card { border-radius: 12px; }
+        .product_card:hover { transform: none; }
+        .product_card_media { aspect-ratio: 1 / 1; }
+        .product_card_info { padding: 9px 9px 11px; }
+        .product_card_name { min-height: 0; font-size: 12px; }
+        .product_card_add { padding: 8px; font-size: 10px; }
+      }
+      @media (max-width: 900px) {
+        .catalog_grid.view_1 .product_card {
+          display: flex;
+          flex-direction: row;
+          border-radius: 14px;
+        }
+        .catalog_grid.view_1 .product_card_media {
+          width: 120px;
+          min-width: 120px;
+          aspect-ratio: auto;
+        }
+        .catalog_grid.view_1 .product_card_info {
+          flex: 1;
+          border-top: none;
+          border-left: 1px solid rgba(255, 255, 255, 0.06);
+        }
+      }
+
       /* ===================== EMPTY STATE ===================== */
       .catalog_empty {
         grid-column: 1 / -1;
         text-align: center;
-        padding: 80px 20px;
+        padding: 80px 20px 100px;
         display: none;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
       }
       .catalog_empty.visible {
+        display: flex;
+      }
+      .catalog_empty_icon_wrap {
+        animation: emptyFloat 3.6s ease-in-out infinite;
+      }
+      .catalog_empty_svg {
+        width: 120px;
+        height: 120px;
         display: block;
       }
-      .catalog_empty_icon {
-        font-size: 48px;
-        margin-bottom: 16px;
+      @keyframes emptyFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
       }
       .catalog_empty_title {
-        font-size: var(--fs-h2);
-        font-weight: 800;
-        color: var(--white);
-        margin-bottom: 10px;
-      }
-      .catalog_empty_text {
-        font-size: var(--fs-body);
-        color: rgba(241, 241, 241, 0.38);
-        margin-bottom: 24px;
+        font-size: clamp(14px, 1.4vw, 15px);
+        font-weight: 600;
+        color: rgba(241, 241, 241, 0.55);
+        margin-bottom: 20px;
+        letter-spacing: 0.02em;
       }
       .catalog_empty_reset {
         display: inline-flex;
@@ -1596,7 +1449,20 @@
         border-color: var(--accent);
         color: #0b0b0c;
       }
+      @media (max-width: 480px) {
+        .catalog_empty {
+          padding: 60px 16px 80px;
+        }
+        .catalog_empty_svg {
+          width: 80px;
+          height: 80px;
+        }
+        .catalog_empty_icon_wrap {
+          margin-bottom: 20px;
+        }
+      }
     </style>
+    {% include 'main/includes/badges.html' %}
   </head>
   <body>
     {% include 'main/header.html' %}
@@ -1645,14 +1511,42 @@
         </div>
 
         <!-- Сетка товаров -->
-        <div class="catalog_grid" id="catalogGrid"></div>
+
+        <div class="catalog_grid" id="catalogGrid">
+          <!-- Карточки рендерятся через JS из products_json -->
+        </div>
 
         <!-- Пустой стейт -->
+        <template id="productCardTemplates">
+          {% for product in products %}
+            {% include 'main/includes/product_card.html' with product=product %}
+          {% endfor %}
+        </template>
+
         <div class="catalog_empty" id="catalogEmpty">
-          <div class="catalog_empty_icon">🔍</div>
-          <div class="catalog_empty_title">Ничего не найдено</div>
-          <p class="catalog_empty_text">Попробуйте изменить фильтры или сбросить их</p>
-          <button class="catalog_empty_reset" id="emptyReset">Сбросить фильтры</button>
+          <!-- Иконка: нет товаров вообще -->
+          <div class="catalog_empty_icon_wrap" id="emptyIconNoProducts">
+            <svg class="catalog_empty_svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="52" cy="50" r="26" stroke="rgba(255,255,255,0.25)" stroke-width="3"/>
+              <line x1="70" y1="68" x2="90" y2="88" stroke="rgba(255,255,255,0.25)" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <!-- Иконка: фильтры не дали результат -->
+          <div class="catalog_empty_icon_wrap" id="emptyIconNoResults" style="display:none">
+            <svg class="catalog_empty_svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="60" cy="60" r="54" stroke="rgba(255,255,255,0.06)" stroke-width="2"/>
+              <circle cx="60" cy="60" r="40" stroke="rgba(191,247,71,0.12)" stroke-width="1.5" stroke-dasharray="6 4"/>
+              <!-- Лупа -->
+              <circle cx="55" cy="53" r="16" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+              <line x1="67" y1="65" x2="80" y2="78" stroke="rgba(255,255,255,0.25)" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- Крестик внутри лупы -->
+              <line x1="49" y1="47" x2="61" y2="59" stroke="rgba(255,90,90,0.7)" stroke-width="2" stroke-linecap="round"/>
+              <line x1="61" y1="47" x2="49" y2="59" stroke="rgba(255,90,90,0.7)" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+
+          <div class="catalog_empty_title" id="emptyTitle">Список товаров пуст</div>
+          <button class="catalog_empty_reset" id="emptyReset" style="display:none">Сбросить фильтры</button>
         </div>
 
         <!-- Пагинация -->
@@ -1907,7 +1801,7 @@
               <div class="filter_block_body_content">
                 <div class="filter_chips">
                   <button class="filter_chip">0</button>
-                  <button class="filter_chip active">20</button>
+                  <button class="filter_chip">20</button>
                   <button class="filter_chip">30</button>
                   <button class="filter_chip">50</button>
                 </div>
@@ -1922,92 +1816,56 @@
     <!-- Кнопка вверх -->
     {% include 'main/includes/scroll_to_top.html' %}
 
+    {# Передаём данные из Django в JS через json_script — безопасно, без XSS #}
+    {{ products_json|json_script:"productsData" }}
+
     <script>
       (() => {
         /* ============================================================
-         DATA
-      ============================================================ */
-        const BRANDS = ["Vaporesso", "SMOK", "VOOPOO", "Uwell", "GeekVape", "OXVA", "Lost Mary", "Elfliq", "Chaser", "Freemax"];
-        const BADGES = [null, null, null, { label: "Новинка", type: "new" }, { label: "Хит", type: "hit" }, { label: "-15%", type: "sale" }, null, { label: "-20%", type: "sale" }, null, { label: "Новинка", type: "new" }];
-        const NAMES = [
-          "Pod-система XROS 4 Mini",
-          "Pod-мод Aegis Hero Q Kit",
-          "Под-устройство XLIM V3",
-          "Набор Caliburn G3 Kit",
-          "Pod-система Novo 5",
-          "Под-мод Vmate i2",
-          "Pod-система XROS Pro",
-          "Набор Aegis Boost Pro 2",
-          "Под-система Argus G2",
-          "Pod-система Luxe X Pro",
-          "Набор Target 200 Kit",
-          "Pod-мод Drag S2",
-          "Устройство IQ-M Kit",
-          "Pod-система Unibar Plus",
-          "Набор Obelisk 60 Kit",
-          "Pod-система Find S Trip",
-          "Nano Pod Plus",
-          "Pod-система Elf Bar Mate 500",
-          "Под-мод Gen 200 Kit",
-          "Pod-система Aspire Flexus Q",
-          "Набор Swag PX80 Kit",
-          "Pod-мод Smoant Pasito",
-          "Pod-система Vinci X 2",
-          "Nexus AIO Kit",
-          "Pod-система Navi Pod Mod",
-          "Набор VooPoo Mojo Kit",
-          "Pod-система FREEMAX Galex",
-          "Под-мод Aimo Pod 40W",
-          "Набор Sigelei Fuchai Square 3",
-          "Pod-система Vaporesso Click",
-        ];
-        const SIZES_POOL = [
-          ["0.6Ω", "0.8Ω", "1.0Ω"],
-          ["0.4Ω", "0.6Ω"],
-          ["0.8Ω", "1.2Ω"],
-          ["0.6Ω", "0.9Ω"],
-          ["0.2Ω", "0.3Ω"],
-        ];
-        const PRICE_POOL = [499, 699, 890, 990, 1190, 1290, 1390, 1490, 1690, 1890, 2190, 2390];
-
-        function seeded(n) {
-          let x = Math.sin(n + 1) * 10000;
-          return x - Math.floor(x);
+         DATA — из Django (products_json из views.py)
+        ============================================================ */
+        const _rawData = document.getElementById("productsData");
+        let allProducts = [];
+        try {
+          const parsed = _rawData ? JSON.parse(_rawData.textContent) : [];
+          allProducts = Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+          allProducts = [];
         }
 
-        const CATEGORIES = ["pod", "liquid", "cart", "acc"];
-
-        const allProducts = Array.from({ length: 120 }, (_, i) => {
-          const s = seeded(i);
-          const price = PRICE_POOL[Math.floor(s * PRICE_POOL.length)];
-          const badge = BADGES[i % BADGES.length];
-          const hasOld = badge?.type === "sale";
-          return {
-            id: i + 1,
-            brand: BRANDS[i % BRANDS.length],
-            name: NAMES[i % NAMES.length],
-            category: CATEGORIES[i % CATEGORIES.length],
-            price,
-            oldPrice: hasOld ? Math.round(price * (1 + 0.1 + seeded(i * 3) * 0.15)) : null,
-            badge,
-            likes: 5 + Math.floor(seeded(i * 7) * 60),
-            liked: false,
-            sizes: SIZES_POOL[i % SIZES_POOL.length],
-          };
-        });
+        // Пустой стейт обрабатывается только внутри render()
 
         /* ============================================================
          STATE
       ============================================================ */
+        const maxPrice = allProducts.length > 0 ? Math.ceil(Math.max(...allProducts.map(p => p.price)) / 100) * 100 : 5000;
+        const _rMaxEl = document.getElementById("rangeMax");
+        const _rMinEl = document.getElementById("rangeMin");
+        const _iMaxEl = document.getElementById("priceMax");
+        if (_rMaxEl) { _rMaxEl.max = maxPrice; _rMaxEl.value = maxPrice; }
+        if (_rMinEl) { _rMinEl.max = maxPrice; }
+        if (_iMaxEl) { _iMaxEl.value = maxPrice; _iMaxEl.max = maxPrice; }
+
         let state = {
           categoryFilter: "all", // all | pod | liquid | cart | acc
           priceMin: 0,
-          priceMax: 5000,
+          priceMax: maxPrice,
           page: 1,
           perPage: 30,
           sort: "recommended",
           view: 4,
         };
+
+        function getBadgeType(product) {
+          return product.badge?.type || "";
+        }
+
+        function getCookie(name) {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return parts.pop().split(";").shift();
+          return "";
+        }
 
         /* ============================================================
          FILTER + SORT
@@ -2024,13 +1882,13 @@
           const a = [...arr];
           if (state.sort === "price_asc") return a.sort((x, y) => x.price - y.price);
           if (state.sort === "price_desc") return a.sort((x, y) => y.price - x.price);
-          if (state.sort === "hit") return a.sort((x, y) => (y.badge?.type === "hit" ? 1 : 0) - (x.badge?.type === "hit" ? 1 : 0));
-          if (state.sort === "new") return a.sort((x, y) => (y.badge?.type === "new" ? 1 : 0) - (x.badge?.type === "new" ? 1 : 0));
-          if (state.sort === "sale") return a.sort((x, y) => (y.badge?.type === "sale" ? 1 : 0) - (x.badge?.type === "sale" ? 1 : 0));
+          if (state.sort === "hit") return a.sort((x, y) => (getBadgeType(y) === "hit" ? 1 : 0) - (getBadgeType(x) === "hit" ? 1 : 0));
+          if (state.sort === "new") return a.sort((x, y) => (getBadgeType(y) === "new" ? 1 : 0) - (getBadgeType(x) === "new" ? 1 : 0));
+          if (state.sort === "sale") return a.sort((x, y) => (getBadgeType(y) === "sale" ? 1 : 0) - (getBadgeType(x) === "sale" ? 1 : 0));
           if (state.sort === "discount_pct")
             return a.sort((x, y) => {
-              const pctX = x.oldPrice ? Math.round((1 - x.price / x.oldPrice) * 100) : 0;
-              const pctY = y.oldPrice ? Math.round((1 - y.price / y.oldPrice) * 100) : 0;
+              const pctX = x.old_price ? Math.round((1 - x.price / x.old_price) * 100) : 0;
+              const pctY = y.old_price ? Math.round((1 - y.price / y.old_price) * 100) : 0;
               return pctY - pctX;
             });
           return a; // recommended — исходный порядок
@@ -2039,30 +1897,106 @@
         /* ============================================================
          RENDER CARD
       ============================================================ */
+        const productCardTemplate = document.getElementById("productCardTemplates");
+        const productCardMap = new Map(
+          [...(productCardTemplate?.content.querySelectorAll(".product_card") || [])].map((card) => [Number(card.dataset.id), card.outerHTML]),
+        );
+
         function renderCard(p) {
-          const badgeHtml = p.badge ? `<span class="product_card_badge product_card_badge_${p.badge.type}">${p.badge.label}</span>` : "";
-          const oldHtml = p.oldPrice ? `<span class="product_card_old_price">${p.oldPrice.toLocaleString("uk-UA")}₴</span>` : "";
-          const sizesHtml = p.sizes.map((s, i) => `<button class="product_card_size${i === p.sizes.length - 1 ? " out" : ""}" type="button">${s}</button>`).join("");
+          const templateHtml = productCardMap.get(Number(p.id));
+          if (templateHtml) return templateHtml;
+
+          const badgeHtml = p.badge && p.badge.type
+            ? `<span class="product_card_badge product_card_badge_${p.badge.type}">${p.badge.label}</span>` : "";
+          const oldHtml = p.old_price
+            ? `<span class="product_card_old_price">${Number(p.old_price).toLocaleString("uk-UA")}₴</span>` : "";
+          const imgHtml = p.image_url
+            ? `<img src="${p.image_url}" alt="${p.name}" class="product_card_img" loading="lazy" />` : "";
+          const variants = Array.isArray(p.variants) ? p.variants : [];
+          const availableVariants = new Set(Array.isArray(p.available_variants) ? p.available_variants.map(String) : []);
+          const sizesHtml = variants
+            .map((s) => {
+              const isAvailable = availableVariants.has(String(s));
+              return `<button class="product_card_size${isAvailable ? "" : " out"}" type="button" data-size="${s}"${isAvailable ? "" : " disabled"}>${s}</button>`;
+            })
+            .join("");
+          const detailUrl = p.slug ? `/products/${p.id}/${p.slug}/` : "#";
+          const brandHtml = p.brand ? `<div class="product_card_brand">${p.brand}</div>` : "";
           return `
           <article class="product_card" data-id="${p.id}">
             <div class="product_card_media">
               <div class="product_card_skeleton"></div>
               ${badgeHtml}
-              <button class="product_card_like${p.liked ? " active" : ""}" type="button" data-like="${p.id}" aria-label="В избранное">
+              <button class="product_card_like${p.is_liked ? " active" : ""}" type="button" data-like="${p.id}" data-like-url="/products/${p.id}/like/" data-liked="${p.is_liked ? "true" : "false"}" aria-label="В избранное">
                 <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                <span class="product_card_like_count">${p.likes}</span>
+                <span class="product_card_like_count">${p.likes || 0}</span>
               </button>
+              ${imgHtml}
             </div>
             <div class="product_card_info">
-              <div class="product_card_brand">${p.brand}</div>
-              <h3 class="product_card_name product_card_name_link">${p.name}</h3>
+              ${brandHtml}
+              <h3 class="product_card_name product_card_name_link">
+                <a href="${detailUrl}">${p.name}</a>
+              </h3>
               <div class="product_card_price_row">
-                <span class="product_card_price">${p.price.toLocaleString("uk-UA")}₴</span>
+                <span class="product_card_price">${Number(p.price).toLocaleString("uk-UA")}₴</span>
                 ${oldHtml}
               </div>
-              <div class="product_card_sizes">${sizesHtml}</div>
+              ${variants.length ? `<div class="product_card_sizes">${sizesHtml}</div>` : ""}
+              <button class="product_card_add" type="button" data-add-to-cart="${p.id}">Додати до кошика</button>
             </div>
           </article>`;
+        }
+
+        async function handleLikeClick(btn) {
+          const id = Number(btn.dataset.like);
+          const likeUrl = btn.dataset.likeUrl;
+          if (!id || !likeUrl || btn.disabled) return;
+
+          btn.disabled = true;
+          try {
+            const response = await fetch(likeUrl, {
+              method: "POST",
+              headers: {
+                "X-CSRFToken": getCookie("csrftoken"),
+                "X-Requested-With": "XMLHttpRequest",
+              },
+            });
+
+            if (response.status === 401 || response.status === 403) {
+              alert("Войдите в аккаунт, чтобы ставить лайки.");
+              return;
+            }
+            if (!response.ok) throw new Error("Like request failed");
+
+            const data = await response.json();
+            const product = allProducts.find((item) => item.id === id);
+            if (product) {
+              product.is_liked = data.liked;
+              product.likes = data.likes;
+            }
+
+            btn.dataset.liked = data.liked ? "true" : "false";
+            btn.classList.toggle("active", data.liked);
+            const counter = btn.querySelector(".product_card_like_count");
+            if (counter) counter.textContent = data.likes;
+
+            const templateCard = productCardTemplate?.content.querySelector(`.product_card[data-id="${id}"]`);
+            if (templateCard) {
+              const templateBtn = templateCard.querySelector("[data-like]");
+              if (templateBtn) {
+                templateBtn.dataset.liked = data.liked ? "true" : "false";
+                templateBtn.classList.toggle("active", data.liked);
+              }
+              const templateCounter = templateCard.querySelector(".product_card_like_count");
+              if (templateCounter) templateCounter.textContent = data.likes;
+              productCardMap.set(id, templateCard.outerHTML);
+            }
+          } catch (error) {
+            alert("Не удалось обновить лайк. Попробуйте еще раз.");
+          } finally {
+            btn.disabled = false;
+          }
         }
 
         /* ============================================================
@@ -2166,6 +2100,24 @@
           if (page.length === 0) {
             grid.innerHTML = "";
             empty.classList.add("visible");
+            const noProducts = document.getElementById("emptyIconNoProducts");
+            const noResults = document.getElementById("emptyIconNoResults");
+            const emptyTitle = document.getElementById("emptyTitle");
+            const emptyResetBtn = document.getElementById("emptyReset");
+            const isFiltered = state.categoryFilter !== "all" || state.priceMin > 0 || state.priceMax < maxPrice;
+            if (allProducts.length === 0) {
+              // Товаров нет вообще в БД
+              if (noProducts) noProducts.style.display = "";
+              if (noResults) noResults.style.display = "none";
+              if (emptyTitle) emptyTitle.textContent = "Список товаров пуст";
+              if (emptyResetBtn) emptyResetBtn.style.display = "none";
+            } else {
+              // Есть товары, но фильтры дали 0 результатов
+              if (noProducts) noProducts.style.display = "none";
+              if (noResults) noResults.style.display = "";
+              if (emptyTitle) emptyTitle.textContent = "Ничего не найдено";
+              if (emptyResetBtn) emptyResetBtn.style.display = "";
+            }
           } else {
             empty.classList.remove("visible");
             grid.innerHTML = page.map(renderCard).join("");
@@ -2174,13 +2126,7 @@
             grid.querySelectorAll("[data-like]").forEach((btn) => {
               btn.addEventListener("click", (e) => {
                 e.stopPropagation();
-                const id = +btn.dataset.like;
-                const p = allProducts.find((x) => x.id === id);
-                if (!p) return;
-                p.liked = !p.liked;
-                p.likes += p.liked ? 1 : -1;
-                btn.classList.toggle("active", p.liked);
-                btn.querySelector(".product_card_like_count").textContent = p.likes;
+                handleLikeClick(btn);
               });
             });
           }
@@ -2243,7 +2189,7 @@
             render();
           });
           iMax.addEventListener("change", () => {
-            rMax.value = Math.min(5000, Math.max(+iMax.value, +rMin.value + 100));
+            rMax.value = Math.min(maxPrice, Math.max(+iMax.value, +rMin.value + 100));
             state.priceMax = +rMax.value;
             state.page = 1;
             updateFill();
@@ -2403,17 +2349,17 @@
         function resetFilters() {
           state.categoryFilter = "all";
           state.priceMin = 0;
-          state.priceMax = 5000;
+          state.priceMax = maxPrice;
           state.page = 1;
           document.querySelectorAll(".filter_chip[data-category]").forEach((b) => b.classList.toggle("active", b.dataset.category === "all"));
           const rMin = document.getElementById("rangeMin");
           const rMax = document.getElementById("rangeMax");
           if (rMin) rMin.value = 0;
-          if (rMax) rMax.value = 5000;
+          if (rMax) rMax.value = maxPrice;
           const iMin = document.getElementById("priceMin");
           const iMax = document.getElementById("priceMax");
           if (iMin) iMin.value = 0;
-          if (iMax) iMax.value = 5000;
+          if (iMax) iMax.value = maxPrice;
           const fill = document.getElementById("rangeFill");
           if (fill) {
             fill.style.left = "0%";
@@ -2508,10 +2454,19 @@
         initRangeSlider();
         initFilterBlocks();
         initTypeChips();
+
+        // Никотин — визуальный toggle (без реальной фильтрации, поля нет в модели)
+        document.querySelectorAll('#fb_nicotine .filter_chip').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const isActive = btn.classList.contains('active');
+            document.querySelectorAll('#fb_nicotine .filter_chip').forEach(b => b.classList.remove('active'));
+            if (!isActive) btn.classList.add('active');
+          });
+        });
+
         initSort();
         initViewToggle();
         initDrawer();
-        initCursor();
         render();
       })();
     </script>

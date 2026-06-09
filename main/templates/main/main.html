@@ -1729,6 +1729,7 @@
         }
       }
     </style>
+    {% include 'main/includes/badges.html' %}
   </head>
   <body>
     {% include 'main/header.html' %}
@@ -1886,7 +1887,11 @@
             </div>
           </div>
         </div>
-        <div class="recommendations_content" id="recommendationsContent"></div>
+        <div class="recommendations_content" id="recommendationsContent">
+          {% for product in products %} {% include 'main/includes/product_card.html' with product=product %} {% empty %}
+          <p style="grid-column: 1/-1; text-align: center; color: rgba(241, 241, 241, 0.5)">Товары не найдены</p>
+          {% endfor %}
+        </div>
       </div>
     </section>
 
@@ -2784,18 +2789,18 @@
 
       // ===== BRAND MARQUEE =====
       (function () {
-          const config = {
-            brands: [
-              { name: "Chaser", logo: "{% static 'assets/img/brand_logo/chaser_logp.png' %}" },
-              { name: "Eleaf", logo: "{% static 'assets/img/brand_logo/eleaf_logo-removebg-preview.png' %}" },
-              { name: "Elf Bar", logo: "{% static 'assets/img/brand_logo/elfbar_logo.png' %}" },
-              { name: "Nova", logo: "{% static 'assets/img/brand_logo/nova_logo.png' %}" },
-              { name: "OXVA", logo: "{% static 'assets/img/brand_logo/oxva_logo.png' %}" },
-              { name: "SMOK", logo: "{% static 'assets/img/brand_logo/smoktech_logo-removebg-preview.png' %}" },
-              { name: "Vaporesso", logo: "{% static 'assets/img/brand_logo/vaporesso_logo.png' %}" },
-            ],
-            animationSpeed: 36,
-          };
+        const config = {
+          brands: [
+            { name: "Chaser", logo: "{% static 'assets/img/brand_logo/chaser_logp.png' %}" },
+            { name: "Eleaf", logo: "{% static 'assets/img/brand_logo/eleaf_logo-removebg-preview.png' %}" },
+            { name: "Elf Bar", logo: "{% static 'assets/img/brand_logo/elfbar_logo.png' %}" },
+            { name: "Nova", logo: "{% static 'assets/img/brand_logo/nova_logo.png' %}" },
+            { name: "OXVA", logo: "{% static 'assets/img/brand_logo/oxva_logo.png' %}" },
+            { name: "SMOK", logo: "{% static 'assets/img/brand_logo/smoktech_logo-removebg-preview.png' %}" },
+            { name: "Vaporesso", logo: "{% static 'assets/img/brand_logo/vaporesso_logo.png' %}" },
+          ],
+          animationSpeed: 36,
+        };
         let isDetailActive = false,
           currentBrand = null;
 
