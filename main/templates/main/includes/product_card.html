@@ -1,58 +1,58 @@
 {% with badge=product.get_badge_data product_variants=product.display_product_variants %}
-<article class="product_card" data-id="{{ product.id }}">
-  <div class="product_card_media">
-    <div class="product_card_skeleton"></div>
+<article class="product_card_component" data_product_card_id="{{ product.id }}">
+  <div class="product_card_media_container">
+    <div class="product_card_skeleton_element"></div>
 
     {% if product.image %}
-      <img class="product_card_img" src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" />
+      <img class="product_card_image_element" src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" />
     {% endif %}
 
     {% if badge %}
-      <span class="product_card_badge product_card_badge_{{ badge.type }}">
+      <span class="product_card_badge_element product_card_badge_{{ badge.type }}_variant">
         {{ badge.label }}
       </span>
     {% endif %}
 
     <button
-      class="product_card_like{% if product.is_liked %} active{% endif %}"
+      class="product_card_like_button{% if product.is_liked %} active{% endif %}"
       type="button"
-      data-like="{{ product.id }}"
-      data-like-url="{% url 'main:product_like' product.id %}"
-      data-liked="{% if product.is_liked %}true{% else %}false{% endif %}"
+      data_product_card_like_id="{{ product.id }}"
+      data_product_card_like_url="{% url 'main:product_like' product.id %}"
+      data_product_card_liked_state="{% if product.is_liked %}true{% else %}false{% endif %}"
       aria-label="В избранное"
     >
       <svg viewBox="0 0 24 24">
         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
       </svg>
-      <span class="product_card_like_count">{{ product.likes|default:0 }}</span>
+      <span class="product_card_like_count_text">{{ product.likes|default:0 }}</span>
     </button>
   </div>
 
-  <div class="product_card_info">
+  <div class="product_card_info_block">
     {% if product.brand %}
-      <div class="product_card_brand">{{ product.brand.name }}</div>
+      <div class="product_card_brand_text">{{ product.brand.name }}</div>
     {% endif %}
 
-    <h3 class="product_card_name product_card_name_link">
+    <h3 class="product_card_name_text product_card_name_link_element">
       <a href="{% url 'main:product_detail' product.id product.slug %}">{{ product.name }}</a>
     </h3>
 
-    <div class="product_card_price_row">
-      <span class="product_card_price">{{ product.price|floatformat:0 }}₴</span>
+    <div class="product_card_price_row_container">
+      <span class="product_card_price_value">{{ product.price|floatformat:0 }}₴</span>
       {% if product.is_on_sale %}
-        <span class="product_card_old_price">{{ product.old_price|floatformat:0 }}₴</span>
+        <span class="product_card_old_price_value">{{ product.old_price|floatformat:0 }}₴</span>
       {% endif %}
     </div>
 
     {% if product_variants %}
-      <div class="product_card_sizes">
+      <div class="product_card_sizes_container">
         {% for product_variant in product_variants %}
           <button
-            class="product_card_size{% if not product_variant.available %} out{% endif %}"
+            class="product_card_size_button{% if not product_variant.available %} product_card_size_out_state{% endif %}"
             type="button"
-            data-variant-id="{{ product_variant.id }}"
-            data-size="{{ product_variant.name }}"
-            data-stock="{{ product_variant.stock }}"
+            data_product_variant_id="{{ product_variant.id }}"
+            data_product_variant_name="{{ product_variant.name }}"
+            data_product_variant_stock="{{ product_variant.stock }}"
             {% if not product_variant.available %}disabled{% endif %}
           >
             {{ product_variant.name }}

@@ -138,7 +138,7 @@
       }
 
       /* ===================== CURSOR ===================== */
-      .cursor_dot {
+      .cursor_dot_component {
         position: fixed;
         top: 0;
         left: 0;
@@ -154,12 +154,12 @@
           background-color 0.12s ease,
           border-color 0.12s ease;
       }
-      .cursor_dot_small {
+      .cursor_dot_small_variant {
         width: 6px;
         height: 6px;
         background: var(--accent);
       }
-      .cursor_dot_large {
+      .cursor_dot_large_variant {
         width: 30px;
         height: 30px;
         border: 1px solid var(--accent);
@@ -168,7 +168,7 @@
       }
 
       /* ===================== HERO BANNER ===================== */
-      .catalog_hero {
+      .catalog_hero_section {
         position: relative;
         width: 100%;
         height: 300px;
@@ -176,33 +176,33 @@
         background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 50%, #0a0a0a 100%);
       }
       @media (max-width: 1200px) {
-        .catalog_hero {
+        .catalog_hero_section {
           height: 320px;
         }
       }
       @media (max-width: 900px) {
-        .catalog_hero {
+        .catalog_hero_section {
           height: 260px;
         }
       }
       @media (max-width: 768px) {
-        .catalog_hero {
+        .catalog_hero_section {
           height: 210px;
         }
       }
       @media (max-width: 480px) {
-        .catalog_hero {
+        .catalog_hero_section {
           height: 170px;
         }
       }
 
-      .catalog_hero_skeleton {
+      .catalog_hero_section_skeleton_element {
         position: absolute;
         inset: 0;
         background: linear-gradient(135deg, #1f1f1f 0%, #141414 100%);
         overflow: hidden;
       }
-      .catalog_hero_skeleton::before {
+      .catalog_hero_section_skeleton_element::before {
         content: "";
         position: absolute;
         inset: -12%;
@@ -210,7 +210,7 @@
         transform: translate(-130%, -130%);
         animation: skeletonSweep 3.5s ease-in-out infinite;
       }
-      .catalog_hero_img_placeholder {
+      .catalog_hero_section_img_placeholder_element {
         position: absolute;
         inset: 0;
         display: flex;
@@ -224,13 +224,13 @@
         letter-spacing: 0.2em;
         text-transform: uppercase;
       }
-      .catalog_hero_img_placeholder svg {
+      .catalog_hero_section_img_placeholder_element svg {
         width: 32px;
         height: 32px;
         opacity: 0.15;
       }
 
-      .catalog_hero_glow {
+      .catalog_hero_section_glow_element {
         position: absolute;
         bottom: -80px;
         left: 50%;
@@ -240,7 +240,7 @@
         background: radial-gradient(ellipse, rgba(191, 247, 71, 0.12) 0%, transparent 70%);
         pointer-events: none;
       }
-      .catalog_hero_content {
+      .catalog_hero_content_container {
         position: relative;
         z-index: 2;
         height: 100%;
@@ -250,16 +250,16 @@
         padding: 0 var(--site-pad) 36px;
       }
       @media (max-width: 768px) {
-        .catalog_hero_content {
+        .catalog_hero_content_container {
           padding-bottom: 24px;
         }
       }
       @media (max-width: 480px) {
-        .catalog_hero_content {
+        .catalog_hero_content_container {
           padding-bottom: 18px;
         }
       }
-      .catalog_hero_eyebrow {
+      .catalog_hero_section_eyebrow_text {
         font-size: var(--fs-label);
         font-weight: 700;
         letter-spacing: 0.28em;
@@ -267,7 +267,7 @@
         color: var(--accent);
         margin-bottom: 10px;
       }
-      .catalog_hero_title {
+      .catalog_hero_section_title_text {
         font-size: var(--fs-h1);
         font-weight: 900;
         line-height: 1.05;
@@ -275,20 +275,20 @@
         text-transform: uppercase;
         letter-spacing: -1px;
       }
-      .catalog_hero_count {
+      .catalog_hero_section_count_text {
         margin-top: 10px;
         font-size: var(--fs-ui);
         color: var(--accent);
         font-weight: 700;
         letter-spacing: 0.06em;
       }
-      .catalog_hero_count span {
+      .catalog_hero_section_count_text span {
         color: var(--accent);
         font-weight: 700;
       }
 
       /* Хлебные крошки */
-      .catalog_breadcrumb {
+      .catalog_breadcrumb_nav {
         position: absolute;
         top: 24px;
         left: var(--site-pad);
@@ -300,18 +300,18 @@
         color: rgba(241, 241, 241, 0.35);
         max-width: calc(100% - var(--site-pad) * 2);
       }
-      .catalog_breadcrumb a:hover {
+      .catalog_breadcrumb_nav a:hover {
         color: var(--white);
       }
-      .catalog_breadcrumb_sep {
+      .catalog_breadcrumb_nav_separator {
         opacity: 0.3;
       }
-      .catalog_breadcrumb_current {
+      .catalog_breadcrumb_nav_current_page {
         color: rgba(241, 241, 241, 0.6);
       }
 
       /* ===================== MAIN LAYOUT ===================== */
-      .catalog_layout {
+      .catalog_layout_container {
         display: block;
         max-width: 1600px;
         min-height: 600px;
@@ -319,20 +319,20 @@
         padding: 28px var(--site-pad) 80px;
       }
       @media (max-width: 768px) {
-        .catalog_layout {
+        .catalog_layout_container {
           padding-top: 20px;
           padding-bottom: 60px;
         }
       }
       @media (max-width: 480px) { 
-        .catalog_layout {
+        .catalog_layout_container {
           padding-top: 14px;
           padding-bottom: 48px;
         }
       }
 
       /* ===================== SIDEBAR / FILTERS ===================== */
-      .catalog_sidebar {
+      .catalog_sidebar_aside {
         display: none !important;
       }
 
@@ -347,13 +347,13 @@
         -moz-appearance: textfield;
       }
 
-      .filter_block {
+      .filter_block_component {
         border-bottom: 1px solid rgba(255, 255, 255, 0.06);
       }
-      .filter_block:last-child {
+      .filter_block_component:last-child {
         border-bottom: none;
       }
-      .filter_block_header {
+      .filter_block_header_element {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -362,10 +362,10 @@
         user-select: none;
         gap: 10px;
       }
-      .filter_block_static .filter_block_header {
+      .filter_block_static_variant .filter_block_header_element {
         cursor: default;
       }
-      .filter_block_title {
+      .filter_block_title_text {
         font-size: 12px;
         font-weight: 600;
         color: rgba(255, 255, 255, 0.5);
@@ -373,10 +373,10 @@
         text-transform: uppercase;
         transition: color 0.18s ease;
       }
-      .filter_block.open .filter_block_title {
+      .filter_block_component.filter_block_open_state .filter_block_title_text {
         color: var(--white);
       }
-      .filter_block_arrow_wrap {
+      .filter_block_arrow_wrapper {
         width: 20px;
         height: 20px;
         display: flex;
@@ -385,47 +385,47 @@
         flex-shrink: 0;
         transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
       }
-      .filter_block.open .filter_block_arrow_wrap {
+      .filter_block_component.filter_block_open_state .filter_block_arrow_wrapper {
         transform: rotate(-180deg);
       }
-      .filter_block_static .filter_block_arrow_wrap {
+      .filter_block_static_variant .filter_block_arrow_wrapper {
         display: none;
       }
-      .filter_block_arrow {
+      .filter_block_arrow_icon {
         width: 14px;
         height: 14px;
         color: rgba(255, 255, 255, 0.25);
         transition: color 0.18s ease;
         flex-shrink: 0;
       }
-      .filter_block.open .filter_block_arrow {
+      .filter_block_component.filter_block_open_state .filter_block_arrow_icon {
         color: rgba(255, 255, 255, 0.5);
       }
       /* Accordion — правильная анимация: overflow:hidden только на inner */
-      .filter_block_body {
+      .filter_block_body_container {
         display: grid;
         grid-template-rows: 0fr;
         transition: grid-template-rows 0.28s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
       }
-      .filter_block.open .filter_block_body {
+      .filter_block_component.filter_block_open_state .filter_block_body_container {
         grid-template-rows: 1fr;
         overflow: visible;
       }
-      .filter_block_body_inner {
+      .filter_block_body_inner_wrapper {
         min-height: 0;
       }
-      .filter_block_body_content {
+      .filter_block_body_content_area {
         padding-bottom: 16px;
       }
 
       /* Типы (chips) */
-      .filter_chips {
+      .filter_chips_container {
         display: flex;
         flex-wrap: wrap;
         gap: 6px;
       }
-      .filter_chip {
+      .filter_chip_button {
         padding: 6px 12px;
         border-radius: 999px;
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -440,16 +440,16 @@
         min-width: 0;
         max-width: 100%;
       }
-      .filter_chip:hover {
+      .filter_chip_button:hover {
         border-color: rgba(252, 225, 34, 0.3);
         color: var(--buda);
       }
-      .filter_chip.active {
+      .filter_chip_button.active {
         background: var(--buda);
         border-color: var(--buda);
         color: #0b0b0c;
       }
-      .filter_empty_text {
+      .filter_empty_text_element {
         width: 100%;
         font-size: var(--fs-micro);
         font-weight: 800;
@@ -459,13 +459,13 @@
       }
 
       /* Ценовой ползунок */
-      .filter_price_inputs {
+      .filter_price_inputs_container {
         display: flex;
         align-items: center;
         gap: 8px;
         margin-bottom: 16px;
       }
-      .filter_price_input {
+      .filter_price_input_field {
         flex: 1;
         background: rgba(255, 255, 255, 0.04);
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -482,25 +482,25 @@
         appearance: textfield;
         -moz-appearance: textfield;
       }
-      .filter_price_input::-webkit-outer-spin-button,
-      .filter_price_input::-webkit-inner-spin-button {
+      .filter_price_input_field::-webkit-outer-spin-button,
+      .filter_price_input_field::-webkit-inner-spin-button {
         -webkit-appearance: none;
         margin: 0;
       }
-      .filter_price_input:focus {
+      .filter_price_input_field:focus {
         border-color: rgba(186, 187, 185, 0.4);
       }
-      .filter_price_sep {
+      .filter_price_separator {
         font-size: var(--fs-micro);
         color: rgba(255, 255, 255, 0.25);
         flex-shrink: 0;
       }
-      .filter_range_wrap {
+      .filter_range_slider_wrapper {
         position: relative;
         height: 20px;
         margin-bottom: 4px;
       }
-      .filter_range_track {
+      .filter_range_slider_track_line {
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
@@ -510,14 +510,14 @@
         background: rgba(255, 255, 255, 0.08);
         border-radius: 999px;
       }
-      .filter_range_fill {
+      .filter_range_slider_fill_line {
         position: absolute;
         top: 0;
         height: 100%;
         background: var(--buda);
         border-radius: 999px;
       }
-      .filter_range {
+      .filter_range_slider {
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
@@ -529,7 +529,7 @@
         pointer-events: none;
         outline: none;
       }
-      .filter_range::-webkit-slider-thumb {
+      .filter_range_slider::-webkit-slider-thumb {
         appearance: none;
         width: 18px;
         height: 18px;
@@ -543,24 +543,24 @@
           transform 0.15s ease,
           box-shadow 0.15s ease;
       }
-      .filter_range::-webkit-slider-thumb:hover {
+      .filter_range_slider::-webkit-slider-thumb:hover {
         transform: scale(1.2);
         box-shadow: 0 0 0 4px rgba(191, 247, 71, 0.2);
       }
-      .filter_range_min {
+      .filter_range_slider_slider_min {
         z-index: 3;
       }
-      .filter_range_max {
+      .filter_range_slider_slider_max {
         z-index: 3;
       }
 
       /* Чекбоксы */
-      .filter_checkboxes {
+      .filter_checkboxes_container {
         display: flex;
         flex-direction: column;
         gap: 2px;
       }
-      .filter_checkbox_label {
+      .filter_checkbox_label_element {
         display: flex;
         align-items: center;
         gap: 10px;
@@ -569,10 +569,10 @@
         border-radius: 8px;
         transition: background 0.15s ease;
       }
-      .filter_checkbox_label:hover {
+      .filter_checkbox_label_element:hover {
         background: rgba(255, 255, 255, 0.03);
       }
-      .filter_checkbox_box {
+      .filter_checkbox_box_element {
         width: 16px;
         height: 16px;
         border-radius: 4px;
@@ -584,14 +584,14 @@
         justify-content: center;
         transition: all 0.15s ease;
       }
-      .filter_checkbox_label input {
+      .filter_checkbox_label_element input {
         display: none;
       }
-      .filter_checkbox_label input:checked + .filter_checkbox_box {
+      .filter_checkbox_label_element input:checked + .filter_checkbox_box_element {
         background: var(--buda);
         border-color: var(--buda);
       }
-      .filter_checkbox_label input:checked + .filter_checkbox_box::after {
+      .filter_checkbox_label_element input:checked + .filter_checkbox_box_element::after {
         content: "";
         width: 9px;
         height: 6px;
@@ -600,23 +600,23 @@
         transform: rotate(-45deg) translateY(-1px);
         display: block;
       }
-      .filter_checkbox_text {
+      .filter_checkbox_text_span {
         font-size: var(--fs-ui);
         color: rgba(241, 241, 241, 0.72);
         flex: 1;
         transition: color 0.15s ease;
       }
-      .filter_checkbox_label:hover .filter_checkbox_text {
+      .filter_checkbox_label_element:hover .filter_checkbox_text_span {
         color: var(--white);
       }
-      .filter_checkbox_count {
+      .filter_checkbox_count_span {
         font-size: var(--fs-micro);
         color: rgba(241, 241, 241, 0.28);
         font-family: "IBM Plex Mono", monospace;
       }
 
       /* Сброс фильтров */
-      .filter_reset {
+      .filter_reset_button {
         width: 100%;
         padding: 11px 18px;
         border-radius: 10px;
@@ -630,19 +630,19 @@
         transition: all 0.18s ease;
         margin-top: 4px;
       }
-      .filter_reset:hover {
+      .filter_reset_button:hover {
         border-color: var(--danger);
         color: var(--danger);
         background: rgba(255, 75, 76, 0.05);
       }
 
       /* ===================== MAIN CONTENT ===================== */
-      .catalog_main {
+      .catalog_main_content {
         min-width: 0;
       }
 
       /* Тулбар */
-      .catalog_toolbar {
+      .catalog_toolbar_container {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -650,33 +650,33 @@
         margin-bottom: 20px;
         flex-wrap: wrap;
       }
-      .catalog_toolbar_left {
+      .catalog_toolbar_left_group {
         display: flex;
         align-items: center;
         gap: 10px;
       }
-      .catalog_toolbar_right {
+      .catalog_toolbar_right_group {
         display: flex;
         align-items: center;
         gap: 8px;
       }
       @media (max-width: 600px) {
-        .catalog_toolbar {
+        .catalog_toolbar_container {
           margin-bottom: 14px;
           gap: 8px;
         }
-        .catalog_toolbar_right {
+        .catalog_toolbar_right_group {
           gap: 6px;
         }
       }
       @media (max-width: 480px) {
-        .catalog_toolbar {
+        .catalog_toolbar_container {
           margin-bottom: 12px;
         }
       }
 
       /* Кнопка фильтров — всегда видна */
-      .catalog_filter_toggle {
+      .catalog_filter_toggle_button {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -690,58 +690,58 @@
         transition: all 0.18s ease;
         white-space: nowrap;
       }
-      .catalog_filter_toggle:hover {
+      .catalog_filter_toggle_button:hover {
         color: var(--white);
       }
-      .catalog_filter_toggle svg {
+      .catalog_filter_toggle_button svg {
         width: 16px;
         height: 16px;
         flex-shrink: 0;
       }
       @media (max-width: 600px) {
-        .catalog_filter_toggle {
+        .catalog_filter_toggle_button {
           padding: 8px 14px;
           gap: 6px;
         }
       }
       @media (max-width: 480px) {
-        .catalog_filter_toggle {
+        .catalog_filter_toggle_button {
           padding: 8px 10px;
         }
         /* Скрыть текст, оставить иконку */
-        .catalog_filter_toggle .filter_btn_text {
+        .catalog_filter_toggle_button .filter_button_text_span {
           display: none;
         }
       }
 
       /* Счётчик результатов */
-      .catalog_result_count {
+      .catalog_result_count_text {
         font-size: var(--fs-ui);
         color: rgba(241, 241, 241, 0.38);
         white-space: nowrap;
       }
-      .catalog_result_count strong {
+      .catalog_result_count_text strong {
         color: rgba(241, 241, 241, 0.38);
         font-weight: 500;
       }
       @media (max-width: 480px) {
-        .catalog_result_count {
+        .catalog_result_count_text {
           font-size: 11px;
         }
       }
 
       /* Сортировка */
-      .catalog_sort_label {
+      .catalog_sort_label_text {
         font-size: var(--fs-ui);
         color: rgba(241, 241, 241, 0.4);
         white-space: nowrap;
       }
-      .catalog_sort_wrap {
+      .catalog_sort_wrapper {
         position: relative;
         display: flex;
         align-items: center;
       }
-      .catalog_sort_wrap::after {
+      .catalog_sort_wrapper::after {
         content: "";
         position: absolute;
         right: 12px;
@@ -755,10 +755,10 @@
         pointer-events: none;
         transition: border-color 0.18s ease;
       }
-      .catalog_sort_wrap:hover::after {
+      .catalog_sort_wrapper:hover::after {
         border-top-color: rgba(255, 255, 255, 0.6);
       }
-      .catalog_sort_select {
+      .catalog_sort_select_element {
         appearance: none;
         -webkit-appearance: none;
         background: var(--surface);
@@ -778,36 +778,36 @@
         min-width: 180px;
       }
       @media (max-width: 900px) {
-        .catalog_sort_select {
+        .catalog_sort_select_element {
           min-width: 150px;
         }
       }
       @media (max-width: 600px) {
-        .catalog_sort_select {
+        .catalog_sort_select_element {
           min-width: 120px;
           padding: 8px 28px 8px 10px;
           font-size: 11px;
         }
-        .catalog_sort_wrap::after {
+        .catalog_sort_wrapper::after {
           right: 9px;
         }
       }
       @media (max-width: 480px) {
         /* На маленьких — скрыть select, оставить только view toggle и фильтры */
-        .catalog_sort_wrap {
+        .catalog_sort_wrapper {
           display: none;
         }
       }
 
       /* Вид сетки */
-      .catalog_view_toggle {
+      .catalog_view_toggle_container {
         display: flex;
         border: 1px solid var(--border);
         border-radius: 10px;
         overflow: hidden;
         flex-shrink: 0;
       }
-      .catalog_view_btn {
+      .catalog_view_button_element {
         width: 36px;
         height: 36px;
         display: flex;
@@ -818,23 +818,23 @@
         background: var(--surface);
         position: relative;
       }
-      .catalog_view_btn:hover {
+      .catalog_view_button_element:hover {
         color: rgba(255, 255, 255, 0.7);
       }
-      .catalog_view_btn.active {
+      .catalog_view_button_element.catalog_view_button_active_state {
         background: rgba(255, 255, 255, 0.1);
         color: var(--white);
       }
-      .catalog_view_btn svg {
+      .catalog_view_button_element svg {
         width: 16px;
         height: 16px;
       }
-      .catalog_view_btn + .catalog_view_btn {
+      .catalog_view_button_element + .catalog_view_button_element {
         border-left: 1px solid var(--border);
       }
       /* Tooltip-like labels */
-      .catalog_view_btn[data-label]::after {
-        content: attr(data-label);
+      .catalog_view_button_element[data_view_button_label]::after {
+        content: attr(data_view_button_label);
         position: absolute;
         bottom: calc(100% + 6px);
         left: 50%;
@@ -852,48 +852,48 @@
         opacity: 0;
         transition: opacity 0.15s ease;
       }
-      .catalog_view_btn[data-label]:hover::after {
+      .catalog_view_button_element[data_view_button_label]:hover::after {
         opacity: 1;
       }
 
       @media (max-width: 600px) {
-        .catalog_view_btn {
+        .catalog_view_button_element {
           width: 32px;
           height: 32px;
         }
-        .catalog_view_btn svg {
+        .catalog_view_button_element svg {
           width: 14px;
           height: 14px;
         }
       }
 
       /* sort_select states */
-      .catalog_sort_select:hover {
+      .catalog_sort_select_element:hover {
         border-color: rgba(255, 255, 255, 0.18);
         background: rgba(255, 255, 255, 0.04);
         color: var(--white);
       }
-      .catalog_sort_select:focus {
+      .catalog_sort_select_element:focus {
         border-color: rgba(255, 255, 255, 0.2);
         outline: none;
       }
-      .catalog_sort_select option {
+      .catalog_sort_select_element option {
         background: #1a1a1c;
         color: var(--text);
         font-weight: 500;
       }
 
       /* ===================== PRODUCT GRID ===================== */
-      .catalog_grid {
+      .catalog_grid_container {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 14px;
       }
       /* Явные классы от view toggle */
-      .catalog_grid.view_3 {
+      .catalog_grid_container.catalog_grid_three_columns_state {
         grid-template-columns: repeat(3, 1fr);
       }
-      .catalog_grid.view_2 {
+      .catalog_grid_container.catalog_grid_two_columns_state {
         grid-template-columns: repeat(2, 1fr);
       }
 
@@ -901,59 +901,59 @@
 
       /* ── 1200px: дефолт 3, view toggle → 2 или 3 ── */
       @media (max-width: 1200px) {
-        .catalog_grid {
+        .catalog_grid_container {
           grid-template-columns: repeat(3, 1fr);
         }
-        .catalog_grid.view_3 {
+        .catalog_grid_container.catalog_grid_three_columns_state {
           grid-template-columns: repeat(3, 1fr);
         }
-        .catalog_grid.view_2 {
+        .catalog_grid_container.catalog_grid_two_columns_state {
           grid-template-columns: repeat(2, 1fr);
         }
       }
 
       /* ── 900px: дефолт 2, view toggle → 1 или 2 ── */
       @media (max-width: 900px) {
-        .catalog_grid {
+        .catalog_grid_container {
           grid-template-columns: repeat(2, 1fr);
           gap: 12px;
         }
-        .catalog_grid.view_3 {
+        .catalog_grid_container.catalog_grid_three_columns_state {
           grid-template-columns: repeat(2, 1fr);
         }
-        .catalog_grid.view_2 {
+        .catalog_grid_container.catalog_grid_two_columns_state {
           grid-template-columns: repeat(2, 1fr);
         }
-        .catalog_grid.view_1 {
+        .catalog_grid_container.catalog_grid_one_column_state {
           grid-template-columns: repeat(1, 1fr);
         }
       }
 
       /* ── 768px: то же самое, чуть меньше gap ── */
       @media (max-width: 768px) {
-        .catalog_grid {
+        .catalog_grid_container {
           gap: 10px;
         }
       }
 
       /* ── 600px: 2 колонки, маленький gap ── */
       @media (max-width: 600px) {
-        .catalog_grid {
+        .catalog_grid_container {
           grid-template-columns: repeat(2, 1fr);
           gap: 8px;
         }
-        .catalog_grid.view_1 {
+        .catalog_grid_container.catalog_grid_one_column_state {
           grid-template-columns: repeat(1, 1fr);
         }
       }
 
       /* ── 480px: 2 колонки, минимальный gap ── */
       @media (max-width: 480px) {
-        .catalog_grid {
+        .catalog_grid_container {
           grid-template-columns: repeat(2, 1fr);
           gap: 6px;
         }
-        .catalog_grid.view_1 {
+        .catalog_grid_container.catalog_grid_one_column_state {
           grid-template-columns: repeat(1, 1fr);
         }
       }
@@ -961,12 +961,12 @@
 
 
       /* ===================== SORT OPTIONS ===================== */
-      .sort_options {
+      .sort_options_container {
         display: flex;
         flex-direction: column;
         gap: 2px;
       }
-      .sort_option {
+      .sort_option_button {
         display: flex;
         align-items: center;
         gap: 10px;
@@ -979,10 +979,10 @@
         text-align: left;
         transition: background 0.15s ease;
       }
-      .sort_option:hover {
+      .sort_option_button:hover {
         background: rgba(255, 255, 255, 0.03);
       }
-      .sort_option_icon {
+      .sort_option_button_icon_element {
         width: 16px;
         height: 16px;
         flex-shrink: 0;
@@ -992,33 +992,33 @@
         justify-content: center;
         transition: color 0.15s ease;
       }
-      .sort_option_icon svg {
+      .sort_option_button_icon_element svg {
         width: 16px;
         height: 16px;
       }
-      .sort_option:hover .sort_option_icon {
+      .sort_option_button:hover .sort_option_button_icon_element {
         color: rgba(255, 255, 255, 0.6);
       }
-      .sort_option.active .sort_option_icon {
+      .sort_option_button.active .sort_option_button_icon_element {
         color: var(--buda);
       }
-      .sort_option_label {
+      .sort_option_button_label_text {
         font-size: var(--fs-ui);
         font-weight: 400;
         color: rgba(241, 241, 241, 0.72);
         flex: 1;
         transition: color 0.15s ease;
       }
-      .sort_option:hover .sort_option_label {
+      .sort_option_button:hover .sort_option_button_label_text {
         color: var(--white);
       }
-      .sort_option.active .sort_option_label {
+      .sort_option_button.active .sort_option_button_label_text {
         color: var(--white);
         font-weight: 500;
       }
 
       /* ===================== FILTER DRAWER (universal) ===================== */
-      .filter_drawer_overlay {
+      .filter_drawer_overlay_component {
         display: none;
         position: fixed;
         inset: 0;
@@ -1029,11 +1029,11 @@
         opacity: 0;
         transition: opacity 0.3s ease;
       }
-      .filter_drawer_overlay.open {
+      .filter_drawer_overlay_component.open {
         display: block;
         opacity: 1;
       }
-      .filter_drawer {
+      .filter_drawer_panel {
         position: fixed;
         top: 0;
         right: -380px;
@@ -1050,14 +1050,14 @@
         display: flex;
         flex-direction: column;
       }
-      .filter_drawer.open {
+      .filter_drawer_panel.open {
         right: 0;
       }
-      .filter_drawer::-webkit-scrollbar {
+      .filter_drawer_panel::-webkit-scrollbar {
         display: none;
       }
       /* Кнопка закрытия — привязана к левой грани drawer */
-      .filter_drawer_arrow {
+      .filter_drawer_panel_arrow_button {
         position: fixed;
         /* по умолчанию скрыта за экраном вместе с drawer */
         right: -380px;
@@ -1084,21 +1084,21 @@
           background 0.18s ease,
           border-color 0.18s ease;
       }
-      .filter_drawer_arrow.open {
+      .filter_drawer_panel_arrow_button.open {
         /* drawer = 360px → левый край на right:360px → центр кнопки туда же */
         right: 360px;
         pointer-events: all;
         opacity: 1;
       }
-      .filter_drawer_arrow:hover {
+      .filter_drawer_panel_arrow_button:hover {
         color: var(--white);
         background: #1e1e21;
         border-color: rgba(255, 255, 255, 0.18);
       }
-      .filter_drawer_arrow:active {
+      .filter_drawer_panel_arrow_button:active {
         background: #222226;
       }
-      .filter_drawer_arrow svg {
+      .filter_drawer_panel_arrow_button svg {
         width: 15px;
         height: 15px;
         flex-shrink: 0;
@@ -1108,14 +1108,14 @@
         line-height: 1;
       }
       @media (max-width: 600px) {
-        .filter_drawer {
+        .filter_drawer_panel {
           right: -85vw;
         }
-        .filter_drawer_arrow {
+        .filter_drawer_panel_arrow_button {
           right: -85vw;
         }
       }
-      .filter_drawer_header {
+      .filter_drawer_panel_header_block {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -1127,12 +1127,12 @@
         z-index: 10;
         gap: 12px;
       }
-      .filter_drawer_header_left {
+      .filter_drawer_panel_header_block_left_group {
         display: flex;
         flex-direction: column;
         gap: 2px;
       }
-      .filter_drawer_title {
+      .filter_drawer_panel_title_text {
         font-size: 15px;
         font-weight: 800;
         text-transform: uppercase;
@@ -1140,14 +1140,14 @@
         color: var(--white);
         line-height: 1;
       }
-      .filter_drawer_subtitle {
+      .filter_drawer_panel_subtitle_text {
         font-size: 10px;
         color: rgba(255, 255, 255, 0.28);
         letter-spacing: 0.06em;
         font-weight: 500;
         text-transform: uppercase;
       }
-      .filter_drawer_reset_icon {
+      .filter_drawer_panel_reset_button {
         width: 34px;
         height: 34px;
         border-radius: 10px;
@@ -1160,17 +1160,17 @@
         transition: all 0.18s ease;
         flex-shrink: 0;
       }
-      .filter_drawer_reset_icon:hover {
+      .filter_drawer_panel_reset_button:hover {
         background: rgba(255, 75, 76, 0.08);
         border-color: rgba(255, 75, 76, 0.25);
         color: var(--danger);
       }
-      .filter_drawer_reset_icon svg {
+      .filter_drawer_panel_reset_button svg {
         width: 15px;
         height: 15px;
       }
       /* Контейнер блоков */
-      .filter_drawer_blocks {
+      .filter_drawer_blocks_container {
         display: flex;
         flex-direction: column;
         padding: 8px 20px 0;
@@ -1179,12 +1179,12 @@
         min-width: 0;
       }
       /* Reset button at bottom */
-      .filter_drawer_footer {
+      .filter_drawer_panel_footer_block {
         padding: 16px 20px 0;
       }
 
       /* ===================== PRODUCT CARD ===================== */
-      .product_card {
+      .product_card_component {
         background: linear-gradient(180deg, rgba(17, 17, 17, 0.96) 0%, rgba(10, 10, 10, 0.98) 100%);
         border: 1px solid var(--border);
         border-radius: 20px;
@@ -1195,18 +1195,18 @@
         height: 100%;
         transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
       }
-      .product_card:hover {
+      .product_card_component:hover {
         transform: translateY(-4px);
         border-color: rgba(255, 255, 255, 0.12);
         box-shadow: 0 26px 70px rgba(0, 0, 0, 0.36);
       }
-      .product_card_media {
+      .product_card_media_container {
         position: relative;
         aspect-ratio: 3 / 4;
         background: linear-gradient(135deg, #262626 0%, #1a1a1a 100%);
         overflow: hidden;
       }
-      .product_card_media::after {
+      .product_card_media_container::after {
         content: "";
         position: absolute;
         inset: 0;
@@ -1215,13 +1215,13 @@
         background: linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, transparent 42%),
           linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 58%, rgba(0, 0, 0, 0.22) 100%);
       }
-      .product_card_skeleton {
+      .product_card_skeleton_element {
         position: absolute;
         inset: 0;
         background: linear-gradient(135deg, #1f1f1f 0%, #171717 100%);
         overflow: hidden;
       }
-      .product_card_skeleton::before {
+      .product_card_skeleton_element::before {
         content: "";
         position: absolute;
         inset: -12%;
@@ -1229,7 +1229,7 @@
         transform: translate(-130%, -130%);
         animation: skeletonSweep 2.8s ease-in-out infinite;
       }
-      .product_card_img {
+      .product_card_image_element {
         position: absolute;
         inset: 0;
         z-index: 0;
@@ -1238,7 +1238,7 @@
         height: 100%;
         object-fit: cover;
       }
-      .product_card_badge {
+      .product_card_badge_element {
         position: absolute;
         top: 10px;
         left: 10px;
@@ -1250,10 +1250,10 @@
         letter-spacing: 0.08em;
         text-transform: uppercase;
       }
-      .product_card_badge_new { background: var(--accent); color: #0b0b0c; }
-      .product_card_badge_sale { background: var(--danger); color: var(--white); }
-      .product_card_badge_hit { background: var(--buda); color: #0b0b0c; }
-      .product_card_like {
+      .product_card_badge_new_variant { background: var(--accent); color: #0b0b0c; }
+      .product_card_badge_sale_variant { background: var(--danger); color: var(--white); }
+      .product_card_badge_hit_variant { background: var(--buda); color: #0b0b0c; }
+      .product_card_like_button {
         position: absolute;
         top: 10px;
         right: 10px;
@@ -1268,7 +1268,7 @@
         background: rgba(15, 15, 15, 0.82);
         color: rgba(255, 255, 255, 0.86);
       }
-      .product_card_like svg {
+      .product_card_like_button svg {
         width: 14px;
         height: 14px;
         fill: none;
@@ -1277,12 +1277,12 @@
         stroke-linecap: round;
         stroke-linejoin: round;
       }
-      .product_card_like.active svg { fill: var(--danger); stroke: var(--danger); }
-      .product_card_like_count {
+      .product_card_like_button.active svg { fill: var(--danger); stroke: var(--danger); }
+      .product_card_like_count_text {
         font-size: var(--fs-micro);
         font-weight: 700;
       }
-      .product_card_info {
+      .product_card_info_block {
         padding: 12px 12px 14px;
         background: rgba(17, 17, 17, 0.96);
         border-top: 1px solid rgba(255, 255, 255, 0.06);
@@ -1290,7 +1290,7 @@
         display: flex;
         flex-direction: column;
       }
-      .product_card_brand {
+      .product_card_brand_text {
         margin-bottom: 4px;
         color: rgba(241, 241, 241, 0.35);
         font-size: var(--fs-micro);
@@ -1298,7 +1298,7 @@
         letter-spacing: 0.12em;
         text-transform: uppercase;
       }
-      .product_card_name {
+      .product_card_name_text {
         min-height: 2.5em;
         margin-bottom: 8px;
         color: rgba(255, 255, 255, 0.96);
@@ -1311,24 +1311,24 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
-      .product_card_price_row {
+      .product_card_price_row_container {
         display: flex;
         align-items: baseline;
         gap: 6px;
         margin-bottom: 10px;
       }
-      .product_card_price {
+      .product_card_price_value {
         color: var(--white);
         font-size: var(--fs-price);
         font-weight: 800;
       }
-      .product_card_old_price {
+      .product_card_old_price_value {
         color: rgba(255, 255, 255, 0.35);
         font-size: var(--fs-micro);
         font-weight: 500;
         text-decoration: line-through;
       }
-      .product_card_sizes {
+      .product_card_sizes_container {
         display: flex;
         flex-wrap: wrap;
         gap: 4px;
@@ -1336,7 +1336,7 @@
         margin-bottom: 0;
         padding-top: 2px;
       }
-      .product_card_size {
+      .product_card_size_button {
         min-width: 32px;
         height: 24px;
         padding: 0 6px;
@@ -1352,17 +1352,17 @@
         cursor: pointer;
         transition: color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
       }
-      .product_card_size:not(.out):hover {
+      .product_card_size_button:not(.out):hover {
         color: var(--accent);
         border-color: rgba(191, 247, 71, 0.32);
       }
-      .product_card_size.out,
-      .product_card_size:disabled {
+      .product_card_size_button.product_card_size_out_state,
+      .product_card_size_button:disabled {
         opacity: 0.25;
         cursor: default;
         pointer-events: none;
       }
-      .product_card_add {
+      .product_card_add_button {
         width: 100%;
         padding: 9px 10px;
         border: 1px solid rgba(191, 247, 71, 0.2);
@@ -1375,35 +1375,35 @@
         text-transform: uppercase;
         transition: all 0.18s ease;
       }
-      .product_card_add:hover {
+      .product_card_add_button:hover {
         background: var(--accent);
         border-color: var(--accent);
         color: #0b0b0c;
       }
       @media (max-width: 768px) {
-        .product_card { border-radius: 16px; }
-        .product_card_media { aspect-ratio: 3 / 3.5; }
+        .product_card_component { border-radius: 16px; }
+        .product_card_media_container { aspect-ratio: 3 / 3.5; }
       }
       @media (max-width: 480px) {
-        .product_card { border-radius: 12px; }
-        .product_card:hover { transform: none; }
-        .product_card_media { aspect-ratio: 1 / 1; }
-        .product_card_info { padding: 9px 9px 11px; }
-        .product_card_name { min-height: 0; font-size: 12px; }
-        .product_card_add { padding: 8px; font-size: 10px; }
+        .product_card_component { border-radius: 12px; }
+        .product_card_component:hover { transform: none; }
+        .product_card_media_container { aspect-ratio: 1 / 1; }
+        .product_card_info_block { padding: 9px 9px 11px; }
+        .product_card_name_text { min-height: 0; font-size: 12px; }
+        .product_card_add_button { padding: 8px; font-size: 10px; }
       }
       @media (max-width: 900px) {
-        .catalog_grid.view_1 .product_card {
+        .catalog_grid_container.catalog_grid_one_column_state .product_card_component {
           display: flex;
           flex-direction: row;
           border-radius: 14px;
         }
-        .catalog_grid.view_1 .product_card_media {
+        .catalog_grid_container.catalog_grid_one_column_state .product_card_media_container {
           width: 120px;
           min-width: 120px;
           aspect-ratio: auto;
         }
-        .catalog_grid.view_1 .product_card_info {
+        .catalog_grid_container.catalog_grid_one_column_state .product_card_info_block {
           flex: 1;
           border-top: none;
           border-left: 1px solid rgba(255, 255, 255, 0.06);
@@ -1411,7 +1411,7 @@
       }
 
       /* ===================== EMPTY STATE ===================== */
-      .catalog_empty {
+      .catalog_empty_state_container {
         grid-column: 1 / -1;
         text-align: center;
         padding: 80px 20px 100px;
@@ -1420,13 +1420,13 @@
         align-items: center;
         gap: 0;
       }
-      .catalog_empty.visible {
+      .catalog_empty_state_container.catalog_empty_state_visible {
         display: flex;
       }
-      .catalog_empty_icon_wrap {
+      .catalog_empty_icon_wrapper {
         animation: emptyFloat 3.6s ease-in-out infinite;
       }
-      .catalog_empty_svg {
+      .catalog_empty_svg_icon {
         width: 120px;
         height: 120px;
         display: block;
@@ -1435,14 +1435,14 @@
         0%, 100% { transform: translateY(0); }
         50% { transform: translateY(-8px); }
       }
-      .catalog_empty_title {
+      .catalog_empty_title_text {
         font-size: clamp(14px, 1.4vw, 15px);
         font-weight: 600;
         color: rgba(241, 241, 241, 0.55);
         margin-bottom: 20px;
         letter-spacing: 0.02em;
       }
-      .catalog_empty_reset {
+      .catalog_empty_reset_button {
         display: inline-flex;
         padding: 10px 22px;
         border-radius: 10px;
@@ -1454,20 +1454,20 @@
         color: var(--color-muted-mid);
         transition: all 0.18s ease;
       }
-      .catalog_empty_reset:hover {
+      .catalog_empty_reset_button:hover {
         background: var(--white);
         border-color: var(--white);
         color: #0b0b0c;
       }
       @media (max-width: 480px) {
-        .catalog_empty {
+        .catalog_empty_state_container {
           padding: 60px 16px 80px;
         }
-        .catalog_empty_svg {
+        .catalog_empty_svg_icon {
           width: 80px;
           height: 80px;
         }
-        .catalog_empty_icon_wrap {
+        .catalog_empty_icon_wrapper {
           margin-bottom: 20px;
         }
       }
@@ -1477,10 +1477,10 @@
   <body>
     {% include 'main/header.html' %}
     <!-- Hero -->
-    <section class="catalog_hero" id="pageTop">
-      <div class="catalog_hero_skeleton"></div>
-      <div class="catalog_hero_glow"></div>
-      <div class="catalog_hero_img_placeholder">
+    <section class="catalog_hero_section" id="pageTop">
+      <div class="catalog_hero_section_skeleton_element"></div>
+      <div class="catalog_hero_section_glow_element"></div>
+      <div class="catalog_hero_section_img_placeholder_element">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <rect x="3" y="3" width="18" height="18" rx="2" />
           <circle cx="8.5" cy="8.5" r="1.5" />
@@ -1488,33 +1488,33 @@
         </svg>
         Загрузка...
       </div>
-      <nav class="catalog_breadcrumb">
+      <nav class="catalog_breadcrumb_nav">
         <a href="{% url 'main:home' %}">Главная</a>
-        <span class="catalog_breadcrumb_sep">›</span>
-        <span class="catalog_breadcrumb_current">Каталог</span>
+        <span class="catalog_breadcrumb_nav_separator">›</span>
+        <span class="catalog_breadcrumb_nav_current_page">Каталог</span>
       </nav>
     </section>
 
     <!-- Основной layout -->
-    <div class="catalog_layout">
+    <div class="catalog_layout_container">
       <!-- Контент -->
-      <main class="catalog_main">
+      <main class="catalog_main_content">
         <!-- Тулбар -->
-        <div class="catalog_toolbar">
-          <div class="catalog_toolbar_left">
-            <span class="catalog_result_count">Найдено <strong id="shownCount">30</strong> из <strong id="totalCountBar">247</strong></span>
+        <div class="catalog_toolbar_container">
+          <div class="catalog_toolbar_left_group">
+            <span class="catalog_result_count_text">Найдено <strong id="catalog_shown_count_id">30</strong> из <strong id="catalog_total_count_bar_id">247</strong></span>
           </div>
-          <div class="catalog_toolbar_right">
-            <button class="catalog_filter_toggle" id="filterToggleBtn">
+          <div class="catalog_toolbar_right_group">
+            <button class="catalog_filter_toggle_button" id="catalog_filter_toggle_button_id">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="4" y1="6" x2="20" y2="6" />
                 <line x1="8" y1="12" x2="16" y2="12" />
                 <line x1="11" y1="18" x2="13" y2="18" />
               </svg>
-              <span class="filter_btn_text">Фильтры</span>
+              <span class="filter_button_text_span">Фильтры</span>
             </button>
             <!-- View toggle: иконки и доступные опции меняются через JS по ширине экрана -->
-            <div class="catalog_view_toggle" id="viewToggle">
+            <div class="catalog_view_toggle_container" id="catalog_view_toggle_id">
               <!-- Заполняется через JS при инициализации и ресайзе -->
             </div>
           </div>
@@ -1522,7 +1522,7 @@
 
         <!-- Сетка товаров -->
 
-        <div class="catalog_grid" id="catalogGrid">
+        <div class="catalog_grid_container" id="catalog_grid_container_id">
           <!-- Карточки рендерятся через JS из products_json -->
         </div>
 
@@ -1533,23 +1533,23 @@
           {% endfor %}
         </template>
 
-        <div class="catalog_empty" id="catalogEmpty">
+        <div class="catalog_empty_state_container" id="catalog_empty_state_id">
           <!-- Иконка: нет товаров вообще -->
-          <div class="catalog_empty_icon_wrap" id="emptyIconNoProducts">
-            <svg class="catalog_empty_svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <div class="catalog_empty_icon_wrapper" id="catalog_empty_icon_no_products_id">
+            <svg class="catalog_empty_svg_icon" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle cx="52" cy="50" r="26" stroke="rgba(255,255,255,0.25)" stroke-width="3"/>
               <line x1="70" y1="68" x2="90" y2="88" stroke="rgba(255,255,255,0.25)" stroke-width="3" stroke-linecap="round"/>
             </svg>
           </div>
           <!-- Иконка: фильтры не дали результат -->
-          <div class="catalog_empty_icon_wrap" id="emptyIconNoResults" style="display:none">
-            <svg class="catalog_empty_svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <div class="catalog_empty_icon_wrapper" id="catalog_empty_icon_no_results_id" style="display:none">
+            <svg class="catalog_empty_svg_icon" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle cx="52" cy="50" r="26" stroke="rgba(255,255,255,0.25)" stroke-width="3"/>
               <line x1="70" y1="68" x2="90" y2="88" stroke="rgba(255,255,255,0.25)" stroke-width="3" stroke-linecap="round"/>
             </svg>
           </div>
 
-          <button class="catalog_empty_reset" id="emptyReset" type="button" style="display:none">Сбросить фильтры</button>
+          <button class="catalog_empty_reset_button" id="catalog_empty_reset_button_id" type="button" style="display:none">Сбросить фильтры</button>
         </div>
 
         <!-- Пагинация -->
@@ -1558,18 +1558,18 @@
     </div>
 
     <!-- Мобильный/десктоп drawer -->
-    <div class="filter_drawer_overlay" id="drawerOverlay"></div>
+    <div class="filter_drawer_overlay_component" id="filter_drawer_overlay_id"></div>
     <!-- Стрелка-закрывашка по правому краю drawer -->
-    <button class="filter_drawer_arrow" id="drawerArrow" title="Закрыть фильтры">
+    <button class="filter_drawer_panel_arrow_button" id="filter_drawer_arrow_id" title="Закрыть фильтры">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
     </button>
-    <div class="filter_drawer" id="filterDrawer">
-      <div class="filter_drawer_header">
-        <div class="filter_drawer_header_left">
-          <span class="filter_drawer_title">Фильтры и сортировка</span>
+    <div class="filter_drawer_panel" id="filter_drawer_panel_id">
+      <div class="filter_drawer_panel_header_block">
+        <div class="filter_drawer_panel_header_block_left_group">
+          <span class="filter_drawer_panel_title_text">Фильтры и сортировка</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px">
-          <button class="filter_drawer_reset_icon" id="filterReset" type="button" title="Сбросить все фильтры">
+          <button class="filter_drawer_panel_reset_button" id="filter_drawer_reset_button_id" type="button" title="Сбросить все фильтры">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
               <path d="M3 3v5h5" />
@@ -1578,16 +1578,16 @@
         </div>
       </div>
 
-      <div class="filter_drawer_blocks">
+      <div class="filter_drawer_blocks_container">
         <!-- Категория -->
-        <div class="filter_block filter_block_static open" id="fb_category">
-          <div class="filter_block_header">
-            <span class="filter_block_title">Категория</span>
+        <div class="filter_block_component filter_block_static_variant filter_block_open_state" id="filter_block_category_id">
+          <div class="filter_block_header_element">
+            <span class="filter_block_title_text">Категория</span>
           </div>
-          <div class="filter_block_body">
-            <div class="filter_block_body_inner">
-              <div class="filter_block_body_content">
-                <div class="filter_chips" id="categoryFilterContent">
+          <div class="filter_block_body_container">
+            <div class="filter_block_body_inner_wrapper">
+              <div class="filter_block_body_content_area">
+                <div class="filter_chips_container" id="filter_category_chips_container_id">
                   <!-- Категории подставляются из Category -->
                 </div>
               </div>
@@ -1595,27 +1595,27 @@
           </div>
         </div>
         <!-- Цена -->
-        <div class="filter_block filter_block_static open" id="fb_price">
-          <div class="filter_block_header">
-            <span class="filter_block_title">Цена, ₴</span>
-            <span class="filter_block_arrow_wrap">
-              <svg class="filter_block_arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+        <div class="filter_block_component filter_block_static_variant filter_block_open_state" id="filter_block_price_id">
+          <div class="filter_block_header_element">
+            <span class="filter_block_title_text">Цена, ₴</span>
+            <span class="filter_block_arrow_wrapper">
+              <svg class="filter_block_arrow_icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
             </span>
           </div>
-          <div class="filter_block_body">
-            <div class="filter_block_body_inner">
-              <div class="filter_block_body_content">
-                <div class="filter_price_inputs">
-                  <input type="number" class="filter_price_input" id="priceMin" value="0" min="0" max="9999" />
-                  <span class="filter_price_sep">—</span>
-                  <input type="number" class="filter_price_input" id="priceMax" value="5000" min="0" max="9999" />
+          <div class="filter_block_body_container">
+            <div class="filter_block_body_inner_wrapper">
+              <div class="filter_block_body_content_area">
+                <div class="filter_price_inputs_container">
+                  <input type="number" class="filter_price_input_field" id="filter_price_min_input_id" value="0" min="0" max="9999" />
+                  <span class="filter_price_separator">—</span>
+                  <input type="number" class="filter_price_input_field" id="filter_price_max_input_id" value="5000" min="0" max="9999" />
                 </div>
-                <div class="filter_range_wrap">
-                  <div class="filter_range_track">
-                    <div class="filter_range_fill" id="rangeFill"></div>
+                <div class="filter_range_slider_wrapper">
+                  <div class="filter_range_slider_track_line">
+                    <div class="filter_range_slider_fill_line" id="filter_range_fill_line_id"></div>
                   </div>
-                  <input type="range" class="filter_range filter_range_min" id="rangeMin" min="0" max="5000" value="0" step="50" />
-                  <input type="range" class="filter_range filter_range_max" id="rangeMax" min="0" max="5000" value="5000" step="50" />
+                  <input type="range" class="filter_range_slider filter_range_slider_slider_min" id="filter_range_min_slider_id" min="0" max="5000" value="0" step="50" />
+                  <input type="range" class="filter_range_slider filter_range_slider_slider_max" id="filter_range_max_slider_id" min="0" max="5000" value="5000" step="50" />
                 </div>
               </div>
             </div>
@@ -1623,70 +1623,70 @@
         </div>
 
         <!-- Сортировка -->
-        <div class="filter_block open" id="fb_sort">
-          <div class="filter_block_header">
-            <span class="filter_block_title">Сортировка</span>
-            <span class="filter_block_arrow_wrap">
-              <svg class="filter_block_arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+        <div class="filter_block_component filter_block_open_state" id="filter_block_sort_id">
+          <div class="filter_block_header_element">
+            <span class="filter_block_title_text">Сортировка</span>
+            <span class="filter_block_arrow_wrapper">
+              <svg class="filter_block_arrow_icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
             </span>
           </div>
-          <div class="filter_block_body">
-            <div class="filter_block_body_inner">
-              <div class="filter_block_body_content">
-                <div class="sort_options" id="sortSelect">
-                  <button class="sort_option active" data-sort="recommended">
-                    <span class="sort_option_icon"
+          <div class="filter_block_body_container">
+            <div class="filter_block_body_inner_wrapper">
+              <div class="filter_block_body_content_area">
+                <div class="sort_options_container" id="sort_options_container_id">
+                  <button class="sort_option_button active" data_sort_option_key="recommended">
+                    <span class="sort_option_button_icon_element"
                       ><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2l1.5 3.2 3.5.5-2.5 2.4.6 3.5L8 10l-3.1 1.6.6-3.5L3 5.7l3.5-.5z" /></svg
                     ></span>
-                    <span class="sort_option_label">Рекомендации</span>
+                    <span class="sort_option_button_label_text">Рекомендации</span>
                   </button>
-                  <button class="sort_option" data-sort="hit">
-                    <span class="sort_option_icon"
+                  <button class="sort_option_button" data_sort_option_key="hit">
+                    <span class="sort_option_button_icon_element"
                       ><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2C8 2 4 5.5 4 9a4 4 0 008 0C12 5.5 8 2 8 2z" /></svg
                     ></span>
-                    <span class="sort_option_label">Хиты</span>
+                    <span class="sort_option_button_label_text">Хиты</span>
                   </button>
-                  <button class="sort_option" data-sort="new">
-                    <span class="sort_option_icon"
+                  <button class="sort_option_button" data_sort_option_key="new">
+                    <span class="sort_option_button_icon_element"
                       ><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="8" cy="8" r="5.5" />
                         <path d="M8 5v3l2 2" /></svg
                     ></span>
-                    <span class="sort_option_label">Новинки</span>
+                    <span class="sort_option_button_label_text">Новинки</span>
                   </button>
-                  <button class="sort_option" data-sort="sale">
-                    <span class="sort_option_icon"
+                  <button class="sort_option_button" data_sort_option_key="sale">
+                    <span class="sort_option_button_icon_element"
                       ><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="3" y1="13" x2="13" y2="3" />
                         <circle cx="5" cy="5" r="1.5" />
                         <circle cx="11" cy="11" r="1.5" /></svg
                     ></span>
-                    <span class="sort_option_label">Скидки</span>
+                    <span class="sort_option_button_label_text">Скидки</span>
                   </button>
-                  <button class="sort_option" data-sort="price_asc">
-                    <span class="sort_option_icon"
+                  <button class="sort_option_button" data_sort_option_key="price_asc">
+                    <span class="sort_option_button_icon_element"
                       ><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="8" y1="13" x2="8" y2="3" />
                         <polyline points="4 7 8 3 12 7" /></svg
                     ></span>
-                    <span class="sort_option_label">Цена от меньшего</span>
+                    <span class="sort_option_button_label_text">Цена от меньшего</span>
                   </button>
-                  <button class="sort_option" data-sort="price_desc">
-                    <span class="sort_option_icon"
+                  <button class="sort_option_button" data_sort_option_key="price_desc">
+                    <span class="sort_option_button_icon_element"
                       ><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="8" y1="3" x2="8" y2="13" />
                         <polyline points="4 9 8 13 12 9" /></svg
                     ></span>
-                    <span class="sort_option_label">Цена от большего</span>
+                    <span class="sort_option_button_label_text">Цена от большего</span>
                   </button>
-                  <button class="sort_option" data-sort="discount_pct">
-                    <span class="sort_option_icon"
+                  <button class="sort_option_button" data_sort_option_key="discount_pct">
+                    <span class="sort_option_button_icon_element"
                       ><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="3" y1="13" x2="13" y2="3" />
                         <circle cx="4.5" cy="4.5" r="1.5" />
                         <circle cx="11.5" cy="11.5" r="1.5" /></svg
                     ></span>
-                    <span class="sort_option_label">По проценту скидки</span>
+                    <span class="sort_option_button_label_text">По проценту скидки</span>
                   </button>
                 </div>
               </div>
@@ -1695,36 +1695,36 @@
         </div>
 
         <!-- Бренд -->
-        <div class="filter_block" id="fb_brand">
-          <div class="filter_block_header">
-            <span class="filter_block_title">Бренд</span>
-            <span class="filter_block_arrow_wrap">
-              <svg class="filter_block_arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+        <div class="filter_block_component" id="filter_block_brand_id">
+          <div class="filter_block_header_element">
+            <span class="filter_block_title_text">Бренд</span>
+            <span class="filter_block_arrow_wrapper">
+              <svg class="filter_block_arrow_icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
             </span>
           </div>
-          <div class="filter_block_body">
-            <div class="filter_block_body_inner">
-              <div class="filter_block_body_content">
-                <div class="filter_checkboxes" id="brandFilterContent">
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">Vaporesso</span><span class="filter_checkbox_count">38</span></label>
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">SMOK</span><span class="filter_checkbox_count">29</span></label>
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">VOOPOO</span><span class="filter_checkbox_count">24</span></label>
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">Uwell</span><span class="filter_checkbox_count">21</span></label>
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">GeekVape</span><span class="filter_checkbox_count">18</span></label>
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">OXVA</span><span class="filter_checkbox_count">16</span></label>
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">Lost Mary</span><span class="filter_checkbox_count">12</span></label>
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">Elfliq</span><span class="filter_checkbox_count">9</span></label>
+          <div class="filter_block_body_container">
+            <div class="filter_block_body_inner_wrapper">
+              <div class="filter_block_body_content_area">
+                <div class="filter_checkboxes_container" id="filter_brand_checkboxes_id">
+                  <label class="filter_checkbox_label_element"><input type="checkbox" /><span class="filter_checkbox_box_element"></span><span class="filter_checkbox_text_span">Vaporesso</span><span class="filter_checkbox_count_span">38</span></label>
+                  <label class="filter_checkbox_label_element"><input type="checkbox" /><span class="filter_checkbox_box_element"></span><span class="filter_checkbox_text_span">SMOK</span><span class="filter_checkbox_count_span">29</span></label>
+                  <label class="filter_checkbox_label_element"><input type="checkbox" /><span class="filter_checkbox_box_element"></span><span class="filter_checkbox_text_span">VOOPOO</span><span class="filter_checkbox_count_span">24</span></label>
+                  <label class="filter_checkbox_label_element"><input type="checkbox" /><span class="filter_checkbox_box_element"></span><span class="filter_checkbox_text_span">Uwell</span><span class="filter_checkbox_count_span">21</span></label>
+                  <label class="filter_checkbox_label_element"><input type="checkbox" /><span class="filter_checkbox_box_element"></span><span class="filter_checkbox_text_span">GeekVape</span><span class="filter_checkbox_count_span">18</span></label>
+                  <label class="filter_checkbox_label_element"><input type="checkbox" /><span class="filter_checkbox_box_element"></span><span class="filter_checkbox_text_span">OXVA</span><span class="filter_checkbox_count_span">16</span></label>
+                  <label class="filter_checkbox_label_element"><input type="checkbox" /><span class="filter_checkbox_box_element"></span><span class="filter_checkbox_text_span">Lost Mary</span><span class="filter_checkbox_count_span">12</span></label>
+                  <label class="filter_checkbox_label_element"><input type="checkbox" /><span class="filter_checkbox_box_element"></span><span class="filter_checkbox_text_span">Elfliq</span><span class="filter_checkbox_count_span">9</span></label>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div id="variantFilterBlocks">
+        <div id="filter_variant_blocks_container_id">
           <!-- Группы вариантов подставляются из VariantOption/ProductVariant -->
         </div>
       </div>
-      <!-- /filter_drawer_blocks -->
+      <!-- /filter_drawer_blocks_container -->
     </div>
 
     <!-- Кнопка вверх -->
@@ -1762,9 +1762,9 @@
          STATE
       ============================================================ */
         const maxPrice = allProducts.length > 0 ? Math.ceil((Math.max(...allProducts.map(p => p.price)) * 1.1) / 50) * 50 : 5000;
-        const _rMaxEl = document.getElementById("rangeMax");
-        const _rMinEl = document.getElementById("rangeMin");
-        const _iMaxEl = document.getElementById("priceMax");
+        const _rMaxEl = document.getElementById("filter_range_max_slider_id");
+        const _rMinEl = document.getElementById("filter_range_min_slider_id");
+        const _iMaxEl = document.getElementById("filter_price_max_input_id");
         if (_rMaxEl) { _rMaxEl.max = maxPrice; _rMaxEl.value = maxPrice; }
         if (_rMinEl) { _rMinEl.max = maxPrice; }
         if (_iMaxEl) { _iMaxEl.value = maxPrice; _iMaxEl.max = maxPrice; }
@@ -1840,6 +1840,10 @@
           return "";
         }
 
+        function scrollToTop(smooth = true) {
+          window.scrollTo({ top: 0, behavior: smooth ? "smooth" : "instant" });
+        }
+
         /* ============================================================
          FILTER + SORT
       ============================================================ */
@@ -1887,7 +1891,7 @@
       ============================================================ */
         const productCardTemplate = document.getElementById("productCardTemplates");
         const productCardMap = new Map(
-          [...(productCardTemplate?.content.querySelectorAll(".product_card") || [])].map((card) => [Number(card.dataset.id), card.outerHTML]),
+          [...(productCardTemplate?.content.querySelectorAll(".product_card_component") || [])].map((card) => [Number(card.getAttribute("data_product_card_id")), card.outerHTML]),
         );
 
         function renderCard(p) {
@@ -1895,49 +1899,49 @@
           if (templateHtml) return templateHtml;
 
           const badgeHtml = p.badge && p.badge.type
-            ? `<span class="product_card_badge product_card_badge_${p.badge.type}">${p.badge.label}</span>` : "";
+            ? `<span class="product_card_badge_element product_card_badge_${p.badge.type}_variant">${p.badge.label}</span>` : "";
           const oldHtml = p.old_price
-            ? `<span class="product_card_old_price">${Number(p.old_price).toLocaleString("uk-UA")}₴</span>` : "";
+            ? `<span class="product_card_old_price_value">${Number(p.old_price).toLocaleString("uk-UA")}₴</span>` : "";
           const imgHtml = p.image_url
-            ? `<img src="${p.image_url}" alt="${p.name}" class="product_card_img" loading="lazy" />` : "";
+            ? `<img src="${p.image_url}" alt="${p.name}" class="product_card_image_element" loading="lazy" />` : "";
           const variants = Array.isArray(p.display_variant_options) ? p.display_variant_options : [];
           const sizesHtml = variants
             .map((variant) => {
               const isAvailable = Boolean(variant.available);
-              return `<button class="product_card_size${isAvailable ? "" : " out"}" type="button" data-variant-id="${variant.id || ""}" data-size="${variant.name}" data-stock="${variant.stock || 0}"${isAvailable ? "" : " disabled"}>${variant.name}</button>`;
+              return `<button class="product_card_size_button${isAvailable ? "" : " product_card_size_out_state"}" type="button" data_product_variant_id="${variant.id || ""}" data_product_variant_name="${variant.name}" data_product_variant_stock="${variant.stock || 0}"${isAvailable ? "" : " disabled"}>${variant.name}</button>`;
             })
             .join("");
           const detailUrl = p.slug ? `/products/${p.id}/${p.slug}/` : "#";
-          const brandHtml = p.brand ? `<div class="product_card_brand">${p.brand}</div>` : "";
+          const brandHtml = p.brand ? `<div class="product_card_brand_text">${p.brand}</div>` : "";
           return `
-          <article class="product_card" data-id="${p.id}">
-            <div class="product_card_media">
-              <div class="product_card_skeleton"></div>
+          <article class="product_card_component" data_product_card_id="${p.id}">
+            <div class="product_card_media_container">
+              <div class="product_card_skeleton_element"></div>
               ${badgeHtml}
-              <button class="product_card_like${p.is_liked ? " active" : ""}" type="button" data-like="${p.id}" data-like-url="/products/${p.id}/like/" data-liked="${p.is_liked ? "true" : "false"}" aria-label="В избранное">
+              <button class="product_card_like_button${p.is_liked ? " active" : ""}" type="button" data_product_card_like_id="${p.id}" data_product_card_like_url="/products/${p.id}/like/" data_product_card_liked_state="${p.is_liked ? "true" : "false"}" aria-label="В избранное">
                 <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                <span class="product_card_like_count">${p.likes || 0}</span>
+                <span class="product_card_like_count_text">${p.likes || 0}</span>
               </button>
               ${imgHtml}
             </div>
-            <div class="product_card_info">
+            <div class="product_card_info_block">
               ${brandHtml}
-              <h3 class="product_card_name product_card_name_link">
+              <h3 class="product_card_name_text product_card_name_link_element">
                 <a href="${detailUrl}">${p.name}</a>
               </h3>
-              <div class="product_card_price_row">
-                <span class="product_card_price">${Number(p.price).toLocaleString("uk-UA")}₴</span>
+              <div class="product_card_price_row_container">
+                <span class="product_card_price_value">${Number(p.price).toLocaleString("uk-UA")}₴</span>
                 ${oldHtml}
               </div>
-              ${variants.length ? `<div class="product_card_sizes">${sizesHtml}</div>` : ""}
-              <button class="product_card_add" type="button" data-add-to-cart="${p.id}">Додати до кошика</button>
+              ${variants.length ? `<div class="product_card_sizes_container">${sizesHtml}</div>` : ""}
+              <button class="product_card_add_button" type="button" data_product_card_add_to_cart="${p.id}">Додати до кошика</button>
             </div>
           </article>`;
         }
 
         async function handleLikeClick(btn) {
-          const id = Number(btn.dataset.like);
-          const likeUrl = btn.dataset.likeUrl;
+          const id = Number(btn.getAttribute("data_product_card_like_id"));
+          const likeUrl = btn.getAttribute("data_product_card_like_url");
           if (!id || !likeUrl || btn.disabled) return;
 
           btn.disabled = true;
@@ -1963,19 +1967,19 @@
               product.likes = data.likes;
             }
 
-            btn.dataset.liked = data.liked ? "true" : "false";
+            btn.setAttribute("data_product_card_liked_state", data.liked ? "true" : "false");
             btn.classList.toggle("active", data.liked);
-            const counter = btn.querySelector(".product_card_like_count");
+            const counter = btn.querySelector(".product_card_like_count_text");
             if (counter) counter.textContent = data.likes;
 
-            const templateCard = productCardTemplate?.content.querySelector(`.product_card[data-id="${id}"]`);
+            const templateCard = productCardTemplate?.content.querySelector(`.product_card_component[data_product_card_id="${id}"]`);
             if (templateCard) {
-              const templateBtn = templateCard.querySelector("[data-like]");
+              const templateBtn = templateCard.querySelector("[data_product_card_like_id]");
               if (templateBtn) {
-                templateBtn.dataset.liked = data.liked ? "true" : "false";
+                templateBtn.setAttribute("data_product_card_liked_state", data.liked ? "true" : "false");
                 templateBtn.classList.toggle("active", data.liked);
               }
-              const templateCounter = templateCard.querySelector(".product_card_like_count");
+              const templateCounter = templateCard.querySelector(".product_card_like_count_text");
               if (templateCounter) templateCounter.textContent = data.likes;
               productCardMap.set(id, templateCard.outerHTML);
             }
@@ -1993,9 +1997,9 @@
           const totalPages = Math.ceil(total / state.perPage);
           const el = document.getElementById("pagination");
           if (!el) return;
-          const paginationRoot = el.closest("[data-pagination-component]");
+          const paginationRoot = el.closest("[data_pagination_component_wrapper]");
           function renderPaginationTemplate(name, values = {}) {
-            const tpl = paginationRoot?.querySelector(`[data-pagination-template="${name}"]`);
+            const tpl = paginationRoot?.querySelector(`[data_pagination_template_name="${name}"]`);
             if (!tpl) return "";
             let markup = tpl.innerHTML.trim();
             Object.entries(values).forEach(([key, value]) => {
@@ -2037,15 +2041,15 @@
 
           el.innerHTML = html;
 
-          el.querySelectorAll("[data-page]").forEach((btn) => {
+          el.querySelectorAll("[data_pagination_page_number]").forEach((btn) => {
             btn.addEventListener("click", () => {
-              state.page = +btn.dataset.page;
+              state.page = +btn.getAttribute("data_pagination_page_number");
               render();
               scrollToTop(false);
             });
           });
-          const prev = el.querySelector("[data-pagination-prev]");
-          const next = el.querySelector("[data-pagination-next]");
+          const prev = el.querySelector("[data_pagination_prev_button]");
+          const next = el.querySelector("[data_pagination_next_button]");
           if (prev) {
             prev.disabled = state.page === 1;
             prev.addEventListener("click", () => {
@@ -2073,24 +2077,24 @@
           const total = sorted.length;
           const page = sorted.slice((state.page - 1) * state.perPage, state.page * state.perPage);
 
-          const grid = document.getElementById("catalogGrid");
-          const empty = document.getElementById("catalogEmpty");
+          const grid = document.getElementById("catalog_grid_container_id");
+          const empty = document.getElementById("catalog_empty_state_id");
 
           if (!grid) return;
 
           // Обновляем счётчики
           const tcEl = document.getElementById("totalCount");
           if (tcEl) tcEl.textContent = total.toLocaleString("uk-UA");
-          document.getElementById("totalCountBar").textContent = total.toLocaleString("uk-UA");
-          document.getElementById("shownCount").textContent = Math.min(state.perPage, page.length).toString();
+          document.getElementById("catalog_total_count_bar_id").textContent = total.toLocaleString("uk-UA");
+          document.getElementById("catalog_shown_count_id").textContent = Math.min(state.perPage, page.length).toString();
 
           if (page.length === 0) {
             grid.innerHTML = "";
-            empty.classList.add("visible");
-            const noProducts = document.getElementById("emptyIconNoProducts");
-            const noResults = document.getElementById("emptyIconNoResults");
+            empty.classList.add("catalog_empty_state_visible");
+            const noProducts = document.getElementById("catalog_empty_icon_no_products_id");
+            const noResults = document.getElementById("catalog_empty_icon_no_results_id");
             const emptyTitle = document.getElementById("emptyTitle");
-            const emptyResetBtn = document.getElementById("emptyReset");
+            const catalog_empty_reset_button_idBtn = document.getElementById("catalog_empty_reset_button_id");
             const hasVariantFilters = Object.values(state.variantFilters).some((values) => values.size > 0);
             const hasSortFilter = ["hit", "new", "sale"].includes(state.sort);
             const isFiltered = state.categoryFilter !== "all" || state.priceMin > 0 || state.priceMax < maxPrice || state.brandFilters.size > 0 || hasVariantFilters || hasSortFilter;
@@ -2099,20 +2103,20 @@
               if (noProducts) noProducts.style.display = "";
               if (noResults) noResults.style.display = "none";
               if (emptyTitle) emptyTitle.textContent = "Список товаров пуст";
-              if (emptyResetBtn) emptyResetBtn.style.display = "none";
+              if (catalog_empty_reset_button_idBtn) catalog_empty_reset_button_idBtn.style.display = "none";
             } else {
               // Есть товары, но фильтры дали 0 результатов
               if (noProducts) noProducts.style.display = "none";
               if (noResults) noResults.style.display = "";
               if (emptyTitle) emptyTitle.textContent = "Ничего не найдено";
-              if (emptyResetBtn) emptyResetBtn.style.display = "";
+              if (catalog_empty_reset_button_idBtn) catalog_empty_reset_button_idBtn.style.display = "";
             }
           } else {
-            empty.classList.remove("visible");
+            empty.classList.remove("catalog_empty_state_visible");
             grid.innerHTML = page.map(renderCard).join("");
 
             // Лайки
-            grid.querySelectorAll("[data-like]").forEach((btn) => {
+            grid.querySelectorAll("[data_product_card_like_id]").forEach((btn) => {
               btn.addEventListener("click", (e) => {
                 e.stopPropagation();
                 handleLikeClick(btn);
@@ -2137,11 +2141,11 @@
          RANGE SLIDER
         ============================================================ */
         function initRangeSlider() {
-          const rMin = document.getElementById("rangeMin");
-          const rMax = document.getElementById("rangeMax");
-          const iMin = document.getElementById("priceMin");
-          const iMax = document.getElementById("priceMax");
-          const fill = document.getElementById("rangeFill");
+          const rMin = document.getElementById("filter_range_min_slider_id");
+          const rMax = document.getElementById("filter_range_max_slider_id");
+          const iMin = document.getElementById("filter_price_min_input_id");
+          const iMax = document.getElementById("filter_price_max_input_id");
+          const fill = document.getElementById("filter_range_fill_line_id");
           if (!rMin || !rMax || !fill) return;
           rMin.value = state.priceMin;
           rMax.value = state.priceMax;
@@ -2196,11 +2200,11 @@
          FILTER BLOCKS (accordion)
         ============================================================ */
         function initFilterBlocks() {
-          document.querySelectorAll(".filter_block_header").forEach((header) => {
+          document.querySelectorAll(".filter_block_header_element").forEach((header) => {
             header.addEventListener("click", () => {
-              const block = header.closest(".filter_block");
-              if (block.classList.contains("filter_block_static")) return;
-              block.classList.toggle("open");
+              const block = header.closest(".filter_block_component");
+              if (block.classList.contains("filter_block_static_variant")) return;
+              block.classList.toggle("filter_block_open_state");
             });
           });
         }
@@ -2209,12 +2213,12 @@
          TYPE CHIPS (category bar)
         ============================================================ */
         function buildCategoryChips() {
-          const root = document.getElementById("categoryFilterContent");
+          const root = document.getElementById("filter_category_chips_container_id");
           if (!root) return;
           const categories = [{ slug: "all", name: "Все" }, ...allCategories];
           root.innerHTML = categories
             .map((category) => `
-              <button class="filter_chip${state.categoryFilter === category.slug ? " active" : ""}" type="button" data-category="${category.slug}">
+              <button class="filter_chip_button${state.categoryFilter === category.slug ? " active" : ""}" type="button" data_filter_category_slug="${category.slug}">
                 ${category.name}
               </button>
             `)
@@ -2223,12 +2227,12 @@
 
         function initTypeChips() {
           buildCategoryChips();
-          const allChips = document.querySelectorAll("[data-category].filter_chip");
+          const allChips = document.querySelectorAll("[data_filter_category_slug].filter_chip_button");
           allChips.forEach((btn) => {
             btn.addEventListener("click", () => {
-              document.querySelectorAll(".filter_chip[data-category]").forEach((b) => b.classList.remove("active"));
+              document.querySelectorAll(".filter_chip_button[data_filter_category_slug]").forEach((b) => b.classList.remove("active"));
               btn.classList.add("active");
-              state.categoryFilter = btn.dataset.category;
+              state.categoryFilter = btn.getAttribute("data_filter_category_slug");
               state.brandFilters = new Set();
               state.variantFilters = {};
               state.page = 1;
@@ -2245,7 +2249,7 @@
         }
 
         function initBrandFilters() {
-          const root = document.getElementById("brandFilterContent");
+          const root = document.getElementById("filter_brand_checkboxes_id");
           if (!root) return;
           const brandMap = new Map();
           getProductsForCategory().forEach((product) => {
@@ -2261,25 +2265,25 @@
           });
 
           if (!brandMap.size) {
-            root.innerHTML = '<span class="filter_empty_text">Нет брендов</span>';
+            root.innerHTML = '<span class="filter_empty_text_element">Нет брендов</span>';
             return;
           }
 
           root.innerHTML = [...brandMap.values()]
             .sort((a, b) => String(a.name).localeCompare(String(b.name), "ru"))
             .map((brand) => `
-              <label class="filter_checkbox_label">
-                <input type="checkbox" data-brand-id="${brand.id}" ${state.brandFilters.has(brand.id) ? "checked" : ""} />
-                <span class="filter_checkbox_box"></span>
-                <span class="filter_checkbox_text">${brand.name}</span>
-                <span class="filter_checkbox_count">${brand.count}</span>
+              <label class="filter_checkbox_label_element">
+                <input type="checkbox" data_filter_brand_id="${brand.id}" ${state.brandFilters.has(brand.id) ? "checked" : ""} />
+                <span class="filter_checkbox_box_element"></span>
+                <span class="filter_checkbox_text_span">${brand.name}</span>
+                <span class="filter_checkbox_count_span">${brand.count}</span>
               </label>
             `)
             .join("");
 
-          root.querySelectorAll("[data-brand-id]").forEach((input) => {
+          root.querySelectorAll("[data_filter_brand_id]").forEach((input) => {
             input.addEventListener("change", () => {
-              const id = String(input.dataset.brandId);
+              const id = String(input.getAttribute("data_filter_brand_id"));
               if (input.checked) state.brandFilters.add(id);
               else state.brandFilters.delete(id);
               state.page = 1;
@@ -2290,7 +2294,7 @@
         }
 
         function initVariantFilters() {
-          const root = document.getElementById("variantFilterBlocks");
+          const root = document.getElementById("filter_variant_blocks_container_id");
           if (!root) return;
 
           const groups = new Map();
@@ -2318,26 +2322,26 @@
               const options = [...variants.values()]
                 .sort((a, b) => String(a.name).localeCompare(String(b.name), "ru"))
                 .map((variant) => `
-                  <label class="filter_checkbox_label">
-                    <input type="checkbox" data-variant-group="${group}" data-variant-slug="${variant.slug}" ${state.variantFilters[group]?.has(String(variant.slug)) ? "checked" : ""} />
-                    <span class="filter_checkbox_box"></span>
-                    <span class="filter_checkbox_text">${variant.name}</span>
-                    <span class="filter_checkbox_count">${variant.count}</span>
+                  <label class="filter_checkbox_label_element">
+                    <input type="checkbox" data_filter_variant_group_name="${group}" data_filter_variant_slug="${variant.slug}" ${state.variantFilters[group]?.has(String(variant.slug)) ? "checked" : ""} />
+                    <span class="filter_checkbox_box_element"></span>
+                    <span class="filter_checkbox_text_span">${variant.name}</span>
+                    <span class="filter_checkbox_count_span">${variant.count}</span>
                   </label>
                 `)
                 .join("");
               return `
-                <div class="filter_block open" data-variant-filter-block="${group}">
-                  <div class="filter_block_header">
-                    <span class="filter_block_title">${title}</span>
-                    <span class="filter_block_arrow_wrap">
-                      <svg class="filter_block_arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+                <div class="filter_block_component filter_block_open_state" data_filter_variant_block_group="${group}">
+                  <div class="filter_block_header_element">
+                    <span class="filter_block_title_text">${title}</span>
+                    <span class="filter_block_arrow_wrapper">
+                      <svg class="filter_block_arrow_icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
                     </span>
                   </div>
-                  <div class="filter_block_body">
-                    <div class="filter_block_body_inner">
-                      <div class="filter_block_body_content">
-                        <div class="filter_checkboxes">
+                  <div class="filter_block_body_container">
+                    <div class="filter_block_body_inner_wrapper">
+                      <div class="filter_block_body_content_area">
+                        <div class="filter_checkboxes_container">
                           ${options}
                         </div>
                       </div>
@@ -2348,16 +2352,16 @@
             })
             .join("");
 
-          root.querySelectorAll(".filter_block_header").forEach((header) => {
+          root.querySelectorAll(".filter_block_header_element").forEach((header) => {
             header.addEventListener("click", () => {
-              header.closest(".filter_block")?.classList.toggle("open");
+              header.closest(".filter_block_component")?.classList.toggle("filter_block_open_state");
             });
           });
 
-          root.querySelectorAll("[data-variant-slug]").forEach((input) => {
+          root.querySelectorAll("[data_filter_variant_slug]").forEach((input) => {
             input.addEventListener("change", () => {
-              const group = input.dataset.variantGroup || "default";
-              const slug = String(input.dataset.variantSlug);
+              const group = input.getAttribute("data_filter_variant_group_name") || "default";
+              const slug = String(input.getAttribute("data_filter_variant_slug"));
               if (!state.variantFilters[group]) state.variantFilters[group] = new Set();
               const selected = state.variantFilters[group];
               if (input.checked) selected.add(slug);
@@ -2372,14 +2376,14 @@
          SORT
         ============================================================ */
         function initSort() {
-          const container = document.getElementById("sortSelect");
+          const container = document.getElementById("sort_options_container_id");
           if (!container) return;
-          container.querySelectorAll(".sort_option").forEach((b) => b.classList.toggle("active", b.dataset.sort === state.sort));
-          container.querySelectorAll(".sort_option").forEach((btn) => {
+          container.querySelectorAll(".sort_option_button").forEach((b) => b.classList.toggle("active", b.getAttribute("data_sort_option_key") === state.sort));
+          container.querySelectorAll(".sort_option_button").forEach((btn) => {
             btn.addEventListener("click", () => {
-              container.querySelectorAll(".sort_option").forEach((b) => b.classList.remove("active"));
+              container.querySelectorAll(".sort_option_button").forEach((b) => b.classList.remove("active"));
               btn.classList.add("active");
-              state.sort = btn.dataset.sort;
+              state.sort = btn.getAttribute("data_sort_option_key");
               state.page = 1;
               render();
             });
@@ -2426,19 +2430,28 @@
           return { options: [1, 2], default: 2 };
         }
 
+        function getGridViewClass(cols) {
+          const classes = {
+            1: "catalog_grid_one_column_state",
+            2: "catalog_grid_two_columns_state",
+            3: "catalog_grid_three_columns_state",
+          };
+          return classes[cols] || "";
+        }
+
         function buildViewToggle() {
-          const container = document.getElementById("viewToggle");
+          const container = document.getElementById("catalog_view_toggle_id");
           if (!container) return;
           const { options, default: def } = getViewOptions();
 
           // Если текущее state.view не входит в доступные — сбросить на дефолт
           if (!options.includes(state.view)) {
             state.view = def;
-            const grid = document.getElementById("catalogGrid");
+            const grid = document.getElementById("catalog_grid_container_id");
             if (grid) {
-              grid.className = "catalog_grid";
+              grid.className = "catalog_grid_container";
               if (state.view !== options[options.length - 1]) {
-                grid.classList.add(`view_${state.view}`);
+                grid.classList.add(getGridViewClass(state.view));
               }
             }
           }
@@ -2446,9 +2459,9 @@
           container.innerHTML = options
             .map(
               (cols) => `
-            <button class="catalog_view_btn${state.view === cols ? " active" : ""}"
-                    data-cols="${cols}"
-                    data-label="${VIEW_LABELS[cols]}"
+            <button class="catalog_view_button_element${state.view === cols ? " catalog_view_button_active_state" : ""}"
+                    data_view_columns_count="${cols}"
+                    data_view_button_label="${VIEW_LABELS[cols]}"
                     title="${VIEW_LABELS[cols]}">
               ${VIEW_ICONS[cols]}
             </button>
@@ -2456,17 +2469,17 @@
             )
             .join("");
 
-          container.querySelectorAll(".catalog_view_btn").forEach((btn) => {
+          container.querySelectorAll(".catalog_view_button_element").forEach((btn) => {
             btn.addEventListener("click", () => {
-              const cols = +btn.dataset.cols;
+              const cols = +btn.getAttribute("data_view_columns_count");
               state.view = cols;
-              container.querySelectorAll(".catalog_view_btn").forEach((b) => b.classList.remove("active"));
-              btn.classList.add("active");
-              const grid = document.getElementById("catalogGrid");
+              container.querySelectorAll(".catalog_view_button_element").forEach((b) => b.classList.remove("catalog_view_button_active_state"));
+              btn.classList.add("catalog_view_button_active_state");
+              const grid = document.getElementById("catalog_grid_container_id");
               if (!grid) return;
-              grid.className = "catalog_grid";
+              grid.className = "catalog_grid_container";
               const maxCols = getViewOptions().options[getViewOptions().options.length - 1];
-              if (cols !== maxCols) grid.classList.add(`view_${cols}`);
+              if (cols !== maxCols) grid.classList.add(getGridViewClass(cols));
             });
           });
         }
@@ -2496,32 +2509,32 @@
           state.brandFilters = new Set();
           state.variantFilters = {};
           state.sort = "recommended";
-          document.querySelectorAll(".filter_chip[data-category]").forEach((b) => b.classList.toggle("active", b.dataset.category === "all"));
-          document.querySelectorAll(".sort_option").forEach((b) => b.classList.toggle("active", b.dataset.sort === "recommended"));
-          const rMin = document.getElementById("rangeMin");
-          const rMax = document.getElementById("rangeMax");
+          document.querySelectorAll(".filter_chip_button[data_filter_category_slug]").forEach((b) => b.classList.toggle("active", b.getAttribute("data_filter_category_slug") === "all"));
+          document.querySelectorAll(".sort_option_button").forEach((b) => b.classList.toggle("active", b.getAttribute("data_sort_option_key") === "recommended"));
+          const rMin = document.getElementById("filter_range_min_slider_id");
+          const rMax = document.getElementById("filter_range_max_slider_id");
           if (rMin) rMin.value = 0;
           if (rMax) rMax.value = maxPrice;
-          const iMin = document.getElementById("priceMin");
-          const iMax = document.getElementById("priceMax");
+          const iMin = document.getElementById("filter_price_min_input_id");
+          const iMax = document.getElementById("filter_price_max_input_id");
           if (iMin) iMin.value = 0;
           if (iMax) iMax.value = maxPrice;
-          const fill = document.getElementById("rangeFill");
+          const fill = document.getElementById("filter_range_fill_line_id");
           if (fill) {
             fill.style.left = "0%";
             fill.style.width = "100%";
           }
-          document.querySelectorAll(".filter_checkboxes input[type=checkbox]").forEach((cb) => (cb.checked = false));
+          document.querySelectorAll(".filter_checkboxes_container input[type=checkbox]").forEach((cb) => (cb.checked = false));
           initBrandFilters();
           initVariantFilters();
           render();
         }
-        document.getElementById("filterReset")?.addEventListener("click", (event) => {
+        document.getElementById("filter_drawer_reset_button_id")?.addEventListener("click", (event) => {
           event.preventDefault();
           event.stopPropagation();
           resetFilters();
         });
-        document.getElementById("emptyReset")?.addEventListener("click", (event) => {
+        document.getElementById("catalog_empty_reset_button_id")?.addEventListener("click", (event) => {
           event.preventDefault();
           event.stopPropagation();
           resetFilters();
@@ -2531,10 +2544,10 @@
          DRAWER (universal — для всех экранов)
         ============================================================ */
         function initDrawer() {
-          const toggleBtn = document.getElementById("filterToggleBtn");
-          const drawer = document.getElementById("filterDrawer");
-          const overlay = document.getElementById("drawerOverlay");
-          const arrowBtn = document.getElementById("drawerArrow");
+          const toggleBtn = document.getElementById("catalog_filter_toggle_button_id");
+          const drawer = document.getElementById("filter_drawer_panel_id");
+          const overlay = document.getElementById("filter_drawer_overlay_id");
+          const arrowBtn = document.getElementById("filter_drawer_arrow_id");
           if (!toggleBtn || !drawer || !overlay) return;
 
           function openDrawer() {
