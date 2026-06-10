@@ -3,7 +3,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import F
+from django.db.models import F, Q, Sum
 from django.utils.text import slugify
 
 
@@ -50,6 +50,47 @@ class Brand(models.Model):
         return self.name
 
 
+class VariantOption(models.Model):
+    category = models.ForeignKey(
+        Category,
+        related_name="variant_options",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Category",
+    )
+    group = models.CharField(max_length=80, blank=True, verbose_name="Group")
+    name = models.CharField(max_length=100, verbose_name="Name")
+    slug = models.SlugField(max_length=120, blank=True, verbose_name="Slug")
+    order = models.PositiveIntegerField(default=0, verbose_name="Order")
+
+    class Meta:
+        ordering = ("category__name", "group", "order", "name")
+        verbose_name = "Variant option"
+        verbose_name_plural = "Variant options"
+        constraints = (
+            models.UniqueConstraint(
+                fields=("category", "name"),
+                name="main_variantoption_unique_category_name",
+            ),
+            models.UniqueConstraint(
+                fields=("name",),
+                condition=Q(category__isnull=True),
+                name="main_variantoption_unique_global_name",
+            ),
+        )
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base = f"{self.category.slug}-{self.name}" if self.category_id else self.name
+            self.slug = make_unique_slug(VariantOption, base, self.pk)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        prefix = f"{self.group}: " if self.group else ""
+        return f"{prefix}{self.name}"
+
+
 class Product(models.Model):
     BADGE_NEW = "new"
     BADGE_HIT = "hit"
@@ -88,8 +129,6 @@ class Product(models.Model):
     )
     stock = models.PositiveIntegerField(default=0, verbose_name="Stock")
     available = models.BooleanField(default=True, verbose_name="Available")
-    variants = models.JSONField(default=list, blank=True, verbose_name="All variants")
-    available_variants = models.JSONField(default=list, blank=True, verbose_name="Available variants")
     likes = models.PositiveIntegerField(default=0, verbose_name="Likes")
     badge_type = models.CharField(
         max_length=10,
@@ -116,13 +155,6 @@ class Product(models.Model):
 
     def clean(self):
         super().clean()
-        if self.variants and self.available_variants:
-            variants = {str(value) for value in self.variants}
-            invalid = [value for value in self.available_variants if str(value) not in variants]
-            if invalid:
-                raise ValidationError({
-                    "available_variants": "Available variants must be a subset of all variants."
-                })
 
     def get_discount_percent(self):
         if self.discount_percent is not None and self.discount_percent > 0:
@@ -146,8 +178,106 @@ class Product(models.Model):
             return {"type": "hit", "label": "Хит"}
         return None
 
+    @property
+    def available_product_variants(self):
+        variants = getattr(self, "_prefetched_objects_cache", {}).get("product_variants")
+        if variants is None:
+            variants = self.product_variants.select_related("variant").all()
+        return [
+            product_variant
+            for product_variant in variants
+            if product_variant.available and product_variant.stock > 0
+        ]
+
+    @property
+    def variant_labels(self):
+        return [item.variant.name for item in self.available_product_variants]
+
+    @property
+    def variant_payload(self):
+        return [
+            {
+                "id": item.id,
+                "name": item.variant.name,
+                "slug": item.variant.slug,
+                "group": item.variant.group,
+                "stock": item.stock,
+                "available": True,
+            }
+            for item in self.available_product_variants
+        ]
+
+    @property
+    def display_product_variants(self):
+        product_variants = getattr(self, "_prefetched_objects_cache", {}).get("product_variants")
+        if product_variants is None:
+            product_variants = self.product_variants.select_related("variant").all()
+        return [
+            {
+                "id": product_variant.id,
+                "name": product_variant.variant.name,
+                "slug": product_variant.variant.slug,
+                "group": product_variant.variant.group,
+                "stock": product_variant.stock,
+                "available": bool(product_variant.available and product_variant.stock > 0),
+            }
+            for product_variant in product_variants
+        ]
+
+    @property
+    def display_variant_payload(self):
+        return self.display_product_variants
+
+    def sync_stock_from_variants(self):
+        total = self.product_variants.aggregate(total=Sum("stock"))["total"]
+        if total is not None:
+            self.stock = total
+            self.save(update_fields=("stock",))
+
     def __str__(self):
         return self.name
+
+
+class ProductVariant(models.Model):
+    product = models.ForeignKey(
+        Product,
+        related_name="product_variants",
+        on_delete=models.CASCADE,
+        verbose_name="Product",
+    )
+    variant = models.ForeignKey(
+        VariantOption,
+        related_name="product_variants",
+        on_delete=models.CASCADE,
+        verbose_name="Variant",
+    )
+    stock = models.PositiveIntegerField(default=0, verbose_name="Stock")
+    available = models.BooleanField(default=False, verbose_name="Available")
+
+    class Meta:
+        ordering = ("variant__group", "variant__order", "variant__name")
+        unique_together = (("product", "variant"),)
+        verbose_name = "Product variant"
+        verbose_name_plural = "Product variants"
+
+    def clean(self):
+        super().clean()
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        if self.stock <= 0:
+            self.available = False
+        super().save(*args, **kwargs)
+        self.product.sync_stock_from_variants()
+
+    def delete(self, *args, **kwargs):
+        product = self.product
+        result = super().delete(*args, **kwargs)
+        product.sync_stock_from_variants()
+        return result
+
+    def __str__(self):
+        return f"{self.product} / {self.variant}"
 
 
 class ProductLike(models.Model):

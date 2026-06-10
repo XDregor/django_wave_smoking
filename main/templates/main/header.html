@@ -9,28 +9,28 @@
         --site-pad: 7vw;
 
         /*Цветовая палитра*/
-        --bg: #010101; /* основной фон страницы*/
-        --dark: #0b0b0c; /* тёмный фон (hover хедера)*/
-        --surface: #1a1a1a; /* фон панелей, дропдаунов*/
-        --surface-hover: #262626; /* hover внутри панелей*/
-        --header-bg: #141414; /* фон хедера*/
-        --header-border: linear-gradient(90deg, #1c1c1e 0%, #25252a 30%, #1a1a1a 70%, #1c1c1e 100%);
+        --bg: var(--color-bg); /* основной фон страницы*/
+        --dark: var(--color-dark); /* тёмный фон (hover хедера)*/
+        --surface: var(--color-surface-panel); /* фон панелей, дропдаунов*/
+        --surface-hover: var(--color-surface-hover); /* hover внутри панелей*/
+        --header-bg: var(--color-surface-header); /* фон хедера*/
+        --header-border: var(--color-header-border);
 
         /*Текст*/
-        --text: #f1f1f1; /* основной текст*/
-        --text-muted: #888888; /* приглушённый текст*/
-        --text-subtle: #d8d6d6; /* очень тихий текст (иконки, стрелки)*/
-        --white: #ffffff;
+        --text: var(--color-text); /* основной текст*/
+        --text-muted: var(--color-muted-mid); /* приглушённый текст*/
+        --text-subtle: var(--color-text-subtle); /* очень тихий текст (иконки, стрелки)*/
+        --white: var(--color-white);
 
         /* Акценты*/
-        --accent: #bff747; /* основной акцент (зелёный)*/
+        --accent: var(--color-accent); /* основной акцент (зелёный)*/
         --accent-mid: color-mix(in srgb, var(--accent) 70%, var(--white) 30%);
-        --buda: #ffef0f; /* жёлтый акцент*/
-        --danger: #ff4b4c; /* красный / скидки*/
+        --buda: var(--color-warning); /* жёлтый акцент*/
+        --danger: var(--color-danger); /* красный / скидки*/
 
         /* Границы и тени*/
-        --border: #333333;
-        --shadow: rgba(0, 0, 0, 0.4);
+        --border: var(--color-border-solid);
+        --shadow: var(--color-shadow);
       }
 
       body {

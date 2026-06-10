@@ -8,19 +8,20 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'assets/css/theme.css' %}" />
 
     <style>
       /* ===================== BASE / GLOBAL ===================== */
       :root {
         --site-pad: 7vw;
-        --bg: #010101;
-        --text: #f1f1f1;
-        --white: #ffffff;
-        --dark: #0b0b0c;
-        --accent: #bff747;
-        --danger: #ff4b4c;
-        --muted: #f6f6f6;
-        --buda: #ffef0f;
+        --bg: var(--color-bg);
+        --text: var(--color-text);
+        --white: var(--color-white);
+        --dark: var(--color-dark);
+        --accent: var(--color-accent);
+        --danger: var(--color-danger);
+        --muted: var(--color-muted);
+        --buda: var(--color-warning);
 
         /* ===================== TYPE SCALE =====================
          *  --fs-hero   — главный заголовок баннера
@@ -169,12 +170,12 @@
 
       /* ===================== HERO BANNER ===================== */
       .main_banner {
-        --bg: #010101;
-        --text: #f1f1f1;
-        --white: #ffffff;
-        --dark: #0b0b0c;
-        --accent: #bff747;
-        --danger: #ff4b4c;
+        --bg: var(--color-bg);
+        --text: var(--color-text);
+        --white: var(--color-white);
+        --dark: var(--color-dark);
+        --accent: var(--color-accent);
+        --danger: var(--color-danger);
       }
       .main_banner * {
         margin: 0;

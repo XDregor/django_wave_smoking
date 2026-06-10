@@ -1,4 +1,5 @@
 <!doctype html>
+{% load static %}
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
@@ -7,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'assets/css/theme.css' %}" />
     <style>
       /* ===================== TOKENS (shared with main.html) ===================== */
       :root {
@@ -14,17 +16,17 @@
         --site-pad: 7vw;
 
         /* Colors */
-        --bg: #010101;
-        --text: #f1f1f1;
-        --white: #ffffff;
-        --dark: #0b0b0c;
-        --accent: #bff747;
-        --danger: #ff4b4c;
-        --muted: #f6f6f6;
-        --buda: #fce122;
-        --surface: #111113;
-        --border: rgba(255, 255, 255, 0.07);
-        --border-hover: rgba(255, 255, 255, 0.15);
+        --bg: var(--color-bg);
+        --text: var(--color-text);
+        --white: var(--color-white);
+        --dark: var(--color-dark);
+        --accent: var(--color-accent);
+        --danger: var(--color-danger);
+        --muted: var(--color-muted);
+        --buda: var(--color-warning);
+        --surface: var(--color-surface);
+        --border: var(--color-border);
+        --border-hover: var(--color-border-hover);
 
         /* Typography — desktop */
         --fs-hero: clamp(38px, 5.5vw, 62px);
@@ -169,7 +171,7 @@
       .catalog_hero {
         position: relative;
         width: 100%;
-        height: 380px;
+        height: 300px;
         overflow: hidden;
         background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 50%, #0a0a0a 100%);
       }
@@ -312,6 +314,7 @@
       .catalog_layout {
         display: block;
         max-width: 1600px;
+        min-height: 600px;
         margin: 0 auto;
         padding: 28px var(--site-pad) 80px;
       }
@@ -321,7 +324,7 @@
           padding-bottom: 60px;
         }
       }
-      @media (max-width: 480px) {
+      @media (max-width: 480px) { 
         .catalog_layout {
           padding-top: 14px;
           padding-bottom: 48px;
@@ -445,6 +448,14 @@
         background: var(--buda);
         border-color: var(--buda);
         color: #0b0b0c;
+      }
+      .filter_empty_text {
+        width: 100%;
+        font-size: var(--fs-micro);
+        font-weight: 800;
+        color: rgba(241, 241, 241, 0.55);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
       }
 
       /* Ценовой ползунок */
@@ -1433,20 +1444,19 @@
       }
       .catalog_empty_reset {
         display: inline-flex;
-        padding: 12px 28px;
+        padding: 10px 22px;
         border-radius: 10px;
-        border: 1px solid rgba(191, 247, 71, 0.25);
-        background: transparent;
+        border: 1px solid var(--color-muted-mid);
         font-size: var(--fs-ui);
-        font-weight: 700;
+        font-weight: 600;
         letter-spacing: 0.06em;
         text-transform: uppercase;
-        color: var(--accent);
+        color: var(--color-muted-mid);
         transition: all 0.18s ease;
       }
       .catalog_empty_reset:hover {
-        background: var(--accent);
-        border-color: var(--accent);
+        background: var(--white);
+        border-color: var(--white);
         color: #0b0b0c;
       }
       @media (max-width: 480px) {
@@ -1534,19 +1544,12 @@
           <!-- Иконка: фильтры не дали результат -->
           <div class="catalog_empty_icon_wrap" id="emptyIconNoResults" style="display:none">
             <svg class="catalog_empty_svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="60" cy="60" r="54" stroke="rgba(255,255,255,0.06)" stroke-width="2"/>
-              <circle cx="60" cy="60" r="40" stroke="rgba(191,247,71,0.12)" stroke-width="1.5" stroke-dasharray="6 4"/>
-              <!-- Лупа -->
-              <circle cx="55" cy="53" r="16" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
-              <line x1="67" y1="65" x2="80" y2="78" stroke="rgba(255,255,255,0.25)" stroke-width="2.5" stroke-linecap="round"/>
-              <!-- Крестик внутри лупы -->
-              <line x1="49" y1="47" x2="61" y2="59" stroke="rgba(255,90,90,0.7)" stroke-width="2" stroke-linecap="round"/>
-              <line x1="61" y1="47" x2="49" y2="59" stroke="rgba(255,90,90,0.7)" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="52" cy="50" r="26" stroke="rgba(255,255,255,0.25)" stroke-width="3"/>
+              <line x1="70" y1="68" x2="90" y2="88" stroke="rgba(255,255,255,0.25)" stroke-width="3" stroke-linecap="round"/>
             </svg>
           </div>
 
-          <div class="catalog_empty_title" id="emptyTitle">Список товаров пуст</div>
-          <button class="catalog_empty_reset" id="emptyReset" style="display:none">Сбросить фильтры</button>
+          <button class="catalog_empty_reset" id="emptyReset" type="button" style="display:none">Сбросить фильтры</button>
         </div>
 
         <!-- Пагинация -->
@@ -1566,7 +1569,7 @@
           <span class="filter_drawer_title">Фильтры и сортировка</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px">
-          <button class="filter_drawer_reset_icon" id="filterReset" title="Сбросить все фильтры">
+          <button class="filter_drawer_reset_icon" id="filterReset" type="button" title="Сбросить все фильтры">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
               <path d="M3 3v5h5" />
@@ -1584,12 +1587,8 @@
           <div class="filter_block_body">
             <div class="filter_block_body_inner">
               <div class="filter_block_body_content">
-                <div class="filter_chips">
-                  <button class="filter_chip active" data-category="all">Все</button>
-                  <button class="filter_chip" data-category="pod">Pod-системы</button>
-                  <button class="filter_chip" data-category="liquid">Жидкости</button>
-                  <button class="filter_chip" data-category="cart">Картриджи</button>
-                  <button class="filter_chip" data-category="acc">Аксессуары</button>
+                <div class="filter_chips" id="categoryFilterContent">
+                  <!-- Категории подставляются из Category -->
                 </div>
               </div>
             </div>
@@ -1706,7 +1705,7 @@
           <div class="filter_block_body">
             <div class="filter_block_body_inner">
               <div class="filter_block_body_content">
-                <div class="filter_checkboxes">
+                <div class="filter_checkboxes" id="brandFilterContent">
                   <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">Vaporesso</span><span class="filter_checkbox_count">38</span></label>
                   <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">SMOK</span><span class="filter_checkbox_count">29</span></label>
                   <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">VOOPOO</span><span class="filter_checkbox_count">24</span></label>
@@ -1721,93 +1720,8 @@
           </div>
         </div>
 
-        <!-- Мощность -->
-        <div class="filter_block" id="fb_power">
-          <div class="filter_block_header">
-            <span class="filter_block_title">Мощность</span>
-            <span class="filter_block_arrow_wrap">
-              <svg class="filter_block_arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
-            </span>
-          </div>
-          <div class="filter_block_body">
-            <div class="filter_block_body_inner">
-              <div class="filter_block_body_content">
-                <div class="filter_checkboxes">
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">До 20W</span><span class="filter_checkbox_count">44</span></label>
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">20–40W</span><span class="filter_checkbox_count">67</span></label>
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">40–80W</span><span class="filter_checkbox_count">51</span></label>
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">80W+</span><span class="filter_checkbox_count">22</span></label>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Батарея -->
-        <div class="filter_block" id="fb_battery">
-          <div class="filter_block_header">
-            <span class="filter_block_title">Батарея</span>
-            <span class="filter_block_arrow_wrap">
-              <svg class="filter_block_arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
-            </span>
-          </div>
-          <div class="filter_block_body">
-            <div class="filter_block_body_inner">
-              <div class="filter_block_body_content">
-                <div class="filter_checkboxes">
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">До 1000 mAh</span><span class="filter_checkbox_count">18</span></label>
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">1000–2000 mAh</span><span class="filter_checkbox_count">61</span></label>
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">2000–3000 mAh</span><span class="filter_checkbox_count">48</span></label>
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">3000+ mAh</span><span class="filter_checkbox_count">29</span></label>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Вкус -->
-        <div class="filter_block" id="fb_flavor">
-          <div class="filter_block_header">
-            <span class="filter_block_title">Вкус</span>
-            <span class="filter_block_arrow_wrap">
-              <svg class="filter_block_arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
-            </span>
-          </div>
-          <div class="filter_block_body">
-            <div class="filter_block_body_inner">
-              <div class="filter_block_body_content">
-                <div class="filter_checkboxes">
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">Фрукты</span><span class="filter_checkbox_count">83</span></label>
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">Табак</span><span class="filter_checkbox_count">34</span></label>
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">Десерты</span><span class="filter_checkbox_count">27</span></label>
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">Холодок / Ice</span><span class="filter_checkbox_count">49</span></label>
-                  <label class="filter_checkbox_label"><input type="checkbox" /><span class="filter_checkbox_box"></span><span class="filter_checkbox_text">Напитки</span><span class="filter_checkbox_count">19</span></label>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Никотин -->
-        <div class="filter_block" id="fb_nicotine">
-          <div class="filter_block_header">
-            <span class="filter_block_title">Никотин, мг</span>
-            <span class="filter_block_arrow_wrap">
-              <svg class="filter_block_arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
-            </span>
-          </div>
-          <div class="filter_block_body">
-            <div class="filter_block_body_inner">
-              <div class="filter_block_body_content">
-                <div class="filter_chips">
-                  <button class="filter_chip">0</button>
-                  <button class="filter_chip">20</button>
-                  <button class="filter_chip">30</button>
-                  <button class="filter_chip">50</button>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div id="variantFilterBlocks">
+          <!-- Группы вариантов подставляются из VariantOption/ProductVariant -->
         </div>
       </div>
       <!-- /filter_drawer_blocks -->
@@ -1818,6 +1732,7 @@
 
     {# Передаём данные из Django в JS через json_script — безопасно, без XSS #}
     {{ products_json|json_script:"productsData" }}
+    {{ categories_json|json_script:"categoriesData" }}
 
     <script>
       (() => {
@@ -1825,12 +1740,20 @@
          DATA — из Django (products_json из views.py)
         ============================================================ */
         const _rawData = document.getElementById("productsData");
+        const _rawCategories = document.getElementById("categoriesData");
         let allProducts = [];
+        let allCategories = [];
         try {
           const parsed = _rawData ? JSON.parse(_rawData.textContent) : [];
           allProducts = Array.isArray(parsed) ? parsed : [];
         } catch (e) {
           allProducts = [];
+        }
+        try {
+          const parsedCategories = _rawCategories ? JSON.parse(_rawCategories.textContent) : [];
+          allCategories = Array.isArray(parsedCategories) ? parsedCategories : [];
+        } catch (e) {
+          allCategories = [];
         }
 
         // Пустой стейт обрабатывается только внутри render()
@@ -1838,7 +1761,7 @@
         /* ============================================================
          STATE
       ============================================================ */
-        const maxPrice = allProducts.length > 0 ? Math.ceil(Math.max(...allProducts.map(p => p.price)) / 100) * 100 : 5000;
+        const maxPrice = allProducts.length > 0 ? Math.ceil((Math.max(...allProducts.map(p => p.price)) * 1.1) / 50) * 50 : 5000;
         const _rMaxEl = document.getElementById("rangeMax");
         const _rMinEl = document.getElementById("rangeMin");
         const _iMaxEl = document.getElementById("priceMax");
@@ -1850,14 +1773,64 @@
           categoryFilter: "all", // all | pod | liquid | cart | acc
           priceMin: 0,
           priceMax: maxPrice,
+          brandFilters: new Set(),
+          variantFilters: {},
           page: 1,
           perPage: 30,
           sort: "recommended",
           view: 4,
         };
 
+        function parseCsv(value) {
+          return String(value || "")
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean);
+        }
+
+        function readStateFromUrl() {
+          const params = new URLSearchParams(window.location.search);
+          state.categoryFilter = params.get("category") || "all";
+          state.priceMin = Math.min(maxPrice, Math.max(0, Math.round(Number(params.get("price_min") || 0))));
+          state.priceMax = Math.min(maxPrice, Math.round(Number(params.get("price_max") || maxPrice)));
+          if (state.priceMax < state.priceMin) state.priceMax = maxPrice;
+          state.brandFilters = new Set(parseCsv(params.get("brands")).map(String));
+          state.variantFilters = {};
+          params.forEach((value, key) => {
+            if (!key.startsWith("variant_group_")) return;
+            const group = key.replace("variant_group_", "") || "default";
+            state.variantFilters[group] = new Set(parseCsv(value).map(String));
+          });
+          state.sort = params.get("sort") || "recommended";
+        }
+
+        function writeStateToUrl() {
+          const params = new URLSearchParams();
+          if (state.categoryFilter !== "all") params.set("category", state.categoryFilter);
+          if (state.priceMin > 0) params.set("price_min", String(state.priceMin));
+          if (state.priceMax < maxPrice) params.set("price_max", String(state.priceMax));
+          if (state.brandFilters.size) params.set("brands", [...state.brandFilters].join(","));
+          Object.entries(state.variantFilters).forEach(([group, values]) => {
+            if (values.size) params.set(`variant_group_${group}`, [...values].join(","));
+          });
+          if (state.sort !== "recommended") params.set("sort", state.sort);
+          const query = params.toString();
+          const nextUrl = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+          window.history.replaceState({}, "", nextUrl);
+        }
+
+        readStateFromUrl();
+
         function getBadgeType(product) {
           return product.badge?.type || "";
+        }
+
+        function getDiscountPercent(product) {
+          if (Number(product.discount_percent) > 0) return Number(product.discount_percent);
+          if (product.old_price && product.price && Number(product.old_price) > Number(product.price)) {
+            return Math.round((1 - Number(product.price) / Number(product.old_price)) * 100);
+          }
+          return 0;
         }
 
         function getCookie(name) {
@@ -1874,6 +1847,25 @@
           return allProducts.filter((p) => {
             if (state.categoryFilter !== "all" && p.category !== state.categoryFilter) return false;
             if (p.price < state.priceMin || p.price > state.priceMax) return false;
+            if (state.brandFilters.size && !state.brandFilters.has(String(p.brand_id))) return false;
+            if (state.sort === "hit" && getBadgeType(p) !== "hit") return false;
+            if (state.sort === "new" && getBadgeType(p) !== "new") return false;
+            if (state.sort === "sale" && getDiscountPercent(p) <= 0) return false;
+            const activeGroups = Object.entries(state.variantFilters).filter(([, values]) => values.size > 0);
+            if (activeGroups.length) {
+              const productVariants = Array.isArray(p.variant_options) ? p.variant_options : [];
+              const productByGroup = productVariants.reduce((acc, variant) => {
+                const group = variant.group || "default";
+                if (!acc[group]) acc[group] = new Set();
+                acc[group].add(String(variant.slug));
+                return acc;
+              }, {});
+              for (const [group, selected] of activeGroups) {
+                const productGroupValues = productByGroup[group] || new Set();
+                const hasMatch = [...selected].some((slug) => productGroupValues.has(slug));
+                if (!hasMatch) return false;
+              }
+            }
             return true;
           });
         }
@@ -1882,16 +1874,12 @@
           const a = [...arr];
           if (state.sort === "price_asc") return a.sort((x, y) => x.price - y.price);
           if (state.sort === "price_desc") return a.sort((x, y) => y.price - x.price);
-          if (state.sort === "hit") return a.sort((x, y) => (getBadgeType(y) === "hit" ? 1 : 0) - (getBadgeType(x) === "hit" ? 1 : 0));
-          if (state.sort === "new") return a.sort((x, y) => (getBadgeType(y) === "new" ? 1 : 0) - (getBadgeType(x) === "new" ? 1 : 0));
-          if (state.sort === "sale") return a.sort((x, y) => (getBadgeType(y) === "sale" ? 1 : 0) - (getBadgeType(x) === "sale" ? 1 : 0));
+          if (state.sort === "hit") return a.sort((x, y) => (getBadgeType(y) === "hit" ? 1 : 0) - (getBadgeType(x) === "hit" ? 1 : 0) || (y.likes || 0) - (x.likes || 0));
+          if (state.sort === "new") return a.sort((x, y) => (getBadgeType(y) === "new" ? 1 : 0) - (getBadgeType(x) === "new" ? 1 : 0) || String(y.created).localeCompare(String(x.created)));
+          if (state.sort === "sale") return a.sort((x, y) => (getDiscountPercent(y) > 0 ? 1 : 0) - (getDiscountPercent(x) > 0 ? 1 : 0) || getDiscountPercent(y) - getDiscountPercent(x));
           if (state.sort === "discount_pct")
-            return a.sort((x, y) => {
-              const pctX = x.old_price ? Math.round((1 - x.price / x.old_price) * 100) : 0;
-              const pctY = y.old_price ? Math.round((1 - y.price / y.old_price) * 100) : 0;
-              return pctY - pctX;
-            });
-          return a; // recommended — исходный порядок
+            return a.sort((x, y) => getDiscountPercent(y) - getDiscountPercent(x));
+          return a.sort((x, y) => (y.badge ? 1 : 0) - (x.badge ? 1 : 0) || String(y.created).localeCompare(String(x.created)));
         }
 
         /* ============================================================
@@ -1912,12 +1900,11 @@
             ? `<span class="product_card_old_price">${Number(p.old_price).toLocaleString("uk-UA")}₴</span>` : "";
           const imgHtml = p.image_url
             ? `<img src="${p.image_url}" alt="${p.name}" class="product_card_img" loading="lazy" />` : "";
-          const variants = Array.isArray(p.variants) ? p.variants : [];
-          const availableVariants = new Set(Array.isArray(p.available_variants) ? p.available_variants.map(String) : []);
+          const variants = Array.isArray(p.display_variant_options) ? p.display_variant_options : [];
           const sizesHtml = variants
-            .map((s) => {
-              const isAvailable = availableVariants.has(String(s));
-              return `<button class="product_card_size${isAvailable ? "" : " out"}" type="button" data-size="${s}"${isAvailable ? "" : " disabled"}>${s}</button>`;
+            .map((variant) => {
+              const isAvailable = Boolean(variant.available);
+              return `<button class="product_card_size${isAvailable ? "" : " out"}" type="button" data-variant-id="${variant.id || ""}" data-size="${variant.name}" data-stock="${variant.stock || 0}"${isAvailable ? "" : " disabled"}>${variant.name}</button>`;
             })
             .join("");
           const detailUrl = p.slug ? `/products/${p.id}/${p.slug}/` : "#";
@@ -2104,7 +2091,9 @@
             const noResults = document.getElementById("emptyIconNoResults");
             const emptyTitle = document.getElementById("emptyTitle");
             const emptyResetBtn = document.getElementById("emptyReset");
-            const isFiltered = state.categoryFilter !== "all" || state.priceMin > 0 || state.priceMax < maxPrice;
+            const hasVariantFilters = Object.values(state.variantFilters).some((values) => values.size > 0);
+            const hasSortFilter = ["hit", "new", "sale"].includes(state.sort);
+            const isFiltered = state.categoryFilter !== "all" || state.priceMin > 0 || state.priceMax < maxPrice || state.brandFilters.size > 0 || hasVariantFilters || hasSortFilter;
             if (allProducts.length === 0) {
               // Товаров нет вообще в БД
               if (noProducts) noProducts.style.display = "";
@@ -2132,6 +2121,7 @@
           }
 
           renderPagination(total);
+          writeStateToUrl();
         }
 
         let renderFrameId = 0;
@@ -2153,6 +2143,10 @@
           const iMax = document.getElementById("priceMax");
           const fill = document.getElementById("rangeFill");
           if (!rMin || !rMax || !fill) return;
+          rMin.value = state.priceMin;
+          rMax.value = state.priceMax;
+          iMin.value = state.priceMin;
+          iMax.value = state.priceMax;
 
           function updateFill() {
             const min = +rMin.min,
@@ -2214,13 +2208,160 @@
         /* ============================================================
          TYPE CHIPS (category bar)
         ============================================================ */
+        function buildCategoryChips() {
+          const root = document.getElementById("categoryFilterContent");
+          if (!root) return;
+          const categories = [{ slug: "all", name: "Все" }, ...allCategories];
+          root.innerHTML = categories
+            .map((category) => `
+              <button class="filter_chip${state.categoryFilter === category.slug ? " active" : ""}" type="button" data-category="${category.slug}">
+                ${category.name}
+              </button>
+            `)
+            .join("");
+        }
+
         function initTypeChips() {
+          buildCategoryChips();
           const allChips = document.querySelectorAll("[data-category].filter_chip");
           allChips.forEach((btn) => {
             btn.addEventListener("click", () => {
               document.querySelectorAll(".filter_chip[data-category]").forEach((b) => b.classList.remove("active"));
               btn.classList.add("active");
               state.categoryFilter = btn.dataset.category;
+              state.brandFilters = new Set();
+              state.variantFilters = {};
+              state.page = 1;
+              initBrandFilters();
+              initVariantFilters();
+              writeStateToUrl();
+              render();
+            });
+          });
+        }
+
+        function getProductsForCategory() {
+          return allProducts.filter((product) => state.categoryFilter === "all" || product.category === state.categoryFilter);
+        }
+
+        function initBrandFilters() {
+          const root = document.getElementById("brandFilterContent");
+          if (!root) return;
+          const brandMap = new Map();
+          getProductsForCategory().forEach((product) => {
+            if (!product.brand_id) return;
+            const id = String(product.brand_id);
+            const item = brandMap.get(id) || {
+              id,
+              name: product.brand,
+              count: 0,
+            };
+            item.count += 1;
+            brandMap.set(id, item);
+          });
+
+          if (!brandMap.size) {
+            root.innerHTML = '<span class="filter_empty_text">Нет брендов</span>';
+            return;
+          }
+
+          root.innerHTML = [...brandMap.values()]
+            .sort((a, b) => String(a.name).localeCompare(String(b.name), "ru"))
+            .map((brand) => `
+              <label class="filter_checkbox_label">
+                <input type="checkbox" data-brand-id="${brand.id}" ${state.brandFilters.has(brand.id) ? "checked" : ""} />
+                <span class="filter_checkbox_box"></span>
+                <span class="filter_checkbox_text">${brand.name}</span>
+                <span class="filter_checkbox_count">${brand.count}</span>
+              </label>
+            `)
+            .join("");
+
+          root.querySelectorAll("[data-brand-id]").forEach((input) => {
+            input.addEventListener("change", () => {
+              const id = String(input.dataset.brandId);
+              if (input.checked) state.brandFilters.add(id);
+              else state.brandFilters.delete(id);
+              state.page = 1;
+              writeStateToUrl();
+              render();
+            });
+          });
+        }
+
+        function initVariantFilters() {
+          const root = document.getElementById("variantFilterBlocks");
+          if (!root) return;
+
+          const groups = new Map();
+          getProductsForCategory().forEach((product) => {
+            const variants = Array.isArray(product.variant_options) ? product.variant_options : [];
+            variants.forEach((variant) => {
+              const group = variant.group || "default";
+              if (!groups.has(group)) groups.set(group, new Map());
+              const bySlug = groups.get(group);
+              const slug = String(variant.slug);
+              const item = bySlug.get(slug) || { ...variant, count: 0 };
+              item.count += 1;
+              bySlug.set(slug, item);
+            });
+          });
+
+          if (!groups.size) {
+            root.innerHTML = "";
+            return;
+          }
+
+          root.innerHTML = [...groups.entries()]
+            .map(([group, variants]) => {
+              const title = group === "default" ? "Варианты" : group;
+              const options = [...variants.values()]
+                .sort((a, b) => String(a.name).localeCompare(String(b.name), "ru"))
+                .map((variant) => `
+                  <label class="filter_checkbox_label">
+                    <input type="checkbox" data-variant-group="${group}" data-variant-slug="${variant.slug}" ${state.variantFilters[group]?.has(String(variant.slug)) ? "checked" : ""} />
+                    <span class="filter_checkbox_box"></span>
+                    <span class="filter_checkbox_text">${variant.name}</span>
+                    <span class="filter_checkbox_count">${variant.count}</span>
+                  </label>
+                `)
+                .join("");
+              return `
+                <div class="filter_block open" data-variant-filter-block="${group}">
+                  <div class="filter_block_header">
+                    <span class="filter_block_title">${title}</span>
+                    <span class="filter_block_arrow_wrap">
+                      <svg class="filter_block_arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+                    </span>
+                  </div>
+                  <div class="filter_block_body">
+                    <div class="filter_block_body_inner">
+                      <div class="filter_block_body_content">
+                        <div class="filter_checkboxes">
+                          ${options}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            })
+            .join("");
+
+          root.querySelectorAll(".filter_block_header").forEach((header) => {
+            header.addEventListener("click", () => {
+              header.closest(".filter_block")?.classList.toggle("open");
+            });
+          });
+
+          root.querySelectorAll("[data-variant-slug]").forEach((input) => {
+            input.addEventListener("change", () => {
+              const group = input.dataset.variantGroup || "default";
+              const slug = String(input.dataset.variantSlug);
+              if (!state.variantFilters[group]) state.variantFilters[group] = new Set();
+              const selected = state.variantFilters[group];
+              if (input.checked) selected.add(slug);
+              else selected.delete(slug);
               state.page = 1;
               render();
             });
@@ -2233,6 +2374,7 @@
         function initSort() {
           const container = document.getElementById("sortSelect");
           if (!container) return;
+          container.querySelectorAll(".sort_option").forEach((b) => b.classList.toggle("active", b.dataset.sort === state.sort));
           container.querySelectorAll(".sort_option").forEach((btn) => {
             btn.addEventListener("click", () => {
               container.querySelectorAll(".sort_option").forEach((b) => b.classList.remove("active"));
@@ -2351,7 +2493,11 @@
           state.priceMin = 0;
           state.priceMax = maxPrice;
           state.page = 1;
+          state.brandFilters = new Set();
+          state.variantFilters = {};
+          state.sort = "recommended";
           document.querySelectorAll(".filter_chip[data-category]").forEach((b) => b.classList.toggle("active", b.dataset.category === "all"));
+          document.querySelectorAll(".sort_option").forEach((b) => b.classList.toggle("active", b.dataset.sort === "recommended"));
           const rMin = document.getElementById("rangeMin");
           const rMax = document.getElementById("rangeMax");
           if (rMin) rMin.value = 0;
@@ -2366,10 +2512,20 @@
             fill.style.width = "100%";
           }
           document.querySelectorAll(".filter_checkboxes input[type=checkbox]").forEach((cb) => (cb.checked = false));
+          initBrandFilters();
+          initVariantFilters();
           render();
         }
-        document.getElementById("filterReset")?.addEventListener("click", resetFilters);
-        document.getElementById("emptyReset")?.addEventListener("click", resetFilters);
+        document.getElementById("filterReset")?.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          resetFilters();
+        });
+        document.getElementById("emptyReset")?.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          resetFilters();
+        });
 
         /* ============================================================
          DRAWER (universal — для всех экранов)
@@ -2454,15 +2610,8 @@
         initRangeSlider();
         initFilterBlocks();
         initTypeChips();
-
-        // Никотин — визуальный toggle (без реальной фильтрации, поля нет в модели)
-        document.querySelectorAll('#fb_nicotine .filter_chip').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const isActive = btn.classList.contains('active');
-            document.querySelectorAll('#fb_nicotine .filter_chip').forEach(b => b.classList.remove('active'));
-            if (!isActive) btn.classList.add('active');
-          });
-        });
+        initBrandFilters();
+        initVariantFilters();
 
         initSort();
         initViewToggle();

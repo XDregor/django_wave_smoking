@@ -1,8 +1,19 @@
 from django.http import JsonResponse
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 
-from .models import Category, Product, ProductLike
+from .models import Category, Product, ProductLike, ProductVariant
+
+
+available_variant_prefetch = Prefetch(
+    "product_variants",
+    queryset=ProductVariant.objects.select_related("variant").order_by(
+        "variant__group",
+        "variant__order",
+        "variant__name",
+    ),
+)
 
 
 def mark_liked_products(products, liked_product_ids):
@@ -20,7 +31,11 @@ def get_liked_product_ids(request):
 
 
 def home(request):
-    products = list(Product.objects.filter(available=True).select_related("brand", "category")[:12])
+    products = list(
+        Product.objects.filter(available=True)
+        .select_related("brand", "category")
+        .prefetch_related(available_variant_prefetch)[:12]
+    )
     mark_liked_products(products, get_liked_product_ids(request))
     return render(request, "main/main.html", {
         "products": products,
@@ -29,7 +44,11 @@ def home(request):
 
 
 def catalog(request):
-    products = list(Product.objects.filter(available=True).select_related("category", "brand"))
+    products = list(
+        Product.objects.filter(available=True)
+        .select_related("category", "brand")
+        .prefetch_related(available_variant_prefetch)
+    )
     liked_product_ids = get_liked_product_ids(request)
     mark_liked_products(products, liked_product_ids)
 
@@ -38,6 +57,11 @@ def catalog(request):
             "id": p.id,
             "name": p.name,
             "slug": p.slug,
+            "category_id": p.category_id,
+            "category_name": p.category.name if p.category else "",
+            "category": p.category.slug if p.category else None,
+            "brand_id": p.brand_id,
+            "brand_slug": p.brand.slug if p.brand else "",
             "brand": p.brand.name if p.brand else "",
             "price": float(p.price),
             "old_price": float(p.old_price) if p.old_price else None,
@@ -46,17 +70,23 @@ def catalog(request):
             "image_url": p.image.url if p.image else None,
             "badge": p.get_badge_data(),
             "likes": p.likes,
-            "variants": p.variants or [],
-            "available_variants": p.available_variants or [],
-            "category": p.category.slug if p.category else None,
+            "variant_options": p.variant_payload,
+            "display_variant_options": p.display_variant_payload,
+            "created": p.created.isoformat() if p.created else "",
             "is_liked": p.id in liked_product_ids,
         }
         for p in products
     ]
 
+    categories_data = [
+        {"id": category.id, "name": category.name, "slug": category.slug}
+        for category in Category.objects.all()
+    ]
+
     return render(request, "main/сatalog.html", {
         "products": products,
         "products_json": products_data,
+        "categories_json": categories_data,
         "liked_product_ids": liked_product_ids,
     })
 
@@ -67,7 +97,11 @@ def reviews(request):
 
 def product_list(request, category_slug=None):
     categories = Category.objects.all()
-    products = Product.objects.filter(available=True).select_related("category", "brand")
+    products = (
+        Product.objects.filter(available=True)
+        .select_related("category", "brand")
+        .prefetch_related(available_variant_prefetch)
+    )
 
     category = None
     if category_slug:
@@ -86,7 +120,7 @@ def product_list(request, category_slug=None):
 
 def product_detail(request, id, slug):
     product = get_object_or_404(
-        Product.objects.select_related("category", "brand"),
+        Product.objects.select_related("category", "brand").prefetch_related(available_variant_prefetch),
         id=id,
         slug=slug,
         available=True,
@@ -98,6 +132,7 @@ def product_detail(request, id, slug):
     related_products = list(
         Product.objects.filter(category=product.category, available=True)
         .select_related("category", "brand")
+        .prefetch_related(available_variant_prefetch)
         .exclude(id=product.id)[:4]
     )
     mark_liked_products(related_products, liked_product_ids)

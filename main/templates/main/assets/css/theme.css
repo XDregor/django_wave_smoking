@@ -1,0 +1,95 @@
+:root {
+  /* Layout */
+  --site-pad: 7vw;
+  --pad: clamp(16px, 5vw, 72px);
+
+  /* Core palette */
+  --color-bg: #010101;
+  --color-text: #f1f1f1;
+  --color-text-soft: #e8e8e8;
+  --color-white: #ffffff;
+  --color-dark: #0b0b0c;
+  --color-surface: #111113;
+  --color-surface-soft: #161617;
+  --color-surface-muted: #0e0e0f;
+  --color-surface-header: #141414;
+  --color-surface-panel: #1a1a1a;
+  --color-surface-hover: #262626;
+  --color-accent: #bff747;
+  --color-danger: #ff4b4c;
+  --color-warning: #fce122;
+  --color-muted: #f6f6f6;
+  --color-muted-dark: #555555;
+  --color-muted-mid: #777777;
+  --color-text-subtle: #d8d6d6;
+
+  /* Borders and overlays */
+  --color-border: rgba(255, 255, 255, 0.07);
+  --color-border-soft: rgba(255, 255, 255, 0.06);
+  --color-border-strong: rgba(255, 255, 255, 0.11);
+  --color-border-hover: rgba(255, 255, 255, 0.15);
+  --color-border-solid: #333333;
+  --color-header-border: linear-gradient(90deg, #1c1c1e 0%, #25252a 30%, #1a1a1a 70%, #1c1c1e 100%);
+  --color-shadow: rgba(0, 0, 0, 0.4);
+  --color-text-faint: rgba(241, 241, 241, 0.35);
+  --color-text-muted: rgba(241, 241, 241, 0.6);
+  --color-accent-soft: rgba(191, 247, 71, 0.12);
+
+  /* Legacy aliases used by existing templates */
+  --bg: var(--color-bg);
+  --text: var(--color-text);
+  --white: var(--color-white);
+  --dark: var(--color-dark);
+  --surface: var(--color-surface);
+  --surface-2: var(--color-surface-soft);
+  --surface-hover: var(--color-surface-hover);
+  --header-bg: var(--color-surface-header);
+  --header-border: var(--color-header-border);
+  --accent: var(--color-accent);
+  --danger: var(--color-danger);
+  --buda: var(--color-warning);
+  --muted: var(--color-muted);
+  --muted-2: var(--color-muted-mid);
+  --text-muted: var(--color-muted-mid);
+  --text-subtle: var(--color-text-subtle);
+  --border: var(--color-border);
+  --border-2: var(--color-border-strong);
+  --border-hover: var(--color-border-hover);
+  --shadow: var(--color-shadow);
+}
+
+@media (max-width: 1400px) {
+  :root {
+    --site-pad: 5vw;
+  }
+}
+
+@media (max-width: 1200px) {
+  :root {
+    --site-pad: 4vw;
+  }
+}
+
+@media (max-width: 900px) {
+  :root {
+    --site-pad: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --site-pad: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  :root {
+    --site-pad: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --site-pad: 10px;
+  }
+}

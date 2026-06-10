@@ -1,4 +1,5 @@
 <!doctype html>
+{% load static %}
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
@@ -7,24 +8,25 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'assets/css/theme.css' %}" />
 
     <style>
       :root {
         --pad: clamp(16px, 5vw, 72px);
         --site-pad: clamp(16px, 5vw, 72px);
         --fs-micro: 11px;
-        --bg: #010101;
-        --text: #e8e8e8;
-        --white: #ffffff;
-        --surface: #0e0e0f;
-        --surface-2: #161617;
-        --border: rgba(255, 255, 255, 0.06);
-        --border-2: rgba(255, 255, 255, 0.11);
-        --muted: #555;
-        --muted-2: #777;
-        --accent: #bff747;
-        --danger: #ff4b4c;
-        --buda: #fce122;
+        --bg: var(--color-bg);
+        --text: var(--color-text-soft);
+        --white: var(--color-white);
+        --surface: var(--color-surface-muted);
+        --surface-2: var(--color-surface-soft);
+        --border: var(--color-border-soft);
+        --border-2: var(--color-border-strong);
+        --muted: var(--color-muted-dark);
+        --muted-2: var(--color-muted-mid);
+        --accent: var(--color-accent);
+        --danger: var(--color-danger);
+        --buda: var(--color-warning);
       }
       *,
       *::before,
