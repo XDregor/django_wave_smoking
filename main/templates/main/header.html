@@ -7513,11 +7513,323 @@
         const megaMenuController = new MegaMenuController();
         const shopPanelController = new ShopPanelController();
 
+        function installRealShopPanelController(controller) {
+          if (!controller?.elements?.dropdownList) return;
+
+          controller.getCSRFToken = function () {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; csrftoken=`);
+            return parts.length === 2 ? parts.pop().split(";").shift() : "";
+          };
+
+          controller.fetchJSON = async function (url, options = {}) {
+            const response = await fetch(url, {
+              ...options,
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": this.getCSRFToken(),
+                "X-Requested-With": "XMLHttpRequest",
+                ...(options.headers || {}),
+              },
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.error || "Request failed");
+            return data;
+          };
+
+          controller.refreshFavorites = async function () {
+            try {
+              const data = await this.fetchJSON("/api/favorites/");
+              this.state.favorites_widget = data.items || [];
+              this.updateUI();
+              if (this.state.isOpen && this.state.currentMode === "favorites_widget") {
+                this.renderHeader();
+                this.renderFavorites();
+              }
+            } catch (_) {
+              this.state.favorites_widget = [];
+              this.updateUI();
+            }
+          };
+
+          controller.refreshCart = async function () {
+            try {
+              const data = await this.fetchJSON("/api/cart/");
+              this.state.basketItems = data.items || [];
+              this.state.cartTotalQuantity = data.total_quantity || 0;
+              this.state.cartTotalPrice = data.total_price || 0;
+              this.updateUI();
+              if (this.state.isOpen && this.state.currentMode === "cart_widget") {
+                this.renderHeader();
+                this.renderBasket();
+              }
+            } catch (_) {
+              this.state.basketItems = [];
+              this.state.cartTotalQuantity = 0;
+              this.state.cartTotalPrice = 0;
+              this.updateUI();
+            }
+          };
+
+          controller.updateCartCounters = function (count) {
+            const value = count > 9 ? "9+" : `${count}`;
+            if (this.elements.basketCounter) this.elements.basketCounter.textContent = value;
+            this.elements.basketButton?.classList.toggle("has_items", count > 0);
+            window._mobileMenu?.updateBasketBadge?.(count);
+          };
+
+          controller.updateUI = function () {
+            const favoritesCount = this.state.favorites_widget.length;
+            const basketCount = this.state.cartTotalQuantity || this.state.basketItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+            if (this.elements.favoritesCounter) {
+              this.elements.favoritesCounter.textContent = favoritesCount > 9 ? "9+" : `${favoritesCount}`;
+              this.elements.favoritesCounter.style.display = favoritesCount ? "" : "none";
+            }
+            this.elements.favoritesButton?.classList.toggle("has_items", favoritesCount > 0);
+            this.updateCartCounters(basketCount);
+          };
+
+          controller.renderHeader = function () {
+            const items = this.getCurrentItems();
+            const modeLabel = this.state.currentMode === "cart_widget" ? "Корзина" : "Избранное";
+            const iconClass = this.state.currentMode === "cart_widget" ? "fa-shopping-bag" : "fa-heart";
+            const modeClass = this.state.currentMode === "cart_widget" ? "shop_panel_mode_cart" : "shop_panel_mode_favorites";
+            this.elements.dropdownTitle.innerHTML = `
+              <div class="page_header_top">
+                <div class="shop_panel_title_text">
+                  <div class="shop_panel_title_icon ${modeClass}">
+                    <i class="fa-solid ${iconClass}"></i>
+                  </div>
+                  <span>${modeLabel}</span>
+                </div>
+                <span class="shop_panel_items_count">${items.length} ${this.getItemsCountLabel(items.length)}</span>
+              </div>
+            `;
+          };
+
+          controller.getCurrentItems = function () {
+            return this.state.currentMode === "cart_widget" ? this.state.basketItems : this.state.favorites_widget;
+          };
+
+          controller.formatPrice = function (value) {
+            return `${Number(value || 0).toLocaleString("uk-UA")}₴`;
+          };
+
+          controller.getImageMarkup = function (item, alt) {
+            if (item.image_url) {
+              return `<img src="${item.image_url}" alt="${alt}" class="shop_panel_product_image" onerror="this.style.display='none'" />`;
+            }
+            return `<i class="fa-solid fa-box-open"></i>`;
+          };
+
+          controller.getBadgeMarkup = function (badge) {
+            if (!badge) return "";
+            const className = badge.type === "sale" ? "shop_panel_item_badge_sale" : "shop_panel_item_badge_new";
+            return `<span class="${className}">${badge.label}</span>`;
+          };
+
+          controller.renderFavorites = function () {
+            const items = this.state.favorites_widget;
+            if (!items.length) {
+              this.elements.dropdownList.innerHTML = this.createEmptyStateMarkup("all");
+              this.hideFooter();
+              return;
+            }
+            this.elements.dropdownList.innerHTML = items.map((item) => {
+              const variants = item.display_variant_options || item.variant_options || [];
+              const variantMarkup = variants.length ? `
+                <div class="cart_size_selector">
+                  ${variants.map((variant) => `
+                    <button
+                      class="size ${variant.available ? "available" : ""}"
+                      type="button"
+                      data-favorite-variant="${item.id}"
+                      data-variant-id="${variant.id}"
+                      ${variant.available ? "" : "disabled"}
+                    >${variant.name}</button>
+                  `).join("")}
+                </div>
+              ` : "";
+              return `
+                <div class="favorites_panel_item" data-favorite-id="${item.id}">
+                  <div class="cart_item_image_stack">
+                    ${this.getBadgeMarkup(item.badge)}
+                    <div class="promo_image_slider">
+                      <div class="promo_image_slide active">
+                        ${this.getImageMarkup(item, item.name)}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="shop_panel_item_details">
+                    <div class="shop_panel_item_header">
+                      <a class="shop_panel_item_name" href="${item.detail_url || "#"}">${item.name}</a>
+                      <button class="cart_remove_button" type="button" data-remove-favorite="${item.id}">
+                        <i class="fa-solid fa-xmark"></i>
+                      </button>
+                    </div>
+                    <div class="shop_panel_item_price_row">
+                      <div class="shop_panel_item_price">${this.formatPrice(item.price)}</div>
+                      ${item.old_price && Number(item.old_price) > Number(item.price) ? `<div class="shop_panel_item_price_old">${this.formatPrice(item.old_price)}</div>` : ""}
+                    </div>
+                    ${variantMarkup}
+                    <button class="cart_add_button" type="button" data-add-favorite-to-cart="${item.id}">
+                      <i class="fa-solid fa-cart-plus"></i>
+                      <span>В корзину</span>
+                    </button>
+                  </div>
+                </div>
+              `;
+            }).join("");
+            this.hideFooter();
+            this.bindFavoritesInteractions();
+          };
+
+          controller.bindFavoritesInteractions = function () {
+            this.elements.dropdownList.querySelectorAll("[data-favorite-variant]").forEach((button) => {
+              button.addEventListener("click", () => {
+                const itemId = Number(button.getAttribute("data-favorite-variant"));
+                const parent = button.closest(".cart_size_selector");
+                parent?.querySelectorAll(".size").forEach((item) => item.classList.remove("selected"));
+                button.classList.add("selected");
+                this.state.selectedSizes[itemId] = Number(button.getAttribute("data-variant-id"));
+              });
+            });
+            this.elements.dropdownList.querySelectorAll("[data-add-favorite-to-cart]").forEach((button) => {
+              button.addEventListener("click", async () => {
+                const itemId = Number(button.getAttribute("data-add-favorite-to-cart"));
+                const item = this.state.favorites_widget.find((favorite) => favorite.id === itemId);
+                if (!item) return;
+                const variants = item.display_variant_options || item.variant_options || [];
+                const variantId = this.state.selectedSizes[itemId] || null;
+                if (variants.length && !variantId) {
+                  this.showToast("Выберите вариант");
+                  return;
+                }
+                try {
+                  await this.fetchJSON("/api/cart/add/", {
+                    method: "POST",
+                    body: JSON.stringify({ product_id: item.id, variant_id: variantId, quantity: 1 }),
+                  });
+                  await this.refreshCart();
+                  this.showToast("Товар добавлен в корзину");
+                } catch (error) {
+                  this.showToast(error.message);
+                }
+              });
+            });
+            this.elements.dropdownList.querySelectorAll("[data-remove-favorite]").forEach((button) => {
+              button.addEventListener("click", async () => {
+                const itemId = Number(button.getAttribute("data-remove-favorite"));
+                try {
+                  await this.fetchJSON(`/products/${itemId}/like/`, { method: "POST" });
+                  await this.refreshFavorites();
+                  this.showToast("Удалено из избранного");
+                } catch (error) {
+                  this.showToast(error.message);
+                }
+              });
+            });
+          };
+
+          controller.renderBasket = function () {
+            if (!this.state.basketItems.length) {
+              this.elements.dropdownList.innerHTML = this.createEmptyStateMarkup("cart_widget");
+              this.hideFooter();
+              return;
+            }
+            this.elements.dropdownList.innerHTML = this.state.basketItems.map((item) => `
+              <div class="cart_item" data-cart-item-id="${item.id}">
+                <div class="cart_item_image">
+                  ${this.getImageMarkup(item, item.product_name)}
+                </div>
+                <div class="cart_item_details">
+                  <a class="cart_item_name" href="${item.product_url || "#"}">${item.product_name}</a>
+                  ${item.variant_name ? `<div class="shop_panel_item_variant">${item.variant_name}</div>` : ""}
+                  <div class="cart_item_price">${this.formatPrice(item.total_price)}</div>
+                  <div class="cart_quantity_controls">
+                    <button class="cart_quantity_button" type="button" data-cart-decrease="${item.id}" ${item.quantity <= 1 ? "disabled" : ""}>
+                      <i class="fa-solid fa-minus"></i>
+                    </button>
+                    <span class="cart_quantity_value">${item.quantity}</span>
+                    <button class="cart_quantity_button" type="button" data-cart-increase="${item.id}">
+                      <i class="fa-solid fa-plus"></i>
+                    </button>
+                  </div>
+                </div>
+                <button class="cart_item_remove" type="button" data-remove-cart-item="${item.id}">
+                  <i class="fa-solid fa-trash-alt"></i>
+                </button>
+              </div>
+            `).join("");
+            this.showFooter();
+            this.bindBasketInteractions();
+            this.updateBasketTotals();
+          };
+
+          controller.bindBasketInteractions = function () {
+            this.elements.dropdownList.querySelectorAll("[data-cart-increase], [data-cart-decrease]").forEach((button) => {
+              button.addEventListener("click", async () => {
+                const itemId = Number(button.getAttribute("data-cart-increase") || button.getAttribute("data-cart-decrease"));
+                const item = this.state.basketItems.find((cartItem) => cartItem.id === itemId);
+                if (!item) return;
+                const nextQuantity = button.hasAttribute("data-cart-increase") ? item.quantity + 1 : item.quantity - 1;
+                try {
+                  await this.fetchJSON(`/api/cart/${itemId}/`, {
+                    method: "PATCH",
+                    body: JSON.stringify({ quantity: nextQuantity }),
+                  });
+                  await this.refreshCart();
+                } catch (error) {
+                  this.showToast(error.message);
+                }
+              });
+            });
+            this.elements.dropdownList.querySelectorAll("[data-remove-cart-item]").forEach((button) => {
+              button.addEventListener("click", async () => {
+                const itemId = Number(button.getAttribute("data-remove-cart-item"));
+                try {
+                  await this.fetchJSON(`/api/cart/${itemId}/`, { method: "DELETE" });
+                  await this.refreshCart();
+                } catch (error) {
+                  this.showToast(error.message);
+                }
+              });
+            });
+          };
+
+          controller.updateBasketTotals = function () {
+            const totalPrice = document.getElementById("totalPrice");
+            const oldPrice = document.getElementById("oldPrice");
+            if (oldPrice) {
+              oldPrice.classList.remove("show");
+              oldPrice.textContent = "";
+            }
+            if (totalPrice) totalPrice.textContent = this.formatPrice(this.state.cartTotalPrice || 0);
+          };
+
+          controller.addItem = async function (customItem = null, targetList = "favorites_widget") {
+            if (targetList === "cart_widget" && customItem?.product_id) {
+              await this.fetchJSON("/api/cart/add/", {
+                method: "POST",
+                body: JSON.stringify(customItem),
+              });
+              await this.refreshCart();
+            }
+          };
+
+          controller.seedDemoItems = function () {};
+          controller.refreshFavorites();
+          controller.refreshCart();
+        }
+
+        installRealShopPanelController(shopPanelController);
+        window._shopPanel = shopPanelController;
+
         // Patch ShopPanelController to also update mobile notification_badge
         const origUpdateUI = shopPanelController.updateUI.bind(shopPanelController);
         shopPanelController.updateUI = function () {
           origUpdateUI();
-          const count = this.state.basketItems.length;
+          const count = this.state.cartTotalQuantity || this.state.basketItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
           window._mobileMenu?.updateBasketBadge(count);
         };
 
@@ -7537,7 +7849,8 @@
         });
 
         window.setTimeout(() => {
-          shopPanelController?.seedDemoItems?.();
+          shopPanelController?.refreshFavorites?.();
+          shopPanelController?.refreshCart?.();
         }, 120);
       });
     </script>

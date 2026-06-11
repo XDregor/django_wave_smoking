@@ -1,0 +1,1230 @@
+﻿<!doctype html>
+{% load static %}
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ product.name }} | WAVE</title>
+    <link rel="stylesheet" href="{% static 'assets/css/theme.css' %}" />
+    <style>
+      :root {
+        --detail-bg: var(--bg, #0a0a0c);
+        --detail-surface: var(--surface, #111113);
+        --detail-surface-soft: #151518;
+        --detail-border: var(--border, rgba(255, 255, 255, 0.08));
+        --detail-text: var(--white, #f1f1f1);
+        --detail-muted: rgba(241, 241, 241, 0.58);
+        --detail-faint: rgba(241, 241, 241, 0.34);
+        --detail-accent: var(--accent, #bff747);
+        --detail-danger: var(--danger, #ff4b4c);
+        --detail-radius: 14px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--detail-bg);
+        color: var(--detail-text);
+        font-family: "Roboto", Arial, sans-serif;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        border: 0;
+      }
+
+      .product-detail {
+        width: min(1320px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 80px;
+      }
+
+      .product-detail__breadcrumbs {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 24px;
+        color: var(--detail-faint);
+        font-size: 12px;
+      }
+
+      .product-detail__breadcrumbs a {
+        color: var(--detail-muted);
+        text-decoration: none;
+        transition: color 0.18s ease;
+      }
+
+      .product-detail__breadcrumbs a:hover {
+        color: var(--detail-text);
+      }
+
+      .product-detail__grid {
+        display: grid;
+        grid-template-columns: minmax(360px, 560px) minmax(0, 1fr);
+        gap: clamp(24px, 4vw, 52px);
+        align-items: start;
+      }
+
+      .product-gallery {
+        position: sticky;
+        top: 84px;
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        align-self: start;
+      }
+
+      /* Vertical thumbs strip on the LEFT */
+      .product-gallery__thumbs {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex-shrink: 0;
+        overflow-y: auto;
+        max-height: 460px;
+        scrollbar-width: none;
+        order: -1;
+      }
+
+      .product-gallery__thumbs::-webkit-scrollbar {
+        display: none;
+      }
+
+      .product-gallery__frame {
+        position: relative;
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: 460px;
+        aspect-ratio: 1 / 1;
+        overflow: hidden;
+        border-radius: 10px;
+        background: var(--detail-surface);
+        cursor: default;
+      }
+
+      .product-gallery__image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: contain;
+        margin: auto;
+      }
+
+      .product-gallery__placeholder {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        color: var(--detail-faint);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .product-gallery__badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 2;
+        padding: 3px 8px;
+        border-radius: 999px;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .product-gallery__badge--new {
+        background: var(--detail-accent);
+        color: #08090a;
+      }
+
+      .product-gallery__badge--sale {
+        background: var(--detail-danger);
+        color: var(--detail-text);
+      }
+
+      .product-gallery__badge--hit {
+        background: var(--buda, #fce122);
+        color: #08090a;
+      }
+
+      .product-gallery__thumb {
+        flex: 0 0 64px;
+        width: 64px;
+        height: 64px;
+        overflow: hidden;
+        padding: 0;
+        border: 1.5px solid transparent;
+        border-radius: 6px;
+        background: var(--detail-surface);
+        cursor: pointer;
+        opacity: 0.5;
+        transition: border-color 0.15s ease, opacity 0.15s ease;
+      }
+
+      .product-gallery__thumb:hover {
+        opacity: 0.82;
+      }
+
+      .product-gallery__thumb.active {
+        border-color: var(--detail-accent);
+        opacity: 1;
+      }
+
+      .product-gallery__thumb img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+      }
+
+      .product-info {
+        display: grid;
+        gap: 30px;
+        padding-top: 2px;
+      }
+
+      .product-info__header {
+        position: relative;
+        display: grid;
+        gap: 6px;
+        padding-right: 128px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--detail-border);
+      }
+
+      .product-info__code {
+        position: absolute;
+        top: 0;
+        right: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--detail-faint);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .product-info__code-copy {
+        width: 24px;
+        height: 24px;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: rgba(241, 241, 241, 0.42);
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+      }
+
+      .product-info__code-copy:hover {
+        background: rgba(255, 255, 255, 0.06);
+        color: rgba(241, 241, 241, 0.72);
+      }
+
+      .product-info__code-copy svg {
+        width: 15px;
+        height: 15px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+      }
+
+      .product-info__brand {
+        color: var(--detail-faint);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+
+      .product-info__title {
+        margin: 0;
+        color: var(--detail-text);
+        font-size: clamp(18px, 2vw, 26px);
+        font-weight: 700;
+        line-height: 1.15;
+        letter-spacing: -0.01em;
+      }
+
+      .product-info__price {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .product-info__price-current {
+        color: var(--detail-text);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: clamp(25px, 2vw, 40px);
+        font-weight: 800;
+      }
+
+      .product-info__price-old {
+        color: var(--detail-faint);
+        font-size: 16px;
+        text-decoration: line-through;
+      }
+
+      .product-info__discount {
+        padding: 2px 7px;
+        border: 1px solid rgba(255, 75, 76, 0.32);
+        border-radius: 999px;
+        color: var(--detail-danger);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .product-info__section {
+        display: grid;
+        gap: 7px;
+      }
+
+      .product-info__label {
+        color: var(--detail-faint);
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+      }
+
+      .product-info__variant-group {
+        display: grid;
+        gap: 11px;
+      }
+
+      .product-info__variant-group + .product-info__variant-group {
+        margin-top: 6px;
+      }
+
+      .product-info__variants {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .product-info__variant {
+        min-height: 30px;
+        padding: 0 10px;
+        border: 1px solid var(--detail-border);
+        border-radius: 6px;
+        background: transparent;
+        color: var(--detail-muted);
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      }
+
+      .product-info__variant:hover:not(:disabled),
+      .product-info__variant.active {
+        border-color: var(--buda);
+        background: var(--buda);
+        color: #0b0b0c;
+      }
+
+      .product-info__variant:disabled {
+        opacity: 0.32;
+        cursor: not-allowed;
+        text-decoration: line-through;
+      }
+
+      .product-info__actions {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+      }
+
+      .product-info__button--cart {
+        grid-column: 1;
+      }
+
+      .product-info__button {
+        min-height: 38px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: opacity 0.15s ease, border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+      }
+
+      .product-info__button:hover {
+        opacity: 0.88;
+      }
+
+      .product-info__button--cart {
+        background: var(--detail-accent);
+        color: #08090a;
+      }
+
+      .product-info__button--cart.success_state {
+        background: rgba(191, 247, 71, 0.14);
+        color: var(--detail-accent);
+      }
+
+      .product-info__button--buy {
+        width: 100%;
+        border: 1px solid var(--detail-border);
+        background: transparent;
+        color: var(--detail-text);
+      }
+
+      .product-info__button--buy:hover {
+        border-color: rgba(255, 255, 255, 0.22);
+      }
+
+      .product-info__favorite {
+        width: 48px;
+        min-height: 48px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--detail-border);
+        border-radius: 12px;
+        background: transparent;
+        color: var(--detail-muted);
+        cursor: pointer;
+        transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+      }
+
+      .product-info__favorite:hover,
+      .product-info__favorite.active {
+        border-color: rgba(255, 75, 76, 0.48);
+        background: rgba(255, 75, 76, 0.06);
+        color: var(--detail-danger);
+      }
+
+      .product-info__favorite svg {
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+      }
+
+      .product-info__favorite.active svg {
+        fill: currentColor;
+      }
+
+      .product-info__description {
+        padding-top: 18px;
+        border-top: 1px solid var(--detail-border);
+        color: var(--detail-muted);
+        font-size: 15px;
+        line-height: 1.75;
+      }
+
+      .related-products {
+        margin-top: 80px;
+        padding-top: 40px;
+        border-top: 1px solid var(--detail-border);
+      }
+
+      .related-products__title {
+        margin: 0 0 24px;
+        color: var(--detail-text);
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+      }
+
+      .related-products__grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .product_card_component {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid var(--detail-border);
+        border-radius: 12px;
+        background: var(--detail-surface);
+        cursor: pointer;
+      }
+
+      .product_card_media_container {
+        position: relative;
+        aspect-ratio: 1 / 1;
+        background: var(--detail-surface-soft);
+      }
+
+      .product_card_skeleton_element,
+      .product_card_image_element {
+        position: absolute;
+        inset: 0;
+      }
+
+      .product_card_skeleton_element {
+        background: linear-gradient(135deg, #1c1c1e 0%, #121214 100%);
+      }
+
+      .product_card_image_element {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .product_card_badge_element {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 2;
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .product_card_badge_new_variant {
+        background: var(--detail-accent);
+        color: #08090a;
+      }
+
+      .product_card_badge_sale_variant {
+        background: var(--detail-danger);
+        color: var(--detail-text);
+      }
+
+      .product_card_badge_hit_variant {
+        background: var(--buda, #fce122);
+        color: #08090a;
+      }
+
+      .product_card_like_button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 2;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        min-height: 30px;
+        padding: 0 9px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        background: rgba(10, 10, 12, 0.66);
+        color: var(--detail-muted);
+      }
+
+      .product_card_like_button svg {
+        width: 14px;
+        height: 14px;
+        fill: none;
+        stroke: currentColor;
+      }
+
+      .product_card_like_button.active {
+        color: var(--detail-danger);
+      }
+
+      .product_card_info_block {
+        display: flex;
+        min-height: 164px;
+        flex-direction: column;
+        gap: 8px;
+        padding: 14px;
+      }
+
+      .product_card_brand_text {
+        color: var(--detail-faint);
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+      }
+
+      .product_card_name_text {
+        margin: 0;
+        color: var(--detail-text);
+        font-size: 15px;
+        line-height: 1.3;
+      }
+
+      .product_card_name_text a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .product_card_price_row_container {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        margin-top: auto;
+      }
+
+      .product_card_price_value {
+        color: var(--detail-text);
+        font-weight: 900;
+      }
+
+      .product_card_old_price_value {
+        color: var(--detail-faint);
+        font-size: 12px;
+        text-decoration: line-through;
+      }
+
+      .product_card_variants_summary {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-top: auto;
+        padding-top: 8px;
+      }
+
+      .product_card_variant_group {
+        display: flex;
+        align-items: baseline;
+        gap: 5px;
+        min-width: 0;
+        font-size: 11px;
+        line-height: 1.35;
+      }
+
+      .product_card_variant_group_label {
+        flex: 0 0 auto;
+        color: rgba(241, 241, 241, 0.38);
+        font-weight: 700;
+      }
+
+      .product_card_variant_group_values {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      .product_card_variant_option_button {
+        flex: 0 0 auto;
+        min-width: 0;
+        max-width: 92px;
+        height: 22px;
+        padding: 0 7px;
+        overflow: hidden;
+        border: 0;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(241, 241, 241, 0.62);
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: 600;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        transition: background 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+      }
+
+      .product_card_variant_option_button:hover:not(:disabled),
+      .product_card_variant_option_button.active {
+        background: rgba(191, 247, 71, 0.1);
+        color: var(--detail-accent);
+      }
+
+      .product_card_variant_option_button.product_card_variant_option_out_state,
+      .product_card_variant_option_button:disabled {
+        opacity: 0.28;
+        cursor: default;
+        pointer-events: none;
+        text-decoration: line-through;
+      }
+
+      .product_card_unavailable_state .product_card_variant_group_label,
+      .product_card_unavailable_state .product_card_variant_option_button {
+        color: rgba(241, 241, 241, 0.32);
+      }
+
+      .product-toast {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        max-width: min(360px, calc(100vw - 32px));
+        padding: 12px 15px;
+        border: 1px solid var(--detail-border);
+        border-radius: 12px;
+        background: rgba(17, 17, 19, 0.96);
+        color: var(--detail-text);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.32);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(12px);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+      }
+
+      .product-toast.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .product-toast__dot {
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        border-radius: 50%;
+        background: var(--detail-accent);
+      }
+
+      .product-toast__dot--danger {
+        background: var(--detail-danger);
+      }
+
+      .product-lightbox {
+        position: fixed;
+        inset: 0;
+        z-index: 11000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 32px;
+        background: rgba(0, 0, 0, 0.9);
+      }
+
+      .product-lightbox.open {
+        display: flex;
+      }
+
+      .product-lightbox__image {
+        max-width: min(1120px, 92vw);
+        max-height: 86vh;
+        display: block;
+        object-fit: contain;
+        border-radius: 12px;
+      }
+
+      .product-lightbox__close,
+      .product-lightbox__nav {
+        position: absolute;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(17, 17, 19, 0.72);
+        color: var(--detail-text);
+        cursor: pointer;
+        transition: background 0.18s ease, border-color 0.18s ease;
+      }
+
+      .product-lightbox__close:hover,
+      .product-lightbox__nav:hover {
+        border-color: rgba(255, 255, 255, 0.3);
+        background: rgba(17, 17, 19, 0.94);
+      }
+
+      .product-lightbox__close {
+        top: 20px;
+        right: 20px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        font-size: 24px;
+      }
+
+      .product-lightbox__nav {
+        top: 50%;
+        width: 46px;
+        height: 60px;
+        border-radius: 14px;
+        font-size: 28px;
+        transform: translateY(-50%);
+      }
+
+      .product-lightbox__nav--prev {
+        left: 20px;
+      }
+
+      .product-lightbox__nav--next {
+        right: 20px;
+      }
+
+      @media (max-width: 1024px) {
+        .product-detail__grid {
+          grid-template-columns: 1fr;
+        }
+
+        .product-gallery {
+          position: static;
+          width: min(100%, 560px);
+        }
+
+        .related-products__grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 640px) {
+        .product-detail {
+          width: min(100% - 24px, 1320px);
+        }
+
+        /* On mobile: thumbs go horizontal below the main image */
+        .product-gallery {
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .product-gallery__thumbs {
+          order: 1;
+          flex-direction: row;
+          max-height: none;
+          overflow-x: auto;
+          overflow-y: visible;
+        }
+
+        .product-gallery__thumb {
+          flex: 0 0 68px;
+          width: 68px;
+          height: 68px;
+        }
+
+        .product-gallery__image {
+          width: 100%;
+          height: 100%;
+        }
+
+        .product-info__actions {
+          grid-template-columns: 1fr 48px;
+        }
+
+        .product-info__header {
+          padding-right: 0;
+        }
+
+        .product-info__code {
+          position: static;
+          margin-top: 2px;
+        }
+
+        .related-products__grid {
+          grid-template-columns: 1fr;
+        }
+
+        .product-lightbox {
+          padding: 18px;
+        }
+
+        .product-lightbox__nav {
+          width: 40px;
+          height: 52px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    {% include 'main/header.html' %}
+    {% include 'main/includes/cursor.html' %}
+
+    <main class="product-detail" data_product_detail_id="{{ product.id }}">
+      <nav class="product-detail__breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'main:home' %}">Главная</a>
+        <span>/</span>
+        <a href="{% url 'main:catalog' %}">Каталог</a>
+        <span>/</span>
+        <span>{{ product.name }}</span>
+      </nav>
+
+      <section class="product-detail__grid">
+        <div class="product-gallery">
+          {% if product.image or additional_images %}
+            <div class="product-gallery__thumbs" id="js_gallery_thumbnails" aria-label="Изображения товара">
+              {% if product.image %}
+                <button class="product-gallery__thumb gallery_thumbnail_button active" type="button" data_gallery_src="{{ product.image.url }}" data_gallery_alt="{{ product.name }}" aria-label="Основное изображение">
+                  <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" />
+                </button>
+              {% endif %}
+
+              {% for image in additional_images %}
+                <button class="product-gallery__thumb gallery_thumbnail_button{% if not product.image and forloop.first %} active{% endif %}" type="button" data_gallery_src="{{ image.image.url }}" data_gallery_alt="{{ image.alt_text|default:product.name }}" aria-label="Изображение {{ forloop.counter }}">
+                  <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy" />
+                </button>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="product-gallery__frame" id="js_gallery_frame">
+            {% if badge %}
+              <span class="product-gallery__badge product-gallery__badge--{{ badge.type }}">{{ badge.label }}</span>
+            {% endif %}
+
+            {% if product.image %}
+              <img class="product-gallery__image" id="js_main_image" src="{{ product.image.url }}" alt="{{ product.name }}" />
+            {% elif additional_images %}
+              {% with first_image=additional_images.0 %}
+                <img class="product-gallery__image" id="js_main_image" src="{{ first_image.image.url }}" alt="{{ first_image.alt_text|default:product.name }}" />
+              {% endwith %}
+            {% else %}
+              <div class="product-gallery__placeholder">Нет изображения</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <article class="product-info">
+          <header class="product-info__header">
+            <div class="product-info__code" id="js_product_code" data_product_code="777{{ product.id|stringformat:"04d" }}">
+              <button class="product-info__code-copy" id="js_product_code_copy" type="button" aria-label="Скопировать код товара">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="9" y="9" width="10" height="10" rx="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+              <span>Код: 777{{ product.id|stringformat:"04d" }}</span>
+            </div>
+            {% if product.brand %}
+              <div class="product-info__brand">{{ product.brand.name }}</div>
+            {% endif %}
+            <h1 class="product-info__title">{{ product.name }}</h1>
+          </header>
+
+          <div class="product-info__price">
+            <span class="product-info__price-current">{{ product.price|floatformat:0 }}₴</span>
+            {% if product.is_on_sale %}
+              <span class="product-info__price-old">{{ product.old_price|floatformat:0 }}₴</span>
+              {% if product.get_discount_percent %}
+                <span class="product-info__discount">-{{ product.get_discount_percent }}%</span>
+              {% endif %}
+            {% endif %}
+          </div>
+
+          {% if display_variants %}
+            <div class="product-info__section" id="js_variant_section">
+              {% for product_variant in display_variants %}
+                {% ifchanged product_variant.group %}
+                  {% if not forloop.first %}</div></div>{% endif %}
+                  <div class="product-info__variant-group">
+                    <div class="product-info__label">{{ product_variant.group|default:"Вариант" }}</div>
+                    <div class="product-info__variants">
+                {% endifchanged %}
+                      <button
+                        class="product-info__variant variant_btn"
+                        type="button"
+                        data_variant_id="{{ product_variant.id }}"
+                        data_variant_name="{{ product_variant.name }}"
+                        {% if not product_variant.available %}disabled{% endif %}
+                      >
+                        {{ product_variant.name }}
+                      </button>
+                {% if forloop.last %}</div></div>{% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="product-info__section">
+            <div class="product-info__actions">
+              <button class="product-info__button product-info__button--cart" id="js_add_to_cart" type="button" data_product_id="{{ product.id }}">
+                Добавить в корзину
+              </button>
+              <button
+                class="product-info__favorite{% if is_liked %} active{% endif %}"
+                id="js_wishlist_btn"
+                type="button"
+                data_like_url="{% url 'main:product_like' product.id %}"
+                aria-label="Добавить в избранное"
+                aria-pressed="{% if is_liked %}true{% else %}false{% endif %}"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 0 0 1.06-8.84z"/></svg>
+              </button>
+            </div>
+            <button class="product-info__button product-info__button--buy" id="js_buy_now" type="button">Купить сейчас</button>
+          </div>
+
+          <div class="product-info__description">
+            {{ product.description|default:"Описание товара пока не добавлено."|linebreaks }}
+          </div>
+        </article>
+      </section>
+
+      {% if related_products %}
+        <section class="related-products">
+          <h2 class="related-products__title">Похожие товары</h2>
+          <div class="related-products__grid">
+            {% for product in related_products %}
+              {% include 'main/includes/product_card.html' with product=product %}
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+    </main>
+
+    <div class="product-toast" id="js_toast" role="status" aria-live="polite">
+      <div class="product-toast__dot" id="js_toast_dot"></div>
+      <span id="js_toast_text"></span>
+    </div>
+
+    <div class="product-lightbox" id="js_product_lightbox" role="dialog" aria-modal="true" aria-label="Просмотр изображения товара">
+      <button class="product-lightbox__close" id="js_product_lightbox_close" type="button" aria-label="Закрыть">×</button>
+      <button class="product-lightbox__nav product-lightbox__nav--prev" id="js_product_lightbox_prev" type="button" aria-label="Предыдущее изображение">‹</button>
+      <img class="product-lightbox__image" id="js_product_lightbox_image" src="" alt="" />
+      <button class="product-lightbox__nav product-lightbox__nav--next" id="js_product_lightbox_next" type="button" aria-label="Следующее изображение">›</button>
+    </div>
+
+    <script>
+      (() => {
+        const getCookie = (name) => {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          return parts.length === 2 ? parts.pop().split(";").shift() : "";
+        };
+
+        const csrfToken = getCookie("csrftoken");
+        let toastTimer = null;
+
+        function showToast(message, danger = false) {
+          const toast = document.getElementById("js_toast");
+          const dot = document.getElementById("js_toast_dot");
+          const text = document.getElementById("js_toast_text");
+          if (!toast || !dot || !text) return;
+
+          text.textContent = message;
+          dot.className = danger ? "product-toast__dot product-toast__dot--danger" : "product-toast__dot";
+          toast.classList.add("visible");
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(() => toast.classList.remove("visible"), 2600);
+        }
+
+        window.showToast = window.showToast || showToast;
+
+        const mainImage = document.getElementById("js_main_image");
+        const galleryFrame = document.getElementById("js_gallery_frame");
+        const thumbnailButtons = [...document.querySelectorAll(".gallery_thumbnail_button")];
+        const lightbox = document.getElementById("js_product_lightbox");
+        const lightboxImage = document.getElementById("js_product_lightbox_image");
+        const lightboxClose = document.getElementById("js_product_lightbox_close");
+        const lightboxPrev = document.getElementById("js_product_lightbox_prev");
+        const lightboxNext = document.getElementById("js_product_lightbox_next");
+        let activeGalleryIndex = Math.max(0, thumbnailButtons.findIndex((button) => button.classList.contains("active")));
+
+        function setGalleryImage(index) {
+          const button = thumbnailButtons[index];
+          if (!button || !mainImage) return;
+
+          activeGalleryIndex = index;
+          const src = button.getAttribute("data_gallery_src");
+          const alt = button.getAttribute("data_gallery_alt") || "";
+          mainImage.src = src;
+          mainImage.alt = alt;
+          thumbnailButtons.forEach((item) => item.classList.toggle("active", item === button));
+
+          if (lightboxImage && lightbox?.classList.contains("open")) {
+            lightboxImage.src = src;
+            lightboxImage.alt = alt;
+          }
+        }
+
+        function openLightbox() {
+          if (!mainImage || !lightbox || !lightboxImage) return;
+
+          lightboxImage.src = mainImage.src;
+          lightboxImage.alt = mainImage.alt || "";
+          lightbox.classList.add("open");
+          document.body.style.overflow = "hidden";
+        }
+
+        function closeLightbox() {
+          lightbox?.classList.remove("open");
+          document.body.style.overflow = "";
+        }
+
+        function shiftLightbox(step) {
+          if (!thumbnailButtons.length) return;
+          const nextIndex = (activeGalleryIndex + step + thumbnailButtons.length) % thumbnailButtons.length;
+          setGalleryImage(nextIndex);
+        }
+
+        if (thumbnailButtons.length < 2) {
+          lightboxPrev?.setAttribute("hidden", "");
+          lightboxNext?.setAttribute("hidden", "");
+        }
+
+        thumbnailButtons.forEach((button, index) => {
+          button.addEventListener("click", () => setGalleryImage(index));
+          button.addEventListener("dblclick", openLightbox);
+        });
+
+        galleryFrame?.addEventListener("click", () => {
+          if (mainImage) openLightbox();
+        });
+
+        lightboxClose?.addEventListener("click", closeLightbox);
+        lightbox?.addEventListener("click", (event) => {
+          if (event.target === lightbox) closeLightbox();
+        });
+        lightboxPrev?.addEventListener("click", () => shiftLightbox(-1));
+        lightboxNext?.addEventListener("click", () => shiftLightbox(1));
+
+        document.addEventListener("keydown", (event) => {
+          if (!lightbox?.classList.contains("open")) return;
+          if (event.key === "Escape") closeLightbox();
+          if (event.key === "ArrowLeft") shiftLightbox(-1);
+          if (event.key === "ArrowRight") shiftLightbox(1);
+        });
+
+        const quantity = 1;
+
+        const variantButtons = [...document.querySelectorAll(".variant_btn")];
+        const availableVariantButtons = variantButtons.filter((button) => !button.disabled);
+        const variantGroups = [...document.querySelectorAll(".product-info__variant-group")];
+        const urlParams = new URLSearchParams(window.location.search);
+        const requestedVariantIds = new Set([
+          ...urlParams.getAll("variant_id"),
+          ...(urlParams.get("variant_ids") || "").split(","),
+        ].filter(Boolean));
+
+        variantGroups.forEach((group) => {
+          const groupButtons = [...group.querySelectorAll(".variant_btn")];
+          const availableGroupButtons = groupButtons.filter((button) => !button.disabled);
+          const requestedButton = availableGroupButtons.find((button) => requestedVariantIds.has(button.getAttribute("data_variant_id")));
+          (requestedButton || availableGroupButtons[0])?.classList.add("active");
+        });
+
+        variantButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            if (button.disabled) return;
+            const group = button.closest(".product-info__variant-group");
+            group?.querySelectorAll(".variant_btn").forEach((item) => item.classList.remove("active"));
+            button.classList.add("active");
+          });
+        });
+
+        document.getElementById("js_product_code_copy")?.addEventListener("click", async () => {
+          const code = document.getElementById("js_product_code")?.getAttribute("data_product_code");
+          if (!code) return;
+
+          try {
+            await navigator.clipboard.writeText(code);
+            showToast("Код товара скопирован");
+          } catch {
+            showToast("Не удалось скопировать код", true);
+          }
+        });
+
+        async function addToCart(redirectAfter = false) {
+          const button = document.getElementById("js_add_to_cart");
+          const productId = Number(button?.getAttribute("data_product_id"));
+          variantGroups.forEach((group) => {
+            if (group.querySelector(".variant_btn.active")) return;
+            const firstAvailable = [...group.querySelectorAll(".variant_btn")].find((item) => !item.disabled);
+            firstAvailable?.classList.add("active");
+          });
+
+          const selectedVariants = [...document.querySelectorAll(".variant_btn.active")];
+          const requiredVariantGroupCount = variantGroups.filter((group) => group.querySelector(".variant_btn:not(:disabled)")).length;
+
+          if (variantButtons.length && selectedVariants.length < requiredVariantGroupCount) {
+            showToast("Выберите варианты товара", true);
+            return false;
+          }
+          const selectedVariantIds = selectedVariants.map((variant) => Number(variant.getAttribute("data_variant_id")));
+
+          const response = await fetch("/api/cart/add/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": csrfToken,
+              "X-Requested-With": "XMLHttpRequest",
+            },
+            body: JSON.stringify({
+              product_id: productId,
+              variant_id: selectedVariantIds[0] || null,
+              variant_ids: selectedVariantIds,
+              quantity,
+            }),
+          });
+
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            showToast(data.error || "Не удалось добавить товар", true);
+            return false;
+          }
+
+          window._shopPanel?.refreshCart?.();
+          window._shopPanel?.updateCartCounters?.(data.cart?.total_quantity || 0);
+          showToast("Товар добавлен в корзину");
+
+          if (button) {
+            const original = button.textContent;
+            button.classList.add("success_state");
+            button.textContent = "Добавлено";
+            setTimeout(() => {
+              button.classList.remove("success_state");
+              button.textContent = original;
+            }, 1600);
+          }
+
+          if (redirectAfter) window.location.href = "/cart/";
+          return true;
+        }
+
+        document.getElementById("js_add_to_cart")?.addEventListener("click", () => addToCart(false));
+        document.getElementById("js_buy_now")?.addEventListener("click", () => addToCart(true));
+
+        document.getElementById("js_wishlist_btn")?.addEventListener("click", async (event) => {
+          const button = event.currentTarget;
+          const likeUrl = button.getAttribute("data_like_url");
+
+          const response = await fetch(likeUrl, {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": csrfToken,
+              "X-Requested-With": "XMLHttpRequest",
+            },
+          });
+
+          if (response.status === 401 || response.status === 403) {
+            showToast("Войдите в аккаунт", true);
+            return;
+          }
+
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            showToast("Не удалось обновить избранное", true);
+            return;
+          }
+
+          button.classList.toggle("active", Boolean(data.liked));
+          button.setAttribute("aria-pressed", data.liked ? "true" : "false");
+          window._shopPanel?.refreshFavorites?.();
+          showToast(data.liked ? "Добавлено в избранное" : "Удалено из избранного");
+        });
+
+        document.addEventListener("click", (event) => {
+          const variantButton = event.target.closest(".product_card_variant_option_button");
+          if (!variantButton || variantButton.disabled) return;
+
+          event.preventDefault();
+          event.stopPropagation();
+          const card = variantButton.closest(".product_card_component");
+          if (!card || card.classList.contains("product_card_unavailable_state")) return;
+          const url = card.getAttribute("data_product_card_url");
+          const variantId = variantButton.getAttribute("data_product_variant_id");
+          if (!url || !variantId) return;
+          const detailUrl = new URL(url, window.location.origin);
+          detailUrl.searchParams.set("variant_id", variantId);
+          window.location.href = detailUrl.toString();
+        });
+      })();
+    </script>
+  </body>
+</html>

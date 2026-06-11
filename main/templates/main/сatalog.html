@@ -886,10 +886,13 @@
       /* ===================== PRODUCT GRID ===================== */
       .catalog_grid_container {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(5, 1fr);
         gap: 14px;
       }
       /* Явные классы от view toggle */
+      .catalog_grid_container.catalog_grid_four_columns_state {
+        grid-template-columns: repeat(4, 1fr);
+      }
       .catalog_grid_container.catalog_grid_three_columns_state {
         grid-template-columns: repeat(3, 1fr);
       }
@@ -1200,6 +1203,14 @@
         border-color: rgba(255, 255, 255, 0.12);
         box-shadow: 0 26px 70px rgba(0, 0, 0, 0.36);
       }
+      .product_card_component.product_card_unavailable_state {
+        cursor: not-allowed;
+      }
+      .product_card_component.product_card_unavailable_state:hover {
+        transform: none;
+        border-color: var(--border);
+        box-shadow: none;
+      }
       .product_card_media_container {
         position: relative;
         aspect-ratio: 3 / 4;
@@ -1237,6 +1248,41 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
+      }
+      .product_card_unavailable_state .product_card_image_element {
+        filter: grayscale(35%) brightness(0.75);
+      }
+      .product_card_unavailable_overlay_element {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        background: rgba(0, 0, 0, 0.35);
+        backdrop-filter: blur(2px);
+        pointer-events: none;
+      }
+      .product_card_unavailable_status_text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        z-index: 4;
+        transform: translate(-50%, -50%);
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(10, 10, 12, 0.68);
+        color: var(--white);
+        font-size: var(--fs-micro);
+        font-weight: 900;
+        letter-spacing: 0.15em;
+        text-align: center;
+        text-transform: uppercase;
+        white-space: nowrap;
+        pointer-events: none;
+      }
+      .product_card_unavailable_state .product_card_price_row_container {
+        opacity: 0.6;
+      }
+      .product_card_unavailable_state .product_card_name_link_element a {
+        pointer-events: none;
       }
       .product_card_badge_element {
         position: absolute;
@@ -1328,57 +1374,67 @@
         font-weight: 500;
         text-decoration: line-through;
       }
-      .product_card_sizes_container {
+      .product_card_variants_summary {
         display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
+        flex-direction: column;
+        gap: 5px;
         margin-top: auto;
-        margin-bottom: 0;
-        padding-top: 2px;
+        padding-top: 8px;
       }
-      .product_card_size_button {
-        min-width: 32px;
-        height: 24px;
-        padding: 0 6px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 999px;
-        color: rgba(255, 255, 255, 0.6);
+      .product_card_variant_group {
+        display: flex;
+        align-items: baseline;
+        gap: 5px;
+        min-width: 0;
         font-size: var(--fs-micro);
+        line-height: 1.35;
+      }
+      .product_card_variant_group_label {
+        flex: 0 0 auto;
+        color: rgba(241, 241, 241, 0.38);
         font-weight: 700;
-        background: transparent;
+      }
+      .product_card_variant_group_values {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+      .product_card_variant_option_button {
+        flex: 0 0 auto;
+        min-width: 0;
+        max-width: 92px;
+        height: 22px;
+        padding: 0 7px;
+        overflow: hidden;
+        border: 0;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(241, 241, 241, 0.62);
         cursor: pointer;
-        transition: color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+        font-size: var(--fs-micro);
+        font-weight: 600;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        transition: background 0.15s ease, color 0.15s ease, opacity 0.15s ease;
       }
-      .product_card_size_button:not(.out):hover {
-        color: var(--accent);
-        border-color: rgba(191, 247, 71, 0.32);
+      .product_card_variant_option_button:hover:not(:disabled),
+      .product_card_variant_option_button.active {
+        background: rgba(247, 227, 71, 0.1);
+        color: var(--buda);
       }
-      .product_card_size_button.product_card_size_out_state,
-      .product_card_size_button:disabled {
-        opacity: 0.25;
+      .product_card_variant_option_button.product_card_variant_option_out_state,
+      .product_card_variant_option_button:disabled {
+        opacity: 0.28;
         cursor: default;
         pointer-events: none;
+        text-decoration: line-through;
       }
-      .product_card_add_button {
-        width: 100%;
-        padding: 9px 10px;
-        border: 1px solid rgba(191, 247, 71, 0.2);
-        border-radius: 9px;
-        background: rgba(191, 247, 71, 0.05);
-        color: var(--accent);
-        font-size: var(--fs-ui);
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        transition: all 0.18s ease;
-      }
-      .product_card_add_button:hover {
-        background: var(--accent);
-        border-color: var(--accent);
-        color: #0b0b0c;
+      .product_card_unavailable_state .product_card_variant_group_label,
+      .product_card_unavailable_state .product_card_variant_option_button {
+        color: rgba(241, 241, 241, 0.32);
       }
       @media (max-width: 768px) {
         .product_card_component { border-radius: 16px; }
@@ -1390,7 +1446,6 @@
         .product_card_media_container { aspect-ratio: 1 / 1; }
         .product_card_info_block { padding: 9px 9px 11px; }
         .product_card_name_text { min-height: 0; font-size: 12px; }
-        .product_card_add_button { padding: 8px; font-size: 10px; }
       }
       @media (max-width: 900px) {
         .catalog_grid_container.catalog_grid_one_column_state .product_card_component {
@@ -1833,6 +1888,12 @@
           return 0;
         }
 
+        function isProductAvailable(product) {
+          const variants = Array.isArray(product.display_variant_options) ? product.display_variant_options : [];
+          if (variants.length) return variants.some((variant) => Boolean(variant.available));
+          return Number(product.stock) > 0;
+        }
+
         function getCookie(name) {
           const value = `; ${document.cookie}`;
           const parts = value.split(`; ${name}=`);
@@ -1876,14 +1937,16 @@
 
         function getSorted(arr) {
           const a = [...arr];
-          if (state.sort === "price_asc") return a.sort((x, y) => x.price - y.price);
-          if (state.sort === "price_desc") return a.sort((x, y) => y.price - x.price);
-          if (state.sort === "hit") return a.sort((x, y) => (getBadgeType(y) === "hit" ? 1 : 0) - (getBadgeType(x) === "hit" ? 1 : 0) || (y.likes || 0) - (x.likes || 0));
-          if (state.sort === "new") return a.sort((x, y) => (getBadgeType(y) === "new" ? 1 : 0) - (getBadgeType(x) === "new" ? 1 : 0) || String(y.created).localeCompare(String(x.created)));
-          if (state.sort === "sale") return a.sort((x, y) => (getDiscountPercent(y) > 0 ? 1 : 0) - (getDiscountPercent(x) > 0 ? 1 : 0) || getDiscountPercent(y) - getDiscountPercent(x));
+          const byAvailability = (x, y) => Number(isProductAvailable(y)) - Number(isProductAvailable(x));
+          const sortAvailableFirst = (comparator) => a.sort((x, y) => byAvailability(x, y) || comparator(x, y));
+          if (state.sort === "price_asc") return sortAvailableFirst((x, y) => x.price - y.price);
+          if (state.sort === "price_desc") return sortAvailableFirst((x, y) => y.price - x.price);
+          if (state.sort === "hit") return sortAvailableFirst((x, y) => (getBadgeType(y) === "hit" ? 1 : 0) - (getBadgeType(x) === "hit" ? 1 : 0) || (y.likes || 0) - (x.likes || 0));
+          if (state.sort === "new") return sortAvailableFirst((x, y) => (getBadgeType(y) === "new" ? 1 : 0) - (getBadgeType(x) === "new" ? 1 : 0) || String(y.created).localeCompare(String(x.created)));
+          if (state.sort === "sale") return sortAvailableFirst((x, y) => (getDiscountPercent(y) > 0 ? 1 : 0) - (getDiscountPercent(x) > 0 ? 1 : 0) || getDiscountPercent(y) - getDiscountPercent(x));
           if (state.sort === "discount_pct")
-            return a.sort((x, y) => getDiscountPercent(y) - getDiscountPercent(x));
-          return a.sort((x, y) => (y.badge ? 1 : 0) - (x.badge ? 1 : 0) || String(y.created).localeCompare(String(x.created)));
+            return sortAvailableFirst((x, y) => getDiscountPercent(y) - getDiscountPercent(x));
+          return sortAvailableFirst((x, y) => (y.badge ? 1 : 0) - (x.badge ? 1 : 0) || String(y.created).localeCompare(String(x.created)));
         }
 
         /* ============================================================
@@ -1905,16 +1968,33 @@
           const imgHtml = p.image_url
             ? `<img src="${p.image_url}" alt="${p.name}" class="product_card_image_element" loading="lazy" />` : "";
           const variants = Array.isArray(p.display_variant_options) ? p.display_variant_options : [];
-          const sizesHtml = variants
-            .map((variant) => {
-              const isAvailable = Boolean(variant.available);
-              return `<button class="product_card_size_button${isAvailable ? "" : " product_card_size_out_state"}" type="button" data_product_variant_id="${variant.id || ""}" data_product_variant_name="${variant.name}" data_product_variant_stock="${variant.stock || 0}"${isAvailable ? "" : " disabled"}>${variant.name}</button>`;
-            })
-            .join("");
+          const isUnavailable = !isProductAvailable(p);
+          const variantGroups = variants.reduce((groups, variant) => {
+            const group = variant.group || "Вариант";
+            if (!groups.has(group)) groups.set(group, []);
+            groups.get(group).push(variant);
+            return groups;
+          }, new Map());
+          const variantsSummaryHtml = variantGroups.size
+            ? `<div class="product_card_variants_summary">${[...variantGroups.entries()].map(([group, values]) => `
+                <div class="product_card_variant_group">
+                  <span class="product_card_variant_group_label">${group}:</span>
+                  <div class="product_card_variant_group_values">
+                    ${values.map((variant) => {
+                      const isAvailable = Boolean(variant.available) && !isUnavailable;
+                      return `<button class="product_card_variant_option_button${isAvailable ? "" : " product_card_variant_option_out_state"}" type="button" data_product_variant_id="${variant.id || ""}" data_product_variant_name="${variant.name}" data_product_variant_stock="${variant.stock || 0}"${isAvailable ? "" : " disabled"}>${variant.name}</button>`;
+                    }).join("")}
+                  </div>
+                </div>
+              `).join("")}</div>` : "";
           const detailUrl = p.slug ? `/products/${p.id}/${p.slug}/` : "#";
           const brandHtml = p.brand ? `<div class="product_card_brand_text">${p.brand}</div>` : "";
+          const detailAttr = isUnavailable ? "" : ` data_product_card_url="${detailUrl}"`;
+          const unavailableMediaHtml = isUnavailable
+            ? `<div class="product_card_unavailable_overlay_element" aria-hidden="true"></div><div class="product_card_unavailable_status_text">Нет в наличии</div>` : "";
+          const nameHtml = isUnavailable ? `<span>${p.name}</span>` : `<a href="${detailUrl}">${p.name}</a>`;
           return `
-          <article class="product_card_component" data_product_card_id="${p.id}">
+          <article class="product_card_component${isUnavailable ? " product_card_unavailable_state" : ""}" data_product_card_id="${p.id}"${detailAttr}>
             <div class="product_card_media_container">
               <div class="product_card_skeleton_element"></div>
               ${badgeHtml}
@@ -1923,18 +2003,18 @@
                 <span class="product_card_like_count_text">${p.likes || 0}</span>
               </button>
               ${imgHtml}
+              ${unavailableMediaHtml}
             </div>
             <div class="product_card_info_block">
               ${brandHtml}
               <h3 class="product_card_name_text product_card_name_link_element">
-                <a href="${detailUrl}">${p.name}</a>
+                ${nameHtml}
               </h3>
               <div class="product_card_price_row_container">
                 <span class="product_card_price_value">${Number(p.price).toLocaleString("uk-UA")}₴</span>
                 ${oldHtml}
               </div>
-              ${variants.length ? `<div class="product_card_sizes_container">${sizesHtml}</div>` : ""}
-              <button class="product_card_add_button" type="button" data_product_card_add_to_cart="${p.id}">Додати до кошика</button>
+              ${variantsSummaryHtml}
             </div>
           </article>`;
         }
@@ -1966,6 +2046,7 @@
               product.is_liked = data.liked;
               product.likes = data.likes;
             }
+            window._shopPanel?.refreshFavorites?.();
 
             btn.setAttribute("data_product_card_liked_state", data.liked ? "true" : "false");
             btn.classList.toggle("active", data.liked);
@@ -2120,6 +2201,29 @@
               btn.addEventListener("click", (e) => {
                 e.stopPropagation();
                 handleLikeClick(btn);
+              });
+            });
+            grid.querySelectorAll(".product_card_variant_option_button").forEach((btn) => {
+              btn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (btn.disabled) return;
+                const card = btn.closest(".product_card_component");
+                if (!card || card.classList.contains("product_card_unavailable_state")) return;
+                const url = card.getAttribute("data_product_card_url");
+                const variantId = btn.getAttribute("data_product_variant_id");
+                if (!url || !variantId) return;
+                const detailUrl = new URL(url, window.location.origin);
+                detailUrl.searchParams.set("variant_id", variantId);
+                window.location.href = detailUrl.toString();
+              });
+            });
+            grid.querySelectorAll(".product_card_component").forEach((card) => {
+              card.addEventListener("click", (event) => {
+                if (card.classList.contains("product_card_unavailable_state")) return;
+                if (event.target.closest("a, button")) return;
+                const url = card.getAttribute("data_product_card_url");
+                if (url) window.location.href = url;
               });
             });
           }
@@ -2396,6 +2500,28 @@
 
         /* SVG-иконки для каждого варианта колонок */
         const VIEW_ICONS = {
+          5: `<svg viewBox="0 0 20 16" fill="currentColor">
+            <rect x="1" y="1" width="2.5" height="2.5" rx="0.4"/>
+            <rect x="5" y="1" width="2.5" height="2.5" rx="0.4"/>
+            <rect x="9" y="1" width="2.5" height="2.5" rx="0.4"/>
+            <rect x="13" y="1" width="2.5" height="2.5" rx="0.4"/>
+            <rect x="17" y="1" width="2.5" height="2.5" rx="0.4"/>
+            <rect x="1" y="5" width="2.5" height="2.5" rx="0.4"/>
+            <rect x="5" y="5" width="2.5" height="2.5" rx="0.4"/>
+            <rect x="9" y="5" width="2.5" height="2.5" rx="0.4"/>
+            <rect x="13" y="5" width="2.5" height="2.5" rx="0.4"/>
+            <rect x="17" y="5" width="2.5" height="2.5" rx="0.4"/>
+            <rect x="1" y="9" width="2.5" height="2.5" rx="0.4"/>
+            <rect x="5" y="9" width="2.5" height="2.5" rx="0.4"/>
+            <rect x="9" y="9" width="2.5" height="2.5" rx="0.4"/>
+            <rect x="13" y="9" width="2.5" height="2.5" rx="0.4"/>
+            <rect x="17" y="9" width="2.5" height="2.5" rx="0.4"/>
+            <rect x="1" y="13" width="2.5" height="2.5" rx="0.4"/>
+            <rect x="5" y="13" width="2.5" height="2.5" rx="0.4"/>
+            <rect x="9" y="13" width="2.5" height="2.5" rx="0.4"/>
+            <rect x="13" y="13" width="2.5" height="2.5" rx="0.4"/>
+            <rect x="17" y="13" width="2.5" height="2.5" rx="0.4"/>
+          </svg>`,
           4: `<svg viewBox="0 0 16 16" fill="currentColor">
             <rect x="1" y="1" width="3" height="3" rx="0.5"/><rect x="5" y="1" width="3" height="3" rx="0.5"/>
             <rect x="9" y="1" width="3" height="3" rx="0.5"/><rect x="13" y="1" width="3" height="3" rx="0.5"/>
@@ -2419,12 +2545,12 @@
           </svg>`,
         };
 
-        const VIEW_LABELS = { 4: "4 колонки", 3: "3 колонки", 2: "2 колонки", 1: "Список" };
+        const VIEW_LABELS = { 5: "5 колонок", 4: "4 колонки", 3: "3 колонки", 2: "2 колонки", 1: "Список" };
 
         /* Определяем доступные опции по ширине и дефолтное значение */
         function getViewOptions() {
           const w = window.innerWidth;
-          if (w > 1200) return { options: [3, 4], default: 4 };
+          if (w > 1200) return { options: [4, 5], default: 5 };
           if (w > 900) return { options: [2, 3], default: 3 };
           // ≤900: мобиль — 1 или 2 колонки
           return { options: [1, 2], default: 2 };
@@ -2435,6 +2561,7 @@
             1: "catalog_grid_one_column_state",
             2: "catalog_grid_two_columns_state",
             3: "catalog_grid_three_columns_state",
+            4: "catalog_grid_four_columns_state",
           };
           return classes[cols] || "";
         }

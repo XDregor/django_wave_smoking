@@ -1,10 +1,21 @@
-{% with badge=product.get_badge_data product_variants=product.display_product_variants %}
-<article class="product_card_component" data_product_card_id="{{ product.id }}">
+{% with badge=product.get_badge_data product_variants=product.display_product_variants available_variants=product.available_product_variants %}
+<article
+  class="product_card_component{% if product.stock <= 0 or product_variants and not available_variants %} product_card_unavailable_state{% endif %}"
+  data_product_card_id="{{ product.id }}"
+  {% if product.stock > 0 and not product_variants or available_variants %}
+    data_product_card_url="{% url 'main:product_detail' product.id product.slug %}"
+  {% endif %}
+>
   <div class="product_card_media_container">
     <div class="product_card_skeleton_element"></div>
 
     {% if product.image %}
       <img class="product_card_image_element" src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" />
+    {% endif %}
+
+    {% if product.stock <= 0 or product_variants and not available_variants %}
+      <div class="product_card_unavailable_overlay_element" aria-hidden="true"></div>
+      <div class="product_card_unavailable_status_text">Нет в наличии</div>
     {% endif %}
 
     {% if badge %}
@@ -34,7 +45,11 @@
     {% endif %}
 
     <h3 class="product_card_name_text product_card_name_link_element">
-      <a href="{% url 'main:product_detail' product.id product.slug %}">{{ product.name }}</a>
+      {% if product.stock > 0 and not product_variants or available_variants %}
+        <a href="{% url 'main:product_detail' product.id product.slug %}">{{ product.name }}</a>
+      {% else %}
+        <span>{{ product.name }}</span>
+      {% endif %}
     </h3>
 
     <div class="product_card_price_row_container">
@@ -45,18 +60,26 @@
     </div>
 
     {% if product_variants %}
-      <div class="product_card_sizes_container">
-        {% for product_variant in product_variants %}
-          <button
-            class="product_card_size_button{% if not product_variant.available %} product_card_size_out_state{% endif %}"
-            type="button"
-            data_product_variant_id="{{ product_variant.id }}"
-            data_product_variant_name="{{ product_variant.name }}"
-            data_product_variant_stock="{{ product_variant.stock }}"
-            {% if not product_variant.available %}disabled{% endif %}
-          >
-            {{ product_variant.name }}
-          </button>
+      {% regroup product_variants by group as variant_groups %}
+      <div class="product_card_variants_summary">
+        {% for variant_group in variant_groups %}
+          <div class="product_card_variant_group">
+            <span class="product_card_variant_group_label">{{ variant_group.grouper|default:"Вариант" }}:</span>
+            <div class="product_card_variant_group_values">
+              {% for product_variant in variant_group.list %}
+                <button
+                  class="product_card_variant_option_button{% if not product_variant.available or product.stock <= 0 or product_variants and not available_variants %} product_card_variant_option_out_state{% endif %}"
+                  type="button"
+                  data_product_variant_id="{{ product_variant.id }}"
+                  data_product_variant_name="{{ product_variant.name }}"
+                  data_product_variant_stock="{{ product_variant.stock }}"
+                  {% if not product_variant.available or product.stock <= 0 or product_variants and not available_variants %}disabled{% endif %}
+                >
+                  {{ product_variant.name }}
+                </button>
+              {% endfor %}
+            </div>
+          </div>
         {% endfor %}
       </div>
     {% endif %}
