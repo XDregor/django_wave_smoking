@@ -1,6 +1,18 @@
 from django.contrib import admin
 
-from .models import Brand, Cart, CartItem, Category, Product, ProductImage, ProductLike, ProductVariant, VariantOption
+from .models import (
+    Brand,
+    Cart,
+    CartItem,
+    Category,
+    Product,
+    ProductImage,
+    ProductLike,
+    ProductReview,
+    ProductReviewHelpful,
+    ProductVariant,
+    VariantOption,
+)
 
 
 class VariantOptionInline(admin.TabularInline):
@@ -105,6 +117,33 @@ class ProductLikeAdmin(admin.ModelAdmin):
     list_display = ("user", "product", "created")
     list_filter = ("created",)
     search_fields = ("user__username", "product__name")
+    readonly_fields = ("created",)
+
+
+@admin.register(ProductReview)
+class ProductReviewAdmin(admin.ModelAdmin):
+    list_display = (
+        "author_name",
+        "product",
+        "rating",
+        "is_verified",
+        "is_approved",
+        "helpful_count",
+        "created",
+    )
+    list_filter = ("product", "rating", "is_verified", "is_approved", "created")
+    search_fields = ("author_name", "product__name", "text")
+    list_editable = ("is_verified", "is_approved")
+    autocomplete_fields = ("product", "user")
+    readonly_fields = ("created", "updated")
+
+
+@admin.register(ProductReviewHelpful)
+class ProductReviewHelpfulAdmin(admin.ModelAdmin):
+    list_display = ("review", "user", "session_key", "created")
+    list_filter = ("created",)
+    search_fields = ("review__author_name", "review__product__name", "user__username", "session_key")
+    autocomplete_fields = ("review", "user")
     readonly_fields = ("created",)
 
 

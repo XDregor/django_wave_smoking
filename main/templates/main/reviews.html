@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WAVE — Отзывы покупателей</title>
+    <title>WAVE - Отзывы покупателей</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -129,7 +129,7 @@
           top: 150px;
           left: calc(50% - 690px + var(--pad));
           width: 280px;
-          transform: translateY(calc(var(--header-height, 90px) - 90px));
+          transform: translateY(calc(var(--header-height, 90px) - 90px + var(--reviews-sidebar-shift, 0px)));
           transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
         }
         .catalog_breadcrumb {
@@ -137,7 +137,7 @@
           top: 130px;
           left: calc(50% - 690px + var(--pad));
           z-index: 450;
-          transform: translateY(calc(var(--header-height, 90px) - 90px));
+          transform: translateY(calc(var(--header-height, 90px) - 90px + var(--reviews-sidebar-shift, 0px)));
           transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
           background: transparent;
         }
@@ -552,11 +552,6 @@
         color: var(--accent);
         background: rgba(191, 247, 71, 0.05);
       }
-      .rc-vote.disliked {
-        border-color: rgba(255, 75, 76, 0.3);
-        color: var(--danger);
-        background: rgba(255, 75, 76, 0.05);
-      }
       .rc-source {
         font-size: 12px;
         color: rgba(255, 255, 255, 0.1);
@@ -845,6 +840,137 @@
           font-size: 13px;
         }
       }
+      .review-form__product {
+        position: relative;
+      }
+      .review-form__product-menu {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(100% + 6px);
+        z-index: 20;
+        display: none;
+        max-height: 236px;
+        overflow-y: auto;
+        padding: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        background: #151516;
+        box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
+      }
+      .review-form__product-menu.is-open {
+        display: block;
+      }
+      .review-form__product-option {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 11px;
+        border-radius: 8px;
+        color: rgba(241, 241, 241, 0.82);
+        text-align: left;
+        transition:
+          background 0.18s,
+          color 0.18s;
+      }
+      .review-form__product-option:hover,
+      .review-form__product-option.is-active {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--white);
+      }
+      .review-form__product-main {
+        min-width: 0;
+      }
+      .review-form__product-name {
+        display: block;
+        overflow: hidden;
+        font-size: 13px;
+        font-weight: 600;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .review-form__product-meta {
+        display: block;
+        margin-top: 3px;
+        color: rgba(241, 241, 241, 0.38);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+      }
+      .review-form__product-code {
+        flex: 0 0 auto;
+        color: rgba(241, 241, 241, 0.34);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+      }
+      .review-form__product-empty {
+        padding: 11px;
+        color: rgba(241, 241, 241, 0.42);
+        font-size: 13px;
+      }
+      .modal-submit:disabled,
+      .modal-submit[disabled] {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        color: rgba(241, 241, 241, 0.36) !important;
+        box-shadow: none !important;
+        pointer-events: none;
+        opacity: 1;
+      }
+      .modal-submit:disabled:hover,
+      .modal-submit[disabled]:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        color: rgba(241, 241, 241, 0.36) !important;
+        transform: none;
+      }
+      .review-form__submit-label {
+        position: relative;
+        display: inline-grid;
+        min-width: 170px;
+        overflow: hidden;
+        vertical-align: middle;
+      }
+      .review-form__submit-label-current,
+      .review-form__submit-label-next {
+        grid-area: 1 / 1;
+        display: inline-block;
+        white-space: nowrap;
+        will-change: transform, opacity;
+      }
+      .review-form__submit-label-next {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+      .modal-submit.is-label-changing .review-form__submit-label-current {
+        animation: reviewSubmitLabelOut 0.18s cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards;
+      }
+      .modal-submit.is-label-changing .review-form__submit-label-next {
+        animation: reviewSubmitLabelIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) 0.12s forwards;
+      }
+      @keyframes reviewSubmitLabelOut {
+        to {
+          opacity: 0;
+          transform: translateX(-100%);
+        }
+      }
+      @keyframes reviewSubmitLabelIn {
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      @media (max-width: 480px) {
+        .review-form__product-menu {
+          max-height: 210px;
+        }
+        .review-form__product-option {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 4px;
+        }
+      }
     </style>
   </head>
   <body>
@@ -861,10 +987,10 @@
             <div class="summary-card">
               <p class="summary-label">Общий рейтинг</p>
               <div class="summary-score-row">
-                <span class="summary-big">4.8</span>
+                <span class="summary-big">{{ rating_summary.average|floatformat:1 }}</span>
                 <div class="summary-right">
                   <div class="summary-stars" id="summaryStars"></div>
-                  <p class="summary-sub">&middot; 247 отзывов</p>
+                  <p class="summary-sub">&middot; {{ rating_summary.total }} отзывов</p>
                 </div>
               </div>
             </div>
@@ -877,12 +1003,12 @@
             <div class="filters-card">
               <p class="filters-label">Фильтр</p>
               <div class="filter-list" id="filterBtns">
-                <button class="filter-btn active" data-filter="all">Все отзывы <span class="filter-badge">247</span></button>
-                <button class="filter-btn" data-filter="5"><span class="filter-stars" id="fs5"></span><span class="filter-badge">151</span></button>
-                <button class="filter-btn" data-filter="4"><span class="filter-stars" id="fs4"></span><span class="filter-badge">61</span></button>
-                <button class="filter-btn" data-filter="3"><span class="filter-stars" id="fs3"></span><span class="filter-badge">23</span></button>
-                <button class="filter-btn" data-filter="2"><span class="filter-stars" id="fs2"></span><span class="filter-badge">8</span></button>
-                <button class="filter-btn" data-filter="1"><span class="filter-stars" id="fs1"></span><span class="filter-badge">4</span></button>
+                <button class="filter-btn active" data-filter="all">Все отзывы <span class="filter-badge">{{ rating_summary.total }}</span></button>
+                <button class="filter-btn" data-filter="5"><span class="filter-stars" id="fs5"></span><span class="filter-badge">{{ rating_summary.count_5 }}</span></button>
+                <button class="filter-btn" data-filter="4"><span class="filter-stars" id="fs4"></span><span class="filter-badge">{{ rating_summary.count_4 }}</span></button>
+                <button class="filter-btn" data-filter="3"><span class="filter-stars" id="fs3"></span><span class="filter-badge">{{ rating_summary.count_3 }}</span></button>
+                <button class="filter-btn" data-filter="2"><span class="filter-stars" id="fs2"></span><span class="filter-badge">{{ rating_summary.count_2 }}</span></button>
+                <button class="filter-btn" data-filter="1"><span class="filter-stars" id="fs1"></span><span class="filter-badge">{{ rating_summary.count_1 }}</span></button>
                 <div class="divider"></div>
                 <button class="filter-btn" data-filter="verified">
                   <span style="display: flex; align-items: center; gap: 6px">
@@ -898,7 +1024,7 @@
                     </svg>
                     Проверенные
                   </span>
-                  <span class="filter-badge">198</span>
+                  <span class="filter-badge">{{ rating_summary.verified }}</span>
                 </button>
               </div>
             </div>
@@ -907,7 +1033,7 @@
 
         <main class="reviews_main">
           <div class="toolbar">
-            <p class="toolbar-count"><em id="shownCount">8</em> из 247 отзывов</p>
+            <p class="toolbar-count"><em id="shownCount">{{ rating_summary.total }}</em> из <span id="totalReviewsCount">{{ rating_summary.total }}</span> отзывов</p>
           </div>
           <div id="reviewsList"></div>
           {% include 'main/includes/pagination.html' with pagination_id='reviewsPagination' pagination_label='Reviews pagination' %}
@@ -932,7 +1058,7 @@
           <svg viewBox="0 0 24 24" data-i="5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="var(--buda)" /></svg>
         </div>
         <div class="modal-row">
-          <div class="field"><label>Имя</label><input type="text" placeholder="Ваше имя" id="formName" /></div>
+          <div class="field"><label>Имя</label><input type="text" placeholder="Аноним" id="formName" /></div>
           <div class="field"><label>Товар</label><input type="text" placeholder="Название товара" id="formProduct" /></div>
         </div>
         <div class="field"><label>Комментарий</label><textarea placeholder="Расскажите подробнее..." id="formText"></textarea></div>
@@ -947,6 +1073,10 @@
     </div>
 
     {% include 'main/includes/scroll_to_top.html' %}
+
+    {{ reviews_json|json_script:"reviewsData" }}
+    {{ products_json|json_script:"reviewProductsData" }}
+    {{ rating_summary|json_script:"ratingSummaryData" }}
 
     <script>
       function starSvg(fill, sz) {
@@ -968,65 +1098,112 @@
         }).join("");
       }
 
-      var REVIEWS_DATA = [
-        { id: 1, name: "Александр М.", avatar: "АМ", avatarColor: "c1", rating: 5, date: "18 мая 2025", verified: true, product: "Lost Mary BM5000", text: "Отличный магазин! Заказывал несколько раз, всё приходит быстро и в отличной упаковке. Lost Mary BM5000 — просто бомба, вкус малины с личи держится до конца. Рекомендую всем.", pros: "Быстрая доставка, оригинал, отличная упаковка", cons: "Хотелось бы больше вкусов в наличии", hasPhoto: true, helpful: 24, unhelpful: 1 },
-        { id: 2, name: "Kateryna V.", avatar: "KV", avatarColor: "c4", rating: 5, date: "12 мая 2025", verified: true, product: "Elf Bar 5000", text: "Давно ищу нормальный магазин без подделок, и наконец нашла. Elf Bar 5000 — оригинал, работает чётко. Поддержка быстро ответила на вопросы по доставке. Буду заказывать ещё.", pros: "Оригинальная продукция, быстрая поддержка", cons: null, hasPhoto: false, helpful: 18, unhelpful: 0 },
-        { id: 3, name: "Дмитрий Г.", avatar: "ДГ", avatarColor: "c2", rating: 4, date: "5 мая 2025", verified: true, product: "HQD Cuvie Air", text: "В целом доволен. HQD Cuvie Air взял впервые — вкус хорошый, тяга нормальная. Доставили за 2 дня. Один раз была небольшая задержка, но поддержка объяснила причину и решила вопрос.", pros: "Хорошее соотношение цена/качество, оперативная поддержка", cons: "Бывают небольшие задержки доставки", hasPhoto: true, helpful: 11, unhelpful: 2 },
-        { id: 4, name: "Олег П.", avatar: "ОП", avatarColor: "c1", rating: 5, date: "28 апреля 2025", verified: false, product: "Vozol Gear 10000", text: "Vozol Gear 10000 — монстр автономности. Хватает на очень долго, вкус стабильный до последней затяжки. Ценник немного кусается, но оно того стоит. Магазин надёжный.", pros: "Огромный ресурс, стабильный вкус до конца", cons: "Цена выше среднего", hasPhoto: false, helpful: 31, unhelpful: 3 },
-        { id: 5, name: "Анна С.", avatar: "АС", avatarColor: "c3", rating: 3, date: "20 апреля 2025", verified: true, product: "Randm Tornado 7000", text: "Товар пришёл нормально, но вкус оказался немного не тем, что ожидала по описанию. Бывает. Доставка быстрая, упаковка аккуратная. В следующий раз выберу другой вкус.", pros: "Доставка, упаковка", cons: "Вкус не совпал с ожиданиями", hasPhoto: false, helpful: 7, unhelpful: 1 },
-        { id: 6, name: "Виталий К.", avatar: "ВК", avatarColor: "c2", rating: 5, date: "15 апреля 2025", verified: true, product: "Smok Novo 4", text: "Smok Novo 4 — лучший выбор для тех, кто хочет пересесть с одноразок на многоразку. Брал у этих ребят уже третий раз, каждый раз без проблем. Жидкости тоже отличные.", pros: "Удобная многоразка, широкий выбор жидкостей, всегда оригинал", cons: null, hasPhoto: true, helpful: 42, unhelpful: 0 },
-        { id: 7, name: "Іванов М.Р.", avatar: "ІМ", avatarColor: "c4", rating: 4, date: "8 апреля 2025", verified: true, product: "Geek Bar Pulse 15000", text: "Geek Bar Pulse 15000 с режимом пульс — реально отличается по ощущениям. Доставка 1 день. Немного жаль, что не кладут инструкцию на украинском, но это мелочь.", pros: "Два режима, огромный ресурс, быстрая доставка", cons: "Инструкция только на английском", hasPhoto: false, helpful: 15, unhelpful: 1 },
-        { id: 8, name: "Настя Б.", avatar: "НБ", avatarColor: "c1", rating: 5, date: "1 апреля 2025", verified: false, product: "Lost Mary OS5000", text: "Обожаю Lost Mary! Это уже четвёртый заказ. Всегда оригинал, всегда быстро. Вкус 'Peach Mango Watermelon' — просто космос. Сайт удобный, оформила заказ за 2 минуты.", pros: "Стабильное качество, удобный сайт, любимый вкус", cons: null, hasPhoto: true, helpful: 29, unhelpful: 0 },
-      ];
+      var REVIEWS_DATA = JSON.parse(document.getElementById("reviewsData").textContent);
+      var PRODUCTS_DATA = JSON.parse(document.getElementById("reviewProductsData").textContent);
+      var RATING_SUMMARY = JSON.parse(document.getElementById("ratingSummaryData").textContent);
 
-      var BARS = [
-        { stars: 5, count: 151, pct: 61 },
-        { stars: 4, count: 61, pct: 25 },
-        { stars: 3, count: 23, pct: 9 },
-        { stars: 2, count: 8, pct: 3 },
-        { stars: 1, count: 4, pct: 2 },
-      ];
+      function getCookie(name) {
+        var value = "; " + document.cookie;
+        var parts = value.split("; " + name + "=");
+        return parts.length === 2 ? parts.pop().split(";").shift() : "";
+      }
 
-      var heroStarsEl = document.getElementById("heroStars");
-      var summaryStarsEl = document.getElementById("summaryStars");
-      var ratingBarsEl = document.getElementById("ratingBars");
-
-      if (heroStarsEl) heroStarsEl.innerHTML = renderStarsFloat(4.8, 18);
-      if (summaryStarsEl) summaryStarsEl.innerHTML = renderStarsFloat(4.8, 18);
-      [5, 4, 3, 2, 1].forEach(function (n) {
-        var el = document.getElementById("fs" + n);
-        if (el) el.innerHTML = renderStars(n, 14);
-      });
-
-      if (ratingBarsEl) {
-        ratingBarsEl.innerHTML = BARS.map(function (b) {
-          return '<div class="bar-row"><span class="bar-num">' + b.stars + '</span><div class="bar-track"><div class="bar-fill" data-pct="' + b.pct + '"></div></div><span class="bar-cnt">' + b.count + "</span></div>";
-        }).join("");
-        requestAnimationFrame(function () {
-          requestAnimationFrame(function () {
-            ratingBarsEl.querySelectorAll(".bar-fill").forEach(function (el, i) {
-              el.style.transitionDelay = i * 0.07 + "s";
-              el.style.width = el.dataset.pct + "%";
-            });
-          });
+      function escapeHtml(value) {
+        return String(value || "").replace(/[&<>"]/g, function (char) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[char];
         });
       }
+
+      function getReviewStats() {
+        var total = REVIEWS_DATA.length;
+        var counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+        var verified = 0;
+        var sum = 0;
+        REVIEWS_DATA.forEach(function (review) {
+          var rating = Number(review.rating || 0);
+          if (counts[rating] !== undefined) counts[rating] += 1;
+          if (review.verified) verified += 1;
+          sum += rating;
+        });
+        return {
+          total: total,
+          counts: counts,
+          verified: verified,
+          average: total ? sum / total : 0,
+        };
+      }
+
+
+      function updateReviewSummary() {
+        var stats = getReviewStats();
+        var bars = [5, 4, 3, 2, 1].map(function (stars) {
+          var count = stats.counts[stars] || 0;
+          return {
+            stars: stars,
+            count: count,
+            pct: stats.total ? Math.round((count / stats.total) * 100) : 0,
+          };
+        });
+
+        document.querySelectorAll(".summary-big").forEach(function (el) {
+          el.textContent = stats.average.toFixed(1);
+        });
+        document.querySelectorAll(".summary-sub").forEach(function (el) {
+          el.innerHTML = "&middot; " + stats.total + " отзывов";
+        });
+        document.querySelectorAll('[data-filter="all"] .filter-badge').forEach(function (el) {
+          el.textContent = stats.total;
+        });
+        [5, 4, 3, 2, 1].forEach(function (n) {
+          document.querySelectorAll('[data-filter="' + n + '"] .filter-badge').forEach(function (el) {
+            el.textContent = stats.counts[n] || 0;
+          });
+        });
+        document.querySelectorAll('[data-filter="verified"] .filter-badge').forEach(function (el) {
+          el.textContent = stats.verified;
+        });
+
+        var heroStarsEl = document.getElementById("heroStars");
+        var summaryStarsEl = document.getElementById("summaryStars");
+        var ratingBarsEl = document.getElementById("ratingBars");
+
+        if (heroStarsEl) heroStarsEl.innerHTML = renderStarsFloat(stats.average, 18);
+        if (summaryStarsEl) summaryStarsEl.innerHTML = renderStarsFloat(stats.average, 18);
+        [5, 4, 3, 2, 1].forEach(function (n) {
+          var el = document.getElementById("fs" + n);
+          if (el) el.innerHTML = renderStars(n, 14);
+        });
+
+        if (ratingBarsEl) {
+          ratingBarsEl.innerHTML = bars.map(function (b) {
+            return '<div class="bar-row"><span class="bar-num">' + b.stars + '</span><div class="bar-track"><div class="bar-fill" data-pct="' + b.pct + '"></div></div><span class="bar-cnt">' + b.count + "</span></div>";
+          }).join("");
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              ratingBarsEl.querySelectorAll(".bar-fill").forEach(function (el, i) {
+                el.style.transitionDelay = i * 0.07 + "s";
+                el.style.width = el.dataset.pct + "%";
+              });
+            });
+          });
+        }
+      }
+
 
       function renderReviews(data) {
         var el = document.getElementById("reviewsList");
         if (!data.length) {
-          el.innerHTML = '<div class="empty"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" style="margin:0 auto 14px;display:block;opacity:.25"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg><p class="empty-title">Отзывов не найдено</p><p class="empty-sub">Попробуйте изменить фильтр</p></div>';
+          el.innerHTML = '<div class="empty"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" style="margin:0 auto 14px;display:block;opacity:.25"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg><p class="empty-title">Отзывы не найдены</p><p class="empty-sub">Попробуйте изменить фильтр</p></div>';
           return;
         }
         var tagIcon = '<svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 2A1.5 1.5 0 000 3.5v4.793a1.5 1.5 0 00.44 1.06l6.75 6.75a1.5 1.5 0 002.12 0l4.794-4.794a1.5 1.5 0 000-2.12L7.353.44A1.5 1.5 0 006.293 0H1.5zm2.5 4a1 1 0 110-2 1 1 0 010 2z"/></svg>';
         var checkIcon =
           '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 19L16 22L21 17" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M9 22H7C5.89543 22 5 21.1046 5 20V11.1817C5 11.0632 4.96494 10.9474 4.89923 10.8488L3.10077 8.15115C3.03506 8.05259 3 7.93679 3 7.81833V2.6C3 2.26863 3.26863 2 3.6 2H5.4C5.73137 2 6 2.26863 6 2.6V4.4C6 4.73137 6.26863 5 6.6 5H9.4C9.73137 5 10 4.73137 10 4.4V2.6C10 2.26863 10.2686 2 10.6 2H13.4C13.7314 2 14 2.26863 14 2.6V4.4C14 4.73137 14.2686 5 14.6 5H17.4C17.7314 5 18 4.73137 18 4.4V2.6C18 2.26863 18.2686 2 18.6 2H20.4C20.7314 2 21 2.26863 21 2.6V7.81833C21 7.93679 20.9649 8.05259 20.8992 8.15115L19.1008 10.8488C19.0351 10.9474 19 11.0632 19 11.1817V13.5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
         var likeIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12M15 5.88L14 10h5.83a2 2 0 011.92 2.56l-2.33 8A2 2 0 0117.5 22H4a2 2 0 01-2-2v-8a2 2 0 012-2h2.76a2 2 0 001.79-1.11L12 2a3.13 3.13 0 013 3.88z"/></svg>';
-        var dislikeIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V2M9 18.12L10 14H4.17a2 2 0 01-1.92-2.56l2.33-8A2 2 0 016.5 2H20a2 2 0 012 2v8a2 2 0 01-2 2h-2.76a2 2 0 00-1.79 1.11L12 22a3.13 3.13 0 01-3-3.88z"/></svg>';
 
         el.innerHTML = data
           .map(function (r, i) {
-            var trunc = r.text.length > 220;
+            var trunc = (r.text || "").length > 220;
             return (
               '<article class="review-card" style="animation-delay:' +
               (window.innerWidth > 860 ? i * 0.15 : 0) +
@@ -1035,21 +1212,21 @@
               '">' +
               '<div class="rc-top">' +
               '<div class="rc-avatar c1">' +
-              r.avatar +
+              escapeHtml(r.avatar) +
               "</div>" +
               '<div class="rc-info">' +
               '<div class="rc-name-row"><span class="rc-name">' +
-              r.name +
+              escapeHtml(r.name) +
               "</span>" +
               (r.verified ? '<span class="rc-verified" title="Проверенный покупатель">' + checkIcon + "</span>" : "") +
               "</div>" +
               '<div class="rc-meta-row"><span class="rc-date">' +
-              r.date +
+              escapeHtml(r.date) +
               "</span>" +
               '<span class="rc-product-tag">' +
               tagIcon +
               "&nbsp;" +
-              r.product +
+              escapeHtml(r.product) +
               "</span>" +
               "</div></div>" +
               '<div class="rc-stars-block">' +
@@ -1061,23 +1238,18 @@
               '" id="rt_' +
               r.id +
               '">' +
-              r.text +
+              escapeHtml(r.text) +
               "</p>" +
               (trunc ? '<button class="rc-read-more" onclick="toggleText(' + r.id + ',this)">Читать полностью &rarr;</button>' : "") +
               '<div class="rc-footer"><div class="rc-helpful"><span class="rc-helpful-label">Полезно?</span><div class="rc-vote-btns">' +
-              '<button class="rc-vote" onclick="vote(this,\'like\',' +
+              '<button class="rc-vote' +
+              (r.liked ? " liked" : "") +
+              '" onclick="vote(this,' +
               r.id +
               ')">' +
               likeIcon +
               "<span>" +
-              r.helpful +
-              "</span></button>" +
-              '<button class="rc-vote" onclick="vote(this,\'dislike\',' +
-              r.id +
-              ')">' +
-              dislikeIcon +
-              "<span>" +
-              r.unhelpful +
+              Number(r.helpful || 0) +
               "</span></button>" +
               "</div></div></div>" +
               "</article>"
@@ -1086,47 +1258,54 @@
           .join("");
       }
 
+
       function toggleText(id, btn) {
         var el = document.getElementById("rt_" + id);
         el.classList.toggle("truncated");
         btn.textContent = el.classList.contains("truncated") ? "Читать полностью →" : "Свернуть ↑";
       }
 
-      var voted = {};
-      function vote(btn, type, id) {
-        var card = btn.closest("[data-id]");
-        var likeBtn = card.querySelectorAll(".rc-vote")[0];
-        var dislikeBtn = card.querySelectorAll(".rc-vote")[1];
-        var prev = voted[id];
+      async function vote(btn, id) {
+        var response = await fetch("/api/reviews/" + id + "/vote/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken"),
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: JSON.stringify({ vote: "up" }),
+        });
+        var data = await response.json().catch(function () {
+          return {};
+        });
+        if (!response.ok) return;
 
-        // Снять текущий голос
-        if (prev === "like") {
-          likeBtn.classList.remove("liked");
-          var sp = likeBtn.querySelector("span");
-          sp.textContent = parseInt(sp.textContent) - 1;
-        } else if (prev === "dislike") {
-          dislikeBtn.classList.remove("disliked");
-          var sp = dislikeBtn.querySelector("span");
-          sp.textContent = parseInt(sp.textContent) - 1;
+        var review = REVIEWS_DATA.find(function (item) {
+          return Number(item.id) === Number(id);
+        });
+        if (review) {
+          review.helpful = data.helpful;
+          review.liked = data.liked;
         }
-
-        // Если нажали ту же кнопку — просто снимаем голос
-        if (prev === type) {
-          delete voted[id];
-          return;
-        }
-
-        // Поставить новый голос
-        voted[id] = type;
-        btn.classList.add(type === "like" ? "liked" : "disliked");
-        var sp2 = btn.querySelector("span");
-        sp2.textContent = parseInt(sp2.textContent) + 1;
+        btn.classList.toggle("liked", !!data.liked);
+        var counter = btn.querySelector("span");
+        if (counter) counter.textContent = data.helpful;
       }
+
 
       var activeFilter = "all";
       var currentPage = 1;
       var perPage = 5;
       var filteredData = REVIEWS_DATA.slice();
+
+      function updateReviewsSidebarPosition() {
+        var header = document.querySelector(".page_header");
+        var isHeaderHidden = header && header.classList.contains("page_header_hidden");
+        document.documentElement.style.setProperty("--reviews-sidebar-shift", isHeaderHidden ? "-70px" : "0px");
+      }
+
+      window.addEventListener("scroll", updateReviewsSidebarPosition, { passive: true });
+      window.addEventListener("resize", updateReviewsSidebarPosition);
 
       function renderPagination(total) {
         var totalPages = Math.ceil(total / perPage);
@@ -1261,6 +1440,7 @@
         s.addEventListener("click", function () {
           selectedStars = i + 1;
           highlight(selectedStars);
+          validateReviewForm();
         });
       });
       function highlight(n) {
@@ -1269,49 +1449,243 @@
         });
       }
 
-      document.getElementById("submitReviewBtn").addEventListener("click", function () {
-        var name = document.getElementById("formName").value.trim();
-        var text = document.getElementById("formText").value.trim();
-        if (!name || !text || !selectedStars) {
-          alert("Пожалуйста, укажите имя, оценку и текст.");
+      var selectedReviewProduct = null;
+      var reviewSubmitButtonIcon = "";
+      var reviewSubmitButtonLabel = "";
+
+      function setReviewSubmitLabel(label) {
+        var button = document.getElementById("submitReviewBtn");
+        if (!button) return;
+        if (reviewSubmitButtonLabel === label) return;
+        if (!reviewSubmitButtonIcon) {
+          var icon = button.querySelector("svg");
+          reviewSubmitButtonIcon = icon ? icon.outerHTML : "";
+        }
+        var previousLabel = reviewSubmitButtonLabel || label;
+        if (!reviewSubmitButtonLabel) {
+          reviewSubmitButtonLabel = label;
+          button.innerHTML = reviewSubmitButtonIcon + '<span class="review-form__submit-label"><span class="review-form__submit-label-current">' + escapeHtml(label) + "</span></span>";
           return;
         }
-        var nr = {
-          id: Date.now(),
-          name: name,
-          avatar: name
-            .split(" ")
-            .map(function (w) {
-              return w[0];
-            })
-            .join("")
-            .toUpperCase()
-            .slice(0, 2),
-          avatarColor: "c1",
-          rating: selectedStars,
-          date: new Date().toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" }),
-          verified: false,
-          product: document.getElementById("formProduct").value.trim() || "Товар не указан",
-          text: text,
-          pros: null,
-          cons: null,
-          hasPhoto: false,
-          helpful: 0,
-          unhelpful: 0,
-        };
-        REVIEWS_DATA.unshift(nr);
+        reviewSubmitButtonLabel = label;
+        button.classList.remove("is-label-changing");
+        button.innerHTML =
+          reviewSubmitButtonIcon +
+          '<span class="review-form__submit-label">' +
+            '<span class="review-form__submit-label-current">' + escapeHtml(previousLabel) + "</span>" +
+            '<span class="review-form__submit-label-next">' + escapeHtml(label) + "</span>" +
+          "</span>";
+        void button.offsetWidth;
+        button.classList.add("is-label-changing");
+        window.setTimeout(function () {
+          if (reviewSubmitButtonLabel !== label) return;
+          button.classList.remove("is-label-changing");
+          button.innerHTML = reviewSubmitButtonIcon + '<span class="review-form__submit-label"><span class="review-form__submit-label-current">' + escapeHtml(label) + "</span></span>";
+        }, 380);
+      }
+
+      function validateReviewForm() {
+        var button = document.getElementById("submitReviewBtn");
+        var text = document.getElementById("formText").value.trim();
+        if (!button) return false;
+        if (!selectedStars) {
+          button.disabled = true;
+          setReviewSubmitLabel("Выберите оценку");
+          return false;
+        }
+        if (!selectedReviewProduct) {
+          button.disabled = true;
+          setReviewSubmitLabel("Выберите товар");
+          return false;
+        }
+        if (!text) {
+          button.disabled = true;
+          setReviewSubmitLabel("Напишите комментарий");
+          return false;
+        }
+        button.disabled = false;
+        setReviewSubmitLabel("Опубликовать");
+        return true;
+      }
+
+      function getPopularReviewProducts() {
+        return PRODUCTS_DATA.slice()
+          .sort(function (a, b) {
+            return (Number(b.review_count || 0) - Number(a.review_count || 0)) || (Number(b.likes || 0) - Number(a.likes || 0)) || (Number(a.id) - Number(b.id));
+          })
+          .slice(0, 3);
+      }
+
+      function getProductSearchText(product) {
+        return [
+          product.id,
+          product.code,
+          product.name,
+          product.brand,
+          product.brand_name,
+        ].filter(Boolean).join(" ").toLowerCase();
+      }
+
+      function searchReviewProducts(query) {
+        var value = query.trim().toLowerCase();
+        if (!value) return getPopularReviewProducts();
+        return PRODUCTS_DATA.filter(function (product) {
+          return getProductSearchText(product).indexOf(value) !== -1;
+        }).slice(0, 8);
+      }
+
+      function setSelectedReviewProduct(product) {
+        selectedReviewProduct = product || null;
+        var input = document.getElementById("formProduct");
+        var hidden = document.getElementById("formProductId");
+        if (input && product) input.value = product.name;
+        if (hidden) hidden.value = product ? product.id : "";
+        validateReviewForm();
+      }
+
+      function findSelectedProduct() {
+        return selectedReviewProduct;
+      }
+
+      function closeReviewProductMenu() {
+        var menu = document.getElementById("reviewProductMenu");
+        if (menu) menu.classList.remove("is-open");
+      }
+
+      function renderReviewProductMenu(query) {
+        var menu = document.getElementById("reviewProductMenu");
+        if (!menu) return;
+        var products = searchReviewProducts(query || "");
+        if (!products.length) {
+          menu.innerHTML = '<div class="review-form__product-empty">Такого товара на сайте нет</div>';
+          menu.classList.add("is-open");
+          return;
+        }
+        menu.innerHTML = products.map(function (product) {
+          var meta = [product.brand || product.brand_name, product.review_count ? product.review_count + " отзывов" : ""].filter(Boolean).join(" · ");
+          return '<button class="review-form__product-option" type="button" data-review-product-id="' + product.id + '">' +
+            '<span class="review-form__product-main">' +
+              '<span class="review-form__product-name">' + escapeHtml(product.name) + '</span>' +
+              '<span class="review-form__product-meta">' + escapeHtml(meta || "Товар из каталога") + '</span>' +
+            '</span>' +
+            '<span class="review-form__product-code">#' + escapeHtml(product.code || product.id) + '</span>' +
+          '</button>';
+        }).join("");
+        menu.classList.add("is-open");
+      }
+
+      function setupProductSearch() {
+        var input = document.getElementById("formProduct");
+        if (!input) return;
+        input.removeAttribute("list");
+        input.setAttribute("autocomplete", "off");
+        var field = input.closest(".field");
+        if (field) field.classList.add("review-form__product");
+
+        var hidden = document.getElementById("formProductId");
+        if (!hidden) {
+          hidden = document.createElement("input");
+          hidden.type = "hidden";
+          hidden.id = "formProductId";
+          input.insertAdjacentElement("beforebegin", hidden);
+        }
+
+        var menu = document.getElementById("reviewProductMenu");
+        if (!menu) {
+          menu = document.createElement("div");
+          menu.id = "reviewProductMenu";
+          menu.className = "review-form__product-menu";
+          input.insertAdjacentElement("afterend", menu);
+        }
+
+        input.addEventListener("focus", function () {
+          renderReviewProductMenu(input.value);
+        });
+        input.addEventListener("input", function () {
+          setSelectedReviewProduct(null);
+          renderReviewProductMenu(input.value);
+        });
+        menu.addEventListener("click", function (event) {
+          var option = event.target.closest("[data-review-product-id]");
+          if (!option) return;
+          var productId = Number(option.getAttribute("data-review-product-id"));
+          var product = PRODUCTS_DATA.find(function (item) {
+            return Number(item.id) === productId;
+          });
+          setSelectedReviewProduct(product);
+          closeReviewProductMenu();
+        });
+        document.addEventListener("click", function (event) {
+          if (!event.target.closest(".review-form__product")) closeReviewProductMenu();
+        });
+      }
+
+      document.getElementById("submitReviewBtn").addEventListener("click", async function () {
+        if (!validateReviewForm()) return;
+        var name = document.getElementById("formName").value.trim();
+        var text = document.getElementById("formText").value.trim();
+        var product = findSelectedProduct();
+        if (!text || !selectedStars) {
+          alert("Пожалуйста, укажите оценку и текст.");
+          return;
+        }
+        if (!product) {
+          alert("Товар не найден");
+          return;
+        }
+
+        var response = await fetch("/api/reviews/create/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken"),
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: JSON.stringify({
+            product_id: product.id,
+            author_name: name || "Аноним",
+            rating: selectedStars,
+            text: text,
+          }),
+        });
+        var data = await response.json().catch(function () {
+          return {};
+        });
+        if (!response.ok) {
+          alert(data.error || "Не удалось отправить отзыв");
+          return;
+        }
+
+        REVIEWS_DATA.unshift(data.review);
         filteredData = REVIEWS_DATA.slice();
+        activeFilter = "all";
+        document.querySelectorAll(".filter-btn").forEach(function (b) {
+          b.classList.remove("active");
+        });
+        var allBtn = document.querySelector('[data-filter="all"]');
+        if (allBtn) allBtn.classList.add("active");
         currentPage = 1;
+        updateReviewSummary();
         showPage();
         closeModal();
         ["formName", "formText", "formProduct"].forEach(function (id) {
           document.getElementById(id).value = "";
         });
         selectedStars = 0;
+        selectedReviewProduct = null;
+        var productIdInput = document.getElementById("formProductId");
+        if (productIdInput) productIdInput.value = "";
         highlight(0);
+        validateReviewForm();
       });
 
+
       window.addEventListener("load", function () {
+        setupProductSearch();
+        document.getElementById("formText")?.addEventListener("input", validateReviewForm);
+        updateReviewSummary();
+        updateReviewsSidebarPosition();
+        validateReviewForm();
         showPage();
       });
     </script>
