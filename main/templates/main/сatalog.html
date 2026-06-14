@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="{% static 'assets/css/theme.css' %}" />
+    <link rel="icon" type="image/png" href="{% static 'assets/img/mini_logo.png' %}" />
     <style>
       /* ===================== TOKENS (shared with main.html) ===================== */
       :root {
@@ -1843,13 +1844,30 @@
             .filter(Boolean);
         }
 
+        function normalizeBrandFilterTokens(tokens) {
+          const brandLookup = new Map();
+          allProducts.forEach((product) => {
+            if (!product.brand_id) return;
+            const id = String(product.brand_id);
+            [id, product.brand_slug, product.brand]
+              .filter(Boolean)
+              .forEach((value) => {
+                brandLookup.set(String(value).trim().toLowerCase(), id);
+              });
+          });
+
+          return tokens
+            .map((token) => brandLookup.get(String(token).trim().toLowerCase()))
+            .filter(Boolean);
+        }
+
         function readStateFromUrl() {
           const params = new URLSearchParams(window.location.search);
           state.categoryFilter = params.get("category") || "all";
           state.priceMin = Math.min(maxPrice, Math.max(0, Math.round(Number(params.get("price_min") || 0))));
           state.priceMax = Math.min(maxPrice, Math.round(Number(params.get("price_max") || maxPrice)));
           if (state.priceMax < state.priceMin) state.priceMax = maxPrice;
-          state.brandFilters = new Set(parseCsv(params.get("brands")).map(String));
+          state.brandFilters = new Set(normalizeBrandFilterTokens(parseCsv(params.get("brands"))));
           state.variantFilters = {};
           params.forEach((value, key) => {
             if (!key.startsWith("variant_group_")) return;

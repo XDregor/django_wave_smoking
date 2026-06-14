@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ product.name }} | WAVE</title>
     <link rel="stylesheet" href="{% static 'assets/css/theme.css' %}" />
+    <link rel="icon" type="image/png" href="{% static 'assets/img/mini_logo.png' %}" />
     <style>
       :root {
         --detail-bg: var(--bg, #0a0a0c);
@@ -18,6 +19,9 @@
         --detail-accent: var(--accent, #bff747);
         --detail-danger: var(--danger, #ff4b4c);
         --detail-radius: 14px;
+        --product-gallery-top-expanded: calc(var(--header-height, 90px) + var(--info-line-height, 32px) + 18px);
+        --product-gallery-top-collapsed: calc(var(--info-line-height, 32px) + 25px);
+        --product-gallery-sticky-top: var(--product-gallery-top-expanded);
       }
 
       * {
@@ -32,6 +36,14 @@
         font-family: "Roboto", Arial, sans-serif;
       }
 
+      body:not(.product_header_hidden) {
+        --product-gallery-sticky-top: var(--product-gallery-top-expanded);
+      }
+
+      body.product_header_hidden {
+        --product-gallery-sticky-top: var(--product-gallery-top-collapsed);
+      }
+
       button,
       input {
         font: inherit;
@@ -44,7 +56,7 @@
       .product-detail {
         width: min(1320px, calc(100% - 32px));
         margin: 0 auto;
-        padding: 28px 0 80px;
+        padding: 0 0 80px;
       }
 
       .product-detail__breadcrumbs {
@@ -67,6 +79,10 @@
         color: var(--detail-text);
       }
 
+      .product-detail__hero {
+        position: relative;
+      }
+
       .product-detail__grid {
         display: grid;
         grid-template-columns: minmax(360px, 560px) minmax(0, 1fr);
@@ -74,17 +90,34 @@
         align-items: start;
       }
 
+      .product-gallery-track {
+        min-width: 0;
+        align-self: stretch;
+      }
+
       .product-gallery {
         position: sticky;
-        top: 84px;
-        display: flex;
-        flex-direction: row;
+        top: var(--product-gallery-sticky-top, 120px);
+        z-index: 20;
+        display: grid;
+        grid-template-columns: auto minmax(0, 460px);
+        grid-template-areas:
+          "breadcrumbs breadcrumbs"
+          "thumbs frame";
         gap: 10px;
         align-self: start;
+        transition: top 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .product-gallery .product-detail__breadcrumbs,
+      .product-gallery__breadcrumbs {
+        grid-area: breadcrumbs;
+        margin-bottom: 8px;
       }
 
       /* Vertical thumbs strip on the LEFT */
       .product-gallery__thumbs {
+        grid-area: thumbs;
         display: flex;
         flex-direction: column;
         gap: 8px;
@@ -92,7 +125,6 @@
         overflow-y: auto;
         max-height: 460px;
         scrollbar-width: none;
-        order: -1;
       }
 
       .product-gallery__thumbs::-webkit-scrollbar {
@@ -100,8 +132,8 @@
       }
 
       .product-gallery__frame {
+        grid-area: frame;
         position: relative;
-        flex: 1 1 auto;
         min-width: 0;
         max-width: 460px;
         aspect-ratio: 1 / 1;
@@ -119,6 +151,106 @@
         display: block;
         object-fit: contain;
         margin: auto;
+      }
+
+      .product-gallery__video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: contain;
+        background: #000;
+      }
+
+      .product-gallery__video[hidden],
+      .product-gallery__image[hidden] {
+        display: none;
+      }
+
+      .product-gallery__video-sound {
+        position: absolute;
+        right: 12px;
+        bottom: 20px;
+        z-index: 4;
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 50%;
+        background: rgba(8, 9, 10, 0.58);
+        color: rgba(241, 241, 241, 0.82);
+        cursor: pointer;
+        transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+      }
+
+      .product-gallery__video-sound:hover {
+        border-color: rgba(255, 255, 255, 0.24);
+        background: rgba(8, 9, 10, 0.76);
+        color: var(--detail-text);
+      }
+
+      .product-gallery__video-sound[hidden] {
+        display: none;
+      }
+
+      .product-gallery__video-sound svg {
+        width: 17px;
+        height: 17px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .product-gallery__video-sound svg[hidden] {
+        display: none;
+      }
+
+      .product-gallery__video-sound .product-gallery__video-sound-on {
+        display: none;
+      }
+
+      .product-gallery__video-sound.is-sound-on .product-gallery__video-sound-muted {
+        display: none;
+      }
+
+      .product-gallery__video-sound.is-sound-on .product-gallery__video-sound-on {
+        display: block;
+      }
+
+      .product-gallery__video-progress {
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        bottom: 10px;
+        z-index: 3;
+        height: 3px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.16);
+        opacity: 0;
+        transform: translateY(4px);
+        transition: opacity 0.16s ease, transform 0.16s ease;
+        pointer-events: none;
+      }
+
+      .product-gallery__video-progress[hidden] {
+        display: none;
+      }
+
+      .product-gallery__frame:hover .product-gallery__video-progress {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .product-gallery__video-progress-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: inherit;
+        background: rgba(255, 255, 255, 0.72);
       }
 
       .product-gallery__placeholder {
@@ -162,12 +294,13 @@
       }
 
       .product-gallery__thumb {
+        position: relative;
         flex: 0 0 64px;
         width: 64px;
         height: 64px;
         overflow: hidden;
         padding: 0;
-        border: 1.5px solid transparent;
+        border: 1.5px solid rgba(255, 255, 255, 0.12);
         border-radius: 6px;
         background: var(--detail-surface);
         cursor: pointer;
@@ -175,13 +308,27 @@
         transition: border-color 0.15s ease, opacity 0.15s ease;
       }
 
+      .product-gallery__thumb::after {
+        content: "";
+        position: absolute;
+        inset: 3px;
+        border: 2px solid transparent;
+        border-radius: 4px;
+        pointer-events: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+
       .product-gallery__thumb:hover {
         opacity: 0.82;
       }
 
       .product-gallery__thumb.active {
-        border-color: var(--detail-accent);
+        border-color: rgba(255, 255, 255, 0.16);
         opacity: 1;
+      }
+
+      .product-gallery__thumb.active::after {
+        border-color: var(--buda);
       }
 
       .product-gallery__thumb img {
@@ -191,10 +338,27 @@
         object-fit: cover;
       }
 
+      .product-gallery__thumb--video {
+        position: relative;
+      }
+
+      .product-gallery__thumb-video-icon {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        display: grid;
+        place-items: center;
+        color: var(--detail-text);
+        font-size: 18px;
+        background: rgba(0, 0, 0, 0.34);
+        pointer-events: none;
+      }
+
       .product-info {
         display: grid;
         gap: 30px;
         padding-top: 2px;
+        padding-top: 25px;
       }
 
       .product-info__header {
@@ -254,6 +418,16 @@
         text-transform: uppercase;
       }
 
+      .product-info__brand-link {
+        color: var(--detail-muted);
+        text-decoration: none;
+        transition: color 0.15s ease;
+      }
+
+      .product-info__brand-link:hover {
+        color: var(--detail-text);
+      }
+
       .product-info__title {
         margin: 0;
         color: var(--detail-text);
@@ -263,11 +437,46 @@
         letter-spacing: -0.01em;
       }
 
+      .product-info__reviews-link {
+        width: fit-content;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        margin-top: 7px;
+        color: var(--detail-muted);
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1;
+        text-decoration: none;
+        transition: color 0.15s ease;
+      }
+
+      .product-info__reviews-link:hover {
+        color: var(--detail-text);
+      }
+
+      .product-info__reviews-star {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--buda);
+        font-size: 12px;
+        line-height: 1;
+      }
+
+      .product-info__reviews-text {
+        display: inline-flex;
+        align-items: center;
+        color: inherit;
+        line-height: 1;
+      }
+
       .product-info__price {
         display: flex;
         align-items: baseline;
         flex-wrap: wrap;
         gap: 12px;
+        margin-top: 1ch;
       }
 
       .product-info__price-current {
@@ -294,7 +503,17 @@
 
       .product-info__section {
         display: grid;
-        gap: 7px;
+        gap: 14px;
+        padding: 16px;
+        border: 1px solid var(--detail-border);
+        border-radius: var(--detail-radius);
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .product-info__section--plain {
+        padding: 0;
+        border: 0;
+        background: transparent;
       }
 
       .product-info__label {
@@ -303,6 +522,12 @@
         font-weight: 500;
         letter-spacing: 0.15em;
         text-transform: uppercase;
+      }
+
+      .product-info__selected-variant {
+        color: var(--detail-text);
+        letter-spacing: 0;
+        text-transform: none;
       }
 
       .product-info__variant-group {
@@ -322,18 +547,21 @@
 
       .product-info__variant {
         min-height: 30px;
-        padding: 0 10px;
+        padding: 0 30px;
         border: 1px solid var(--detail-border);
         border-radius: 6px;
         background: transparent;
         color: var(--detail-muted);
-        font-size: 12px;
-        font-weight: 600;
+        font-size: 15px;
+        font-weight: 400;
         cursor: pointer;
         transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
       }
 
-      .product-info__variant:hover:not(:disabled),
+      .product-info__variant:hover:not(:disabled) {
+        border-color: var(--buda);
+      }
+      
       .product-info__variant.active {
         border-color: var(--buda);
         background: var(--buda);
@@ -345,14 +573,147 @@
         pointer-events: none;
       }
 
+      /* Photo swatch variants (e.g. color options with image preview) */
+      .product-info__variants--swatches {
+        gap: 8px;
+      }
+
+      .product-info__variant--swatch {
+        min-height: auto;
+        width: 56px;
+        height: 56px;
+        padding: 0;
+        display: grid;
+        gap: 0;
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .product-info__variant--swatch img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .product-info__variant--swatch::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 7px;
+        border: 1.5px solid transparent;
+        transition: border-color 0.15s ease;
+      }
+
+      .product-info__variant--swatch:hover:not(:disabled)::after,
+      .product-info__variant--swatch.active::after {
+        border-color: var(--detail-accent);
+      }
+
+      .product-info__variant--swatch:hover:not(:disabled),
+      .product-info__variant--swatch.active {
+        background: transparent;
+      }
+
+      .product-info__variant--swatch-label {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 2px 4px;
+        background: rgba(8, 9, 10, 0.72);
+        color: var(--detail-text);
+        font-size: 9px;
+        font-weight: 600;
+        line-height: 1.3;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
       .product-info__actions {
         display: grid;
-        grid-template-columns: 1fr auto;
+        grid-template-columns: auto 1fr auto;
         gap: 10px;
       }
 
       .product-info__button--cart {
-        grid-column: 1;
+        grid-column: 2;
+      }
+
+      .product-info__quantity {
+        min-height: 48px;
+        display: inline-grid;
+        grid-template-columns: 36px 46px 36px;
+        align-items: center;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 10px;
+        background: transparent;
+        color: var(--detail-text);
+      }
+
+      .product-info__quantity-button {
+        position: relative;
+        width: 36px;
+        height: 100%;
+        padding: 0;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.86);
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+      }
+
+      .product-info__quantity-button:hover {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--detail-text);
+      }
+
+      .product-info__quantity-button::before,
+      .product-info__quantity-button--plus::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 12px;
+        height: 1.5px;
+        border-radius: 999px;
+        background: currentColor;
+        transform: translate(-50%, -50%);
+      }
+
+      .product-info__quantity-button--plus::after {
+        transform: translate(-50%, -50%) rotate(90deg);
+      }
+
+      .product-info__quantity-input {
+        width: 46px;
+        height: 100%;
+        padding: 0;
+        border: 0;
+        border-left: 1px solid rgba(255, 255, 255, 0.1);
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        background: transparent;
+        color: var(--detail-text);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 14px;
+        font-weight: 700;
+        text-align: center;
+        outline: none;
+      }
+
+      .product-info__quantity-input::-webkit-outer-spin-button,
+      .product-info__quantity-input::-webkit-inner-spin-button {
+        margin: 0;
+        appearance: none;
+      }
+
+      .product-info__quantity-input[type="number"] {
+        appearance: textfield;
       }
 
       .product-info__button {
@@ -371,7 +732,7 @@
       }
 
       .product-info__button--cart {
-        background: var(--detail-accent);
+        background: var(--buda);
         color: #08090a;
       }
 
@@ -429,6 +790,217 @@
         color: var(--detail-muted);
         font-size: 15px;
         line-height: 1.75;
+      }
+
+      .product-info__description-title,
+      .product-info__specs-title {
+        margin: 0 0 10px;
+        color: var(--detail-text);
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+      }
+
+      .product-info__specs {
+        padding-top: 18px;
+        border-top: 1px solid var(--detail-border);
+      }
+
+      .product-info__specs-list {
+        display: grid;
+        gap: 8px;
+        margin: 0;
+      }
+
+      .product-info__specs-item {
+        display: grid;
+        grid-template-columns: minmax(120px, 0.42fr) minmax(0, 1fr);
+        gap: 12px;
+        color: var(--detail-muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .product-info__specs-name {
+        color: var(--detail-faint);
+      }
+
+      .product-info__specs-value {
+        margin: 0;
+        color: var(--detail-muted);
+      }
+
+      .product-info__specs-text {
+        color: var(--detail-muted);
+        font-size: 15px;
+        line-height: 1.75;
+      }
+
+      .product-info__specs-text p {
+        margin: 0 0 10px;
+      }
+
+      .product-info__specs-text p:last-child {
+        margin-bottom: 0;
+      }
+
+      .product-info__toggle-title {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin: 0 0 10px;
+        padding: 0;
+        background: transparent;
+        color: var(--detail-text);
+        cursor: pointer;
+        text-align: left;
+      }
+
+      .product-info__toggle-icon {
+        position: relative;
+        width: 15px;
+        height: 15px;
+        flex: 0 0 15px;
+        color: currentColor;
+      }
+
+      .product-info__toggle-icon svg {
+        position: absolute;
+        inset: 0;
+        display: block;
+        transition: opacity 0.18s ease, transform 0.18s ease;
+      }
+
+      .product-info__toggle-icon-plus {
+        transform: rotate(90deg);
+      }
+
+      .product-info__toggle-title[aria-expanded="true"] .product-info__toggle-icon-plus {
+        opacity: 0;
+        transform: rotate(90deg) scaleX(0.35);
+      }
+
+      .product-info__collapsible {
+        overflow: hidden;
+        transition: max-height 0.28s ease, opacity 0.22s ease;
+      }
+
+      .product-info__collapsible.is-collapsed {
+        max-height: 0 !important;
+        opacity: 0;
+      }
+
+      .product-reviews {
+        scroll-margin-top: 96px;
+        margin-top: 58px;
+        padding: 20px;
+        border: 1px solid var(--detail-border);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.025);
+      }
+
+      .product-reviews__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .product-reviews__title {
+        margin: 0 0 5px;
+        color: var(--detail-text);
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .product-reviews__summary {
+        color: var(--detail-muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .product-reviews__toggle {
+        min-height: 32px;
+        padding: 0 12px;
+        border: 1px solid var(--detail-border);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--detail-muted);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 700;
+        transition: color 0.15s ease, border-color 0.15s ease;
+      }
+
+      .product-reviews__toggle:hover {
+        border-color: rgba(255, 255, 255, 0.2);
+        color: var(--detail-text);
+      }
+
+      .product-reviews__body {
+        display: none;
+        margin-top: 18px;
+        gap: 10px;
+      }
+
+      .product-reviews.is-open .product-reviews__body {
+        display: grid;
+      }
+
+      .product-reviews__card {
+        padding: 14px;
+        border: 1px solid var(--detail-border);
+        border-radius: 10px;
+        background: var(--detail-surface);
+      }
+
+      .product-reviews__meta {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 8px;
+        color: var(--detail-faint);
+        font-size: 12px;
+      }
+
+      .product-reviews__author {
+        color: var(--detail-text);
+        font-weight: 800;
+      }
+
+      .product-reviews__stars {
+        color: var(--buda);
+        letter-spacing: 0.04em;
+      }
+
+      .product-reviews__text {
+        margin: 0;
+        color: var(--detail-muted);
+        font-size: 14px;
+        line-height: 1.65;
+      }
+
+      .product-reviews__helpful {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 10px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--detail-faint);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 700;
+        transition: color 0.15s ease;
+      }
+
+      .product-reviews__helpful:hover,
+      .product-reviews__helpful.is-liked {
+        color: var(--detail-accent);
       }
 
       .related-products {
@@ -769,6 +1341,7 @@
           width: min(100%, 560px);
         }
 
+
         .related-products__grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
@@ -781,12 +1354,15 @@
 
         /* On mobile: thumbs go horizontal below the main image */
         .product-gallery {
-          flex-direction: column;
+          grid-template-columns: 1fr;
+          grid-template-areas:
+            "breadcrumbs"
+            "frame"
+            "thumbs";
           gap: 10px;
         }
 
         .product-gallery__thumbs {
-          order: 1;
           flex-direction: row;
           max-height: none;
           overflow-x: auto;
@@ -804,8 +1380,30 @@
           height: 100%;
         }
 
+        .product-gallery__video-progress {
+          opacity: 1;
+          transform: none;
+        }
+
+        .product-gallery__video-sound {
+          width: 38px;
+          height: 38px;
+        }
+
         .product-info__actions {
-          grid-template-columns: 1fr 48px;
+          grid-template-columns: auto minmax(0, 1fr) 48px;
+        }
+
+        .product-info__quantity {
+          grid-template-columns: 32px 40px 32px;
+        }
+
+        .product-info__quantity-button {
+          width: 32px;
+        }
+
+        .product-info__quantity-input {
+          width: 40px;
         }
 
         .product-info__header {
@@ -815,6 +1413,16 @@
         .product-info__code {
           position: static;
           margin-top: 2px;
+        }
+
+        .product-info__specs-item {
+          grid-template-columns: 1fr;
+          gap: 3px;
+        }
+
+        .product-reviews__header {
+          align-items: flex-start;
+          flex-direction: column;
         }
 
         .related-products__grid {
@@ -830,6 +1438,204 @@
           height: 52px;
         }
       }
+      .product-info__section {
+        display: grid;
+        gap: 18px;
+        padding: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015));
+      }
+
+      .product-info__section + .product-info__section {
+        padding-top: 18px;
+        border-top: 1px solid var(--detail-border);
+      }
+
+      .product-info__section--plain {
+        gap: 12px;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+      }
+
+      .product-info__variant-group {
+        gap: 18px;
+      }
+
+      .product-info__variant-group + .product-info__variant-group {
+        margin-top: 0;
+        padding-top: 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .product-info__label {
+        color: rgba(241, 241, 241, 0.64);
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+      }
+
+      .product-info__selected-variant {
+        color: var(--detail-text);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0;
+        text-transform: none;
+      }
+
+      .product-info__variants {
+        gap: 8px;
+      }
+
+      .product-info__variants--swatches {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .product-info__variant--swatch {
+        position: relative;
+        width: 64px;
+        height: 64px;
+        padding: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--detail-text);
+        overflow: visible;
+      }
+
+      .product-info__variant--swatch:hover:not(:disabled),
+      .product-info__variant--swatch.active {
+        border-color: var(--buda);
+        background: rgba(247, 235, 71, 0.1);
+        color: var(--detail-text);
+      }
+
+      .product-info__variant-swatch-image {
+        width: 100%;
+        height: 100%;
+        display: block;
+        border-radius: 7px;
+        object-fit: cover;
+      }
+
+      .product-info__variant-swatch-fallback {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        place-items: center;
+        padding: 4px;
+        overflow: hidden;
+        color: rgba(241, 241, 241, 0.72);
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1.15;
+        text-align: center;
+        text-overflow: ellipsis;
+      }
+
+      .product-info__variant-tooltip {
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 8px);
+        z-index: 8;
+        max-width: 180px;
+        padding: 6px 9px;
+        border: 1px solid var(--detail-border);
+        border-radius: 999px;
+        background: rgba(14, 14, 16, 0.94);
+        color: var(--detail-text);
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.2;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 4px);
+        transition: opacity 0.15s ease, transform 0.15s ease;
+      }
+
+      .product-info__variant--swatch:hover .product-info__variant-tooltip {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .product-info__variant--swatch:disabled {
+        opacity: 1;
+        cursor: not-allowed;
+        pointer-events: auto;
+      }
+
+      .product-info__variant--swatch:disabled .product-info__variant-swatch-image,
+      .product-info__variant--swatch:disabled .product-info__variant-swatch-fallback {
+        filter: grayscale(50%) brightness(0.62);
+        opacity: 0.55;
+      }
+
+      @media (max-width: 640px) {
+        .product-info__section {
+          gap: 16px;
+          padding: 14px;
+        }
+
+        .product-info__section--plain {
+          padding: 0;
+        }
+
+        .product-info__variant--swatch {
+          width: 56px;
+          height: 56px;
+        }
+
+        .product-info__variant-tooltip {
+          display: none;
+        }
+      }
+      .product-info__variant--swatch {
+        border-color: rgba(255, 255, 255, 0.12);
+      }
+
+      .product-info__variant--swatch::after {
+        content: "";
+        position: absolute;
+        inset: 3px;
+        border: 2px solid transparent;
+        border-radius: 8px;
+        pointer-events: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .product-info__variant--swatch:hover:not(:disabled),
+      .product-info__variant--swatch.active {
+        border-color: rgba(255, 255, 255, 0.16);
+      }
+
+      .product-info__variant--swatch:hover:not(:disabled)::after,
+      .product-info__variant--swatch.active::after {
+        border-color: var(--buda);
+      }
+
+      .product-info__variant-tooltip {
+        bottom: calc(100% + 10px);
+        padding: 7px 10px;
+        border-radius: 8px;
+      }
+
+      .product-info__variant-tooltip::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 100%;
+        width: 8px;
+        height: 8px;
+        border-right: 1px solid var(--detail-border);
+        border-bottom: 1px solid var(--detail-border);
+        background: rgba(14, 14, 16, 0.94);
+        transform: translate(-50%, -4px) rotate(45deg);
+      }
     </style>
   </head>
   <body>
@@ -837,18 +1643,39 @@
     {% include 'main/includes/cursor.html' %}
 
     <main class="product-detail" data_product_detail_id="{{ product.id }}">
-      <nav class="product-detail__breadcrumbs" aria-label="Хлебные крошки">
-        <a href="{% url 'main:home' %}">Главная</a>
-        <span>/</span>
-        <a href="{% url 'main:catalog' %}">Каталог</a>
-        <span>/</span>
-        <span>{{ product.name }}</span>
-      </nav>
-
-      <section class="product-detail__grid">
+      <section class="product-detail__hero">
+        <div class="product-detail__grid">
+        <aside class="product-gallery-track">
         <div class="product-gallery">
-          {% if product.image or additional_images %}
+          <nav class="product-detail__breadcrumbs product-gallery__breadcrumbs" aria-label="Хлебные крошки">
+            <a href="{% url 'main:home' %}">Главная</a>
+            <span>/</span>
+            <a href="{% url 'main:catalog' %}">Каталог</a>
+            <span>/</span>
+            <span>{{ product.name }}</span>
+          </nav>
+
+          {% if product.promo_video or product.image or additional_images %}
             <div class="product-gallery__thumbs" id="js_gallery_thumbnails" aria-label="Изображения товара">
+              {% if product.promo_video %}
+                <button
+                  class="product-gallery__thumb product-gallery__thumb--video gallery_thumbnail_button{% if not product.image and not additional_images %} active{% endif %}"
+                  type="button"
+                  data_gallery_type="video"
+                  data_gallery_video_src="{{ product.promo_video.url }}"
+                  data_gallery_poster_src="{% if product.promo_video_poster %}{{ product.promo_video_poster.url }}{% elif product.image %}{{ product.image.url }}{% endif %}"
+                  data_gallery_alt="{{ product.name }} — видео"
+                  aria-label="Видео товара"
+                >
+                  <span class="product-gallery__thumb-video-icon">▶</span>
+                  {% if product.promo_video_poster %}
+                    <img src="{{ product.promo_video_poster.url }}" alt="{{ product.name }} — видео" loading="lazy" />
+                  {% elif product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }} — видео" loading="lazy" />
+                  {% endif %}
+                </button>
+              {% endif %}
+
               {% if product.image %}
                 <button class="product-gallery__thumb gallery_thumbnail_button active" type="button" data_gallery_src="{{ product.image.url }}" data_gallery_alt="{{ product.name }}" aria-label="Основное изображение">
                   <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" />
@@ -874,11 +1701,41 @@
               {% with first_image=additional_images.0 %}
                 <img class="product-gallery__image" id="js_main_image" src="{{ first_image.image.url }}" alt="{{ first_image.alt_text|default:product.name }}" />
               {% endwith %}
+            {% elif product.promo_video %}
+              <img class="product-gallery__image" id="js_main_image" src="" alt="" hidden />
             {% else %}
               <div class="product-gallery__placeholder">Нет изображения</div>
             {% endif %}
+            {% if product.promo_video %}
+              <video
+                class="product-gallery__video"
+                id="js_main_video"
+                muted
+                loop
+                playsinline
+                preload="metadata"
+                {% if product.promo_video_poster %}poster="{{ product.promo_video_poster.url }}"{% elif product.image %}poster="{{ product.image.url }}"{% endif %}
+                {% if product.image or additional_images %}hidden{% else %}src="{{ product.promo_video.url }}"{% endif %}
+              ></video>
+              <button class="product-gallery__video-sound" id="js_video_sound_toggle" type="button" aria-label="Включить звук" {% if product.image or additional_images %}hidden{% endif %}>
+                <svg class="product-gallery__video-sound-muted" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 9v6h4l5 4V5L8 9H4z"></path>
+                  <path d="M18 9l4 4"></path>
+                  <path d="M22 9l-4 4"></path>
+                </svg>
+                <svg class="product-gallery__video-sound-on" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 9v6h4l5 4V5L8 9H4z"></path>
+                  <path d="M17 9a4 4 0 0 1 0 6"></path>
+                  <path d="M19.5 6.5a8 8 0 0 1 0 11"></path>
+                </svg>
+              </button>
+              <div class="product-gallery__video-progress" id="js_video_progress" {% if product.image or additional_images %}hidden{% endif %}>
+                <div class="product-gallery__video-progress-fill" id="js_video_progress_fill"></div>
+              </div>
+            {% endif %}
           </div>
         </div>
+        </aside>
 
         <article class="product-info">
           <header class="product-info__header">
@@ -892,10 +1749,64 @@
               <span>Код: 777{{ product.id|stringformat:"04d" }}</span>
             </div>
             {% if product.brand %}
-              <div class="product-info__brand">{{ product.brand.name }}</div>
+              <div class="product-info__brand">
+                <a class="product-info__brand-link" href="{% url 'main:catalog' %}?brands={{ product.brand.slug }}">{{ product.brand.name }}</a>
+              </div>
             {% endif %}
             <h1 class="product-info__title">{{ product.name }}</h1>
+            {% if product_reviews_count %}
+              <a class="product-info__reviews-link" href="#product-reviews" id="js_product_reviews_link">
+                <span class="product-info__reviews-star" aria-hidden="true">★</span>
+                <span class="product-info__reviews-text">{{ product_average_rating|floatformat:1 }} • {{ product_reviews_count }} отзывов</span>
+                <span itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" hidden>
+                  <meta itemprop="reviewCount" content="{{ product_reviews_count }}">
+                  <meta itemprop="ratingValue" content="{{ product_average_rating|floatformat:1 }}">
+                </span>
+              </a>
+            {% endif %}
           </header>
+
+          {% if display_variant_groups %}
+            <div class="product-info__section" id="js_variant_section">
+              {% for variant_group in display_variant_groups %}
+                <div class="product-info__variant-group">
+                  <div class="product-info__label">
+                    {{ variant_group.name }}{% if variant_group.has_images %}: <span class="product-info__selected-variant" data_selected_variant_name></span>{% endif %}
+                  </div>
+                  <div class="product-info__variants{% if variant_group.has_images %} product-info__variants--swatches{% endif %}">
+                    {% for product_variant in variant_group.variants %}
+                      {% if variant_group.has_images %}
+                      <button
+                        class="product-info__variant product-info__variant--swatch{% if not product_variant.image_url %} product-info__variant--swatch-empty{% endif %} variant_btn"
+                        type="button"
+                        data_variant_id="{{ product_variant.id }}"
+                        data_variant_name="{{ product_variant.name }}"
+                        {% if not product_variant.available %}disabled{% endif %}
+                      >
+                        {% if product_variant.image_url %}
+                          <img class="product-info__variant-swatch-image" src="{{ product_variant.image_url }}" alt="{{ product_variant.name }}" loading="lazy" />
+                        {% else %}
+                          <span class="product-info__variant-swatch-fallback">{{ product_variant.name }}</span>
+                        {% endif %}
+                        <span class="product-info__variant-tooltip">{{ product_variant.name }}</span>
+                      </button>
+                      {% else %}
+                      <button
+                        class="product-info__variant variant_btn"
+                        type="button"
+                        data_variant_id="{{ product_variant.id }}"
+                        data_variant_name="{{ product_variant.name }}"
+                        {% if not product_variant.available %}disabled{% endif %}
+                      >
+                        {{ product_variant.name }}
+                      </button>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
 
           <div class="product-info__price">
             <span class="product-info__price-current">{{ product.price|floatformat:0 }}₴</span>
@@ -907,31 +1818,13 @@
             {% endif %}
           </div>
 
-          {% if display_variants %}
-            <div class="product-info__section" id="js_variant_section">
-              {% for product_variant in display_variants %}
-                {% ifchanged product_variant.group %}
-                  {% if not forloop.first %}</div></div>{% endif %}
-                  <div class="product-info__variant-group">
-                    <div class="product-info__label">{{ product_variant.group|default:"Вариант" }}</div>
-                    <div class="product-info__variants">
-                {% endifchanged %}
-                      <button
-                        class="product-info__variant variant_btn"
-                        type="button"
-                        data_variant_id="{{ product_variant.id }}"
-                        data_variant_name="{{ product_variant.name }}"
-                        {% if not product_variant.available %}disabled{% endif %}
-                      >
-                        {{ product_variant.name }}
-                      </button>
-                {% if forloop.last %}</div></div>{% endif %}
-              {% endfor %}
-            </div>
-          {% endif %}
-
-          <div class="product-info__section">
+          <div class="product-info__section product-info__section--plain">
             <div class="product-info__actions">
+              <div class="product-info__quantity" aria-label="Количество товара">
+                <button class="product-info__quantity-button product-info__quantity-button--minus" id="js_quantity_minus" type="button" aria-label="Уменьшить количество"></button>
+                <input class="product-info__quantity-input" id="input-quantity" type="number" name="quantity" value="1" min="1" autocomplete="off" />
+                <button class="product-info__quantity-button product-info__quantity-button--plus" id="js_quantity_plus" type="button" aria-label="Увеличить количество"></button>
+              </div>
               <button class="product-info__button product-info__button--cart" id="js_add_to_cart" type="button" data_product_id="{{ product.id }}">
                 Добавить в корзину
               </button>
@@ -949,11 +1842,89 @@
             <button class="product-info__button product-info__button--buy" id="js_buy_now" type="button">Купить сейчас</button>
           </div>
 
+          {% if product.specifications_text %}
+            <section class="product-info__specs">
+              <button class="product-info__toggle-title product-info__specs-title" type="button" aria-expanded="true" data_collapsible_trigger="product-specs-content">
+                <span>Характеристики</span>
+                <span class="product-info__toggle-icon" aria-hidden="true">
+                  <svg viewBox="0 0 15 15" fill="currentColor" width="15" height="15"><g stroke="none" fill="none" stroke-width="1" fill-rule="evenodd"><g fill="currentColor" fill-rule="nonzero"><g transform="translate(2 7)"><path d="M0 0L11 0 11 1 0 1z"></path></g></g></g></svg>
+                  <svg class="product-info__toggle-icon-plus" viewBox="0 0 15 15" fill="currentColor" width="15" height="15"><g stroke="none" fill="none" stroke-width="1" fill-rule="evenodd"><g fill="currentColor" fill-rule="nonzero"><g transform="translate(2 7)"><path d="M0 0L11 0 11 1 0 1z"></path></g></g></g></svg>
+                </span>
+              </button>
+              <div class="product-info__collapsible" id="product-specs-content">
+                <div class="product-info__specs-text">
+                  {{ product.specifications_text|linebreaks }}
+                </div>
+              </div>
+            </section>
+          {% elif product_specifications %}
+            <section class="product-info__specs">
+              <button class="product-info__toggle-title product-info__specs-title" type="button" aria-expanded="true" data_collapsible_trigger="product-specs-content">
+                <span>Характеристики</span>
+                <span class="product-info__toggle-icon" aria-hidden="true">
+                  <svg viewBox="0 0 15 15" fill="currentColor" width="15" height="15"><g stroke="none" fill="none" stroke-width="1" fill-rule="evenodd"><g fill="currentColor" fill-rule="nonzero"><g transform="translate(2 7)"><path d="M0 0L11 0 11 1 0 1z"></path></g></g></g></svg>
+                  <svg class="product-info__toggle-icon-plus" viewBox="0 0 15 15" fill="currentColor" width="15" height="15"><g stroke="none" fill="none" stroke-width="1" fill-rule="evenodd"><g fill="currentColor" fill-rule="nonzero"><g transform="translate(2 7)"><path d="M0 0L11 0 11 1 0 1z"></path></g></g></g></svg>
+                </span>
+              </button>
+              <div class="product-info__collapsible" id="product-specs-content">
+                <dl class="product-info__specs-list">
+                  {% for specification in product_specifications %}
+                    <div class="product-info__specs-item">
+                      <dt class="product-info__specs-name">{{ specification.name }}</dt>
+                      <dd class="product-info__specs-value">{{ specification.value }}</dd>
+                    </div>
+                  {% endfor %}
+                </dl>
+              </div>
+            </section>
+          {% endif %}
+
           <div class="product-info__description">
-            {{ product.description|default:"Описание товара пока не добавлено."|linebreaks }}
+            <button class="product-info__toggle-title product-info__description-title" type="button" aria-expanded="true" data_collapsible_trigger="product-description-content">
+              <span>О товаре:</span>
+              <span class="product-info__toggle-icon" aria-hidden="true">
+                <svg viewBox="0 0 15 15" fill="currentColor" width="15" height="15"><g stroke="none" fill="none" stroke-width="1" fill-rule="evenodd"><g fill="currentColor" fill-rule="nonzero"><g transform="translate(2 7)"><path d="M0 0L11 0 11 1 0 1z"></path></g></g></g></svg>
+                <svg class="product-info__toggle-icon-plus" viewBox="0 0 15 15" fill="currentColor" width="15" height="15"><g stroke="none" fill="none" stroke-width="1" fill-rule="evenodd"><g fill="currentColor" fill-rule="nonzero"><g transform="translate(2 7)"><path d="M0 0L11 0 11 1 0 1z"></path></g></g></g></svg>
+              </span>
+            </button>
+            <div class="product-info__collapsible" id="product-description-content">
+              {{ product.description|default:"Описание товара пока не добавлено."|linebreaks }}
+            </div>
           </div>
         </article>
+        </div>
       </section>
+
+      {% if product_reviews_count %}
+        <section class="product-reviews" id="product-reviews">
+          <div class="product-reviews__header">
+            <div>
+              <h2 class="product-reviews__title">Отзывы</h2>
+              <div class="product-reviews__summary">★ {{ product_average_rating|floatformat:1 }} • {{ product_reviews_count }} отзывов</div>
+            </div>
+            <button class="product-reviews__toggle" id="js_product_reviews_toggle" type="button" aria-expanded="false">Показать</button>
+          </div>
+          <div class="product-reviews__body" id="js_product_reviews_body">
+            {% for review in product_reviews %}
+              <article class="product-reviews__card">
+                <div class="product-reviews__meta">
+                  <span class="product-reviews__author">{{ review.author_name }}</span>
+                  <span>{{ review.created|date:"d.m.Y" }}</span>
+                  <span class="product-reviews__stars" aria-label="Оценка {{ review.rating }} из 5">
+                    {% for i in "12345" %}
+                      {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}
+                    {% endfor %}
+                  </span>
+                </div>
+                <p class="product-reviews__text">{{ review.text }}</p>
+                <button class="product-reviews__helpful{% if review.id in liked_review_ids %} is-liked{% endif %}" type="button" data_review_helpful_id="{{ review.id }}">
+                  Полезно? <span>{{ review.helpful_count }}</span>
+                </button>
+              </article>
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
 
       {% if related_products %}
         <section class="related-products">
@@ -1006,6 +1977,10 @@
         window.showToast = window.showToast || showToast;
 
         const mainImage = document.getElementById("js_main_image");
+        const mainVideo = document.getElementById("js_main_video");
+        const videoSoundToggle = document.getElementById("js_video_sound_toggle");
+        const videoProgress = document.getElementById("js_video_progress");
+        const videoProgressFill = document.getElementById("js_video_progress_fill");
         const galleryFrame = document.getElementById("js_gallery_frame");
         const thumbnailButtons = [...document.querySelectorAll(".gallery_thumbnail_button")];
         const lightbox = document.getElementById("js_product_lightbox");
@@ -1015,16 +1990,43 @@
         const lightboxNext = document.getElementById("js_product_lightbox_next");
         let activeGalleryIndex = Math.max(0, thumbnailButtons.findIndex((button) => button.classList.contains("active")));
 
-        function setGalleryImage(index) {
-          const button = thumbnailButtons[index];
+        function updateVideoSoundIcon() {
+          if (!mainVideo || !videoSoundToggle) return;
+          const muted = mainVideo.muted;
+          videoSoundToggle.classList.toggle("is-sound-on", !muted);
+          videoSoundToggle.setAttribute("aria-label", muted ? "Включить звук" : "Выключить звук");
+        }
+
+        function setVideoControlsVisible(visible) {
+          if (videoSoundToggle) videoSoundToggle.hidden = !visible;
+          if (videoProgress) videoProgress.hidden = !visible;
+        }
+
+        function updateVideoProgress() {
+          if (!mainVideo || !videoProgressFill || !mainVideo.duration) return;
+          const progress = (mainVideo.currentTime / mainVideo.duration) * 100;
+          videoProgressFill.style.width = `${progress}%`;
+        }
+
+        function showGalleryImage(button) {
           if (!button || !mainImage) return;
 
-          activeGalleryIndex = index;
           const src = button.getAttribute("data_gallery_src");
           const alt = button.getAttribute("data_gallery_alt") || "";
+          if (!src) return;
+
+          if (mainVideo) {
+            mainVideo.pause();
+            mainVideo.hidden = true;
+            mainVideo.muted = true;
+            updateVideoSoundIcon();
+          }
+          setVideoControlsVisible(false);
+          if (videoProgressFill) videoProgressFill.style.width = "0%";
+
+          mainImage.hidden = false;
           mainImage.src = src;
           mainImage.alt = alt;
-          thumbnailButtons.forEach((item) => item.classList.toggle("active", item === button));
 
           if (lightboxImage && lightbox?.classList.contains("open")) {
             lightboxImage.src = src;
@@ -1032,8 +2034,53 @@
           }
         }
 
+        function showGalleryVideo(button, autoplay = true) {
+          const videoSrc = button?.getAttribute("data_gallery_video_src");
+          const posterSrc = button?.getAttribute("data_gallery_poster_src") || "";
+          if (!videoSrc || !mainVideo) return;
+
+          if (mainImage) {
+            mainImage.hidden = true;
+          }
+
+          mainVideo.hidden = false;
+          mainVideo.muted = true;
+          mainVideo.loop = true;
+          mainVideo.src = videoSrc;
+          if (posterSrc) mainVideo.poster = posterSrc;
+          else mainVideo.removeAttribute("poster");
+          mainVideo.load();
+          setVideoControlsVisible(true);
+          updateVideoSoundIcon();
+          if (videoProgressFill) videoProgressFill.style.width = "0%";
+
+          if (autoplay) {
+            const playPromise = mainVideo.play();
+            if (playPromise?.catch) playPromise.catch(() => {});
+          }
+        }
+
+        function setGalleryItem(index) {
+          const button = thumbnailButtons[index];
+          if (!button) return;
+
+          activeGalleryIndex = index;
+          thumbnailButtons.forEach((item) => item.classList.toggle("active", item === button));
+
+          const type = button.getAttribute("data_gallery_type") || "image";
+          if (type === "video") {
+            showGalleryVideo(button, true);
+            return;
+          }
+
+          showGalleryImage(button);
+        }
+
         function openLightbox() {
+          const activeButton = thumbnailButtons[activeGalleryIndex];
+          if ((activeButton?.getAttribute("data_gallery_type") || "image") === "video") return;
           if (!mainImage || !lightbox || !lightboxImage) return;
+          if (mainImage.hidden || !mainImage.src) return;
 
           lightboxImage.src = mainImage.src;
           lightboxImage.alt = mainImage.alt || "";
@@ -1048,8 +2095,13 @@
 
         function shiftLightbox(step) {
           if (!thumbnailButtons.length) return;
-          const nextIndex = (activeGalleryIndex + step + thumbnailButtons.length) % thumbnailButtons.length;
-          setGalleryImage(nextIndex);
+          for (let offset = 1; offset <= thumbnailButtons.length; offset += 1) {
+            const nextIndex = (activeGalleryIndex + step * offset + thumbnailButtons.length) % thumbnailButtons.length;
+            const nextButton = thumbnailButtons[nextIndex];
+            if ((nextButton?.getAttribute("data_gallery_type") || "image") === "video") continue;
+            setGalleryItem(nextIndex);
+            return;
+          }
         }
 
         if (thumbnailButtons.length < 2) {
@@ -1058,13 +2110,41 @@
         }
 
         thumbnailButtons.forEach((button, index) => {
-          button.addEventListener("click", () => setGalleryImage(index));
-          button.addEventListener("dblclick", openLightbox);
+          button.addEventListener("click", () => setGalleryItem(index));
+          button.addEventListener("dblclick", () => {
+            if ((button.getAttribute("data_gallery_type") || "image") !== "video") openLightbox();
+          });
         });
 
         galleryFrame?.addEventListener("click", () => {
-          if (mainImage) openLightbox();
+          if (mainImage && !mainImage.hidden) openLightbox();
         });
+
+        mainVideo?.addEventListener("click", () => {
+          if (mainVideo.paused) {
+            const playPromise = mainVideo.play();
+            if (playPromise?.catch) playPromise.catch(() => {});
+            return;
+          }
+          mainVideo.pause();
+        });
+
+        mainVideo?.addEventListener("timeupdate", updateVideoProgress);
+        mainVideo?.addEventListener("loadedmetadata", updateVideoProgress);
+
+        videoSoundToggle?.addEventListener("click", (event) => {
+          event.stopPropagation();
+          if (!mainVideo) return;
+          mainVideo.muted = !mainVideo.muted;
+          updateVideoSoundIcon();
+        });
+
+        const initialActiveGalleryButton = thumbnailButtons[activeGalleryIndex];
+        if ((initialActiveGalleryButton?.getAttribute("data_gallery_type") || "image") === "video") {
+          showGalleryVideo(initialActiveGalleryButton, false);
+        } else {
+          setVideoControlsVisible(false);
+        }
 
         lightboxClose?.addEventListener("click", closeLightbox);
         lightbox?.addEventListener("click", (event) => {
@@ -1080,7 +2160,86 @@
           if (event.key === "ArrowRight") shiftLightbox(1);
         });
 
-        const quantity = 1;
+        const quantityInput = document.getElementById("input-quantity");
+        const quantityMinus = document.getElementById("js_quantity_minus");
+        const quantityPlus = document.getElementById("js_quantity_plus");
+
+        function normalizeQuantity(value) {
+          const parsed = Number.parseInt(value, 10);
+          return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+        }
+
+        function setQuantity(value) {
+          if (!quantityInput) return 1;
+          const nextQuantity = normalizeQuantity(value);
+          quantityInput.value = `${nextQuantity}`;
+          return nextQuantity;
+        }
+
+        quantityMinus?.addEventListener("click", () => {
+          setQuantity(normalizeQuantity(quantityInput?.value) - 1);
+        });
+
+        quantityPlus?.addEventListener("click", () => {
+          setQuantity(normalizeQuantity(quantityInput?.value) + 1);
+        });
+
+        quantityInput?.addEventListener("change", () => {
+          setQuantity(quantityInput.value);
+        });
+
+        const collapsibleTriggers = [...document.querySelectorAll("[data_collapsible_trigger]")];
+
+        function setCollapsibleHeight(panel) {
+          if (!panel || panel.classList.contains("is-collapsed")) return;
+          panel.style.maxHeight = `${panel.scrollHeight}px`;
+        }
+
+        collapsibleTriggers.forEach((trigger) => {
+          const panel = document.getElementById(trigger.getAttribute("data_collapsible_trigger"));
+          if (!panel) return;
+
+          setCollapsibleHeight(panel);
+
+          trigger.addEventListener("click", () => {
+            const isOpen = trigger.getAttribute("aria-expanded") === "true";
+            trigger.setAttribute("aria-expanded", isOpen ? "false" : "true");
+
+            if (isOpen) {
+              panel.style.maxHeight = `${panel.scrollHeight}px`;
+              requestAnimationFrame(() => {
+                panel.classList.add("is-collapsed");
+              });
+              return;
+            }
+
+            panel.classList.remove("is-collapsed");
+            setCollapsibleHeight(panel);
+          });
+        });
+
+        window.addEventListener("resize", () => {
+          collapsibleTriggers.forEach((trigger) => {
+            const panel = document.getElementById(trigger.getAttribute("data_collapsible_trigger"));
+            setCollapsibleHeight(panel);
+          });
+        });
+
+        function syncProductGalleryHeaderState() {
+          const header = document.querySelector(".page_header");
+          document.body.classList.toggle(
+            "product_header_hidden",
+            header?.classList.contains("page_header_hidden")
+          );
+        }
+
+        syncProductGalleryHeaderState();
+        window.addEventListener("load", syncProductGalleryHeaderState);
+        window.addEventListener("scroll", syncProductGalleryHeaderState, { passive: true });
+        window.addEventListener("resize", syncProductGalleryHeaderState);
+        document.querySelectorAll(".page_header").forEach((header) => {
+          header.addEventListener("transitionend", syncProductGalleryHeaderState);
+        });
 
         const variantButtons = [...document.querySelectorAll(".variant_btn")];
         const availableVariantButtons = variantButtons.filter((button) => !button.disabled);
@@ -1091,11 +2250,19 @@
           ...(urlParams.get("variant_ids") || "").split(","),
         ].filter(Boolean));
 
+        function updateSelectedVariantName(group) {
+          const labelValue = group?.querySelector("[data_selected_variant_name]");
+          if (!labelValue) return;
+          const activeButton = group.querySelector(".variant_btn.active");
+          labelValue.textContent = activeButton?.getAttribute("data_variant_name") || "";
+        }
+
         variantGroups.forEach((group) => {
           const groupButtons = [...group.querySelectorAll(".variant_btn")];
           const availableGroupButtons = groupButtons.filter((button) => !button.disabled);
           const requestedButton = availableGroupButtons.find((button) => requestedVariantIds.has(button.getAttribute("data_variant_id")));
           (requestedButton || availableGroupButtons[0])?.classList.add("active");
+          updateSelectedVariantName(group);
         });
 
         variantButtons.forEach((button) => {
@@ -1104,6 +2271,7 @@
             const group = button.closest(".product-info__variant-group");
             group?.querySelectorAll(".variant_btn").forEach((item) => item.classList.remove("active"));
             button.classList.add("active");
+            updateSelectedVariantName(group);
           });
         });
 
@@ -1148,7 +2316,7 @@
               product_id: productId,
               variant_id: selectedVariantIds[0] || null,
               variant_ids: selectedVariantIds,
-              quantity,
+              quantity: setQuantity(quantityInput?.value),
             }),
           });
 
@@ -1206,6 +2374,50 @@
           button.setAttribute("aria-pressed", data.liked ? "true" : "false");
           window._shopPanel?.refreshFavorites?.();
           showToast(data.liked ? "Добавлено в избранное" : "Удалено из избранного");
+        });
+
+        const productReviews = document.getElementById("product-reviews");
+        const productReviewsToggle = document.getElementById("js_product_reviews_toggle");
+        const productReviewsLink = document.getElementById("js_product_reviews_link");
+
+        function setProductReviewsOpen(open) {
+          if (!productReviews || !productReviewsToggle) return;
+          productReviews.classList.toggle("is-open", open);
+          productReviewsToggle.setAttribute("aria-expanded", open ? "true" : "false");
+          productReviewsToggle.textContent = open ? "Скрыть" : "Показать";
+        }
+
+        productReviewsToggle?.addEventListener("click", () => {
+          setProductReviewsOpen(!productReviews?.classList.contains("is-open"));
+        });
+
+        productReviewsLink?.addEventListener("click", (event) => {
+          event.preventDefault();
+          setProductReviewsOpen(true);
+          productReviews?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+
+        document.querySelectorAll("[data_review_helpful_id]").forEach((button) => {
+          button.addEventListener("click", async () => {
+            const reviewId = button.getAttribute("data_review_helpful_id");
+            const response = await fetch(`/api/reviews/${reviewId}/vote/`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken,
+                "X-Requested-With": "XMLHttpRequest",
+              },
+              body: JSON.stringify({ vote: "up" }),
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+              showToast("Не удалось обновить отзыв", true);
+              return;
+            }
+            button.classList.toggle("is-liked", Boolean(data.liked));
+            const counter = button.querySelector("span");
+            if (counter) counter.textContent = data.helpful;
+          });
         });
 
         document.addEventListener("click", (event) => {

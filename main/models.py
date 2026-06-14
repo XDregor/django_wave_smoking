@@ -119,7 +119,20 @@ class Product(models.Model):
     name = models.CharField(max_length=100, db_index=True, verbose_name="Name")
     slug = models.SlugField(max_length=100, unique=True, blank=True)
     image = models.ImageField(upload_to="products/%Y/%m/%d", blank=True, verbose_name="Image")
+    promo_video = models.FileField(
+        upload_to="products/videos/%Y/%m/%d/",
+        blank=True,
+        null=True,
+        verbose_name="Promo video",
+    )
+    promo_video_poster = models.ImageField(
+        upload_to="products/videos/posters/%Y/%m/%d/",
+        blank=True,
+        null=True,
+        verbose_name="Promo video poster",
+    )
     description = models.TextField(blank=True, verbose_name="Description")
+    specifications_text = models.TextField(blank=True, verbose_name="Product specifications")
     old_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Base price")
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Final price")
     discount_percent = models.PositiveSmallIntegerField(
@@ -202,6 +215,7 @@ class Product(models.Model):
                 "name": item.variant.name,
                 "slug": item.variant.slug,
                 "group": item.variant.group,
+                "image_url": item.image.url if item.image else "",
                 "stock": item.stock,
                 "available": True,
             }
@@ -219,6 +233,7 @@ class Product(models.Model):
                 "name": product_variant.variant.name,
                 "slug": product_variant.variant.slug,
                 "group": product_variant.variant.group,
+                "image_url": product_variant.image.url if product_variant.image else "",
                 "stock": product_variant.stock,
                 "available": bool(product_variant.available and product_variant.stock > 0),
             }
@@ -252,6 +267,7 @@ class ProductVariant(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Variant",
     )
+    image = models.ImageField(upload_to="products/variants/%Y/%m/%d/", blank=True, verbose_name="Variant image")
     stock = models.PositiveIntegerField(default=0, verbose_name="Stock")
     available = models.BooleanField(default=False, verbose_name="Available")
 
@@ -300,6 +316,26 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return self.alt_text or f"{self.product} image {self.pk}"
+
+
+class ProductSpecification(models.Model):
+    product = models.ForeignKey(
+        Product,
+        related_name="specifications",
+        on_delete=models.CASCADE,
+        verbose_name="Product",
+    )
+    name = models.CharField(max_length=120, verbose_name="Name")
+    value = models.CharField(max_length=255, verbose_name="Value")
+    order = models.PositiveIntegerField(default=0, verbose_name="Order")
+
+    class Meta:
+        ordering = ("order", "id")
+        verbose_name = "Product specification"
+        verbose_name_plural = "Product specifications"
+
+    def __str__(self):
+        return f"{self.product} / {self.name}: {self.value}"
 
 
 class ProductReview(models.Model):

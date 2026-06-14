@@ -10,6 +10,7 @@ from .models import (
     ProductLike,
     ProductReview,
     ProductReviewHelpful,
+    ProductSpecification,
     ProductVariant,
     VariantOption,
 )
@@ -25,7 +26,7 @@ class VariantOptionInline(admin.TabularInline):
 class ProductVariantInline(admin.TabularInline):
     model = ProductVariant
     extra = 1
-    fields = ("variant", "stock", "available")
+    fields = ("variant", "image", "stock", "available")
     autocomplete_fields = ("variant",)
 
 
@@ -33,6 +34,12 @@ class ProductImageInline(admin.TabularInline):
     model = ProductImage
     extra = 1
     fields = ("image", "order", "alt_text")
+
+
+class ProductSpecificationInline(admin.TabularInline):
+    model = ProductSpecification
+    extra = 1
+    fields = ("name", "value", "order")
 
 
 @admin.register(Category)
@@ -68,7 +75,7 @@ class ProductAdmin(admin.ModelAdmin):
     inlines = (ProductVariantInline, ProductImageInline)
     fieldsets = (
         ("Main", {
-            "fields": ("category", "brand", "name", "slug", "image", "description"),
+            "fields": ("category", "brand", "name", "slug", "image", "promo_video", "promo_video_poster", "description", "specifications_text"),
         }),
         ("Price and discount", {
             "description": "If discount percent is set, final price is recalculated from base price on save.",
@@ -101,6 +108,7 @@ class ProductVariantAdmin(admin.ModelAdmin):
     list_filter = ("available", "variant__category", "variant__group")
     search_fields = ("product__name", "variant__name", "variant__group")
     autocomplete_fields = ("product", "variant")
+    fields = ("product", "variant", "image", "stock", "available")
 
 
 @admin.register(ProductImage)
@@ -110,6 +118,15 @@ class ProductImageAdmin(admin.ModelAdmin):
     search_fields = ("product__name", "alt_text")
     autocomplete_fields = ("product",)
     readonly_fields = ("created",)
+
+
+@admin.register(ProductSpecification)
+class ProductSpecificationAdmin(admin.ModelAdmin):
+    list_display = ("product", "name", "value", "order")
+    list_filter = ("product__category",)
+    search_fields = ("product__name", "name", "value")
+    autocomplete_fields = ("product",)
+    ordering = ("product__name", "order", "id")
 
 
 @admin.register(ProductLike)
