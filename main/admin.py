@@ -6,6 +6,7 @@ from .models import (
     CartItem,
     Category,
     Product,
+    ProductAlsoChosen,
     ProductImage,
     ProductLike,
     ProductReview,
@@ -42,6 +43,14 @@ class ProductSpecificationInline(admin.TabularInline):
     fields = ("name", "value", "order")
 
 
+class ProductAlsoChosenInline(admin.TabularInline):
+    model = ProductAlsoChosen
+    fk_name = "product"
+    extra = 1
+    fields = ("recommended_product", "sort_order")
+    autocomplete_fields = ("recommended_product",)
+
+
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ("name", "slug")
@@ -72,7 +81,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ("available", "likes")
     readonly_fields = ("slug", "created", "updated")
     search_fields = ("name", "brand__name", "category__name")
-    inlines = (ProductVariantInline, ProductImageInline)
+    inlines = (ProductVariantInline, ProductImageInline, ProductAlsoChosenInline)
     fieldsets = (
         ("Main", {
             "fields": ("category", "brand", "name", "slug", "image", "promo_video", "promo_video_poster", "description", "specifications_text"),

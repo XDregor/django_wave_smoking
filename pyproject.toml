@@ -1,0 +1,20 @@
+[project]
+name = "django-wave-smoking"
+version = "0.1.0"
+description = "Django e-commerce project"
+authors = [
+    {name = "XDregor",email = "gipervershina@gmail.com"}
+]
+requires-python = ">=3.13,<4.0"
+dependencies = [
+    "django (==6.0.5)",
+    "pillow (==12.2.0)",
+    "asgiref (==3.11.1)",
+    "sqlparse (==0.5.5)",
+    "tzdata (==2026.2)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

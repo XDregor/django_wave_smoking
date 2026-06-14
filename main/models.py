@@ -151,6 +151,14 @@ class Product(models.Model):
         default="",
         verbose_name="Badge",
     )
+    also_chosen_products = models.ManyToManyField(
+        "self",
+        through="ProductAlsoChosen",
+        symmetrical=False,
+        related_name="chosen_with_products",
+        blank=True,
+        verbose_name="Также выбирают",
+    )
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -252,6 +260,45 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ProductAlsoChosen(models.Model):
+    product = models.ForeignKey(
+        Product,
+        related_name="also_chosen_relations",
+        on_delete=models.CASCADE,
+        verbose_name="Product",
+    )
+    recommended_product = models.ForeignKey(
+        Product,
+        related_name="also_chosen_for",
+        on_delete=models.CASCADE,
+        verbose_name="Recommended product",
+    )
+    sort_order = models.PositiveIntegerField(default=0, verbose_name="Sort order")
+
+    class Meta:
+        ordering = ("sort_order", "id")
+        constraints = (
+            models.UniqueConstraint(
+                fields=("product", "recommended_product"),
+                name="unique_product_also_chosen_product",
+            ),
+            models.CheckConstraint(
+                condition=~Q(product=F("recommended_product")),
+                name="product_also_chosen_not_self",
+            ),
+        )
+        verbose_name = "Also chosen product"
+        verbose_name_plural = "Also chosen products"
+
+    def clean(self):
+        super().clean()
+        if self.product_id and self.recommended_product_id and self.product_id == self.recommended_product_id:
+            raise ValidationError("Product cannot recommend itself.")
+
+    def __str__(self):
+        return f"{self.product} -> {self.recommended_product}"
 
 
 class ProductVariant(models.Model):

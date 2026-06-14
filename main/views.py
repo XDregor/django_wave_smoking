@@ -35,6 +35,12 @@ def mark_liked_products(products, liked_product_ids):
     return products
 
 
+def is_product_visible_in_recommendations(product):
+    product_variants = product.display_product_variants
+    available_variants = product.available_product_variants
+    return product.stock > 0 and (not product_variants or bool(available_variants))
+
+
 def get_liked_product_ids(request):
     if not request.user.is_authenticated:
         return set(request.session.get("liked_product_ids", []))
@@ -331,6 +337,10 @@ def product_detail(request, id, slug):
     )
     display_variants = product.display_product_variants
     available_variants = product.available_product_variants
+    requested_variant_ids = set(request.GET.getlist("variant_id"))
+    requested_variant_ids.update(
+        value for value in (request.GET.get("variant_ids") or "").split(",") if value
+    )
     display_variant_groups = []
     for product_variant in display_variants:
         group_name = product_variant.get("group") or "Вариант"
@@ -351,6 +361,27 @@ def product_detail(request, id, slug):
     product.is_liked = product.id in liked_product_ids
     product.badge_data = product.get_badge_data()
     additional_images = list(product.additional_images.all().order_by("order", "id"))
+    image_variants = [product_variant for product_variant in available_variants if product_variant.image]
+    initial_gallery_variant = next(
+        (
+            product_variant for product_variant in image_variants
+            if str(product_variant.id) in requested_variant_ids
+        ),
+        image_variants[0] if image_variants else None,
+    )
+    if initial_gallery_variant:
+        gallery_start_image_url = initial_gallery_variant.image.url
+        gallery_start_image_alt = initial_gallery_variant.variant.name
+    elif additional_images:
+        first_gallery_image = additional_images[0]
+        gallery_start_image_url = first_gallery_image.image.url
+        gallery_start_image_alt = first_gallery_image.alt_text or product.name
+    elif product.image:
+        gallery_start_image_url = product.image.url
+        gallery_start_image_alt = product.name
+    else:
+        gallery_start_image_url = ""
+        gallery_start_image_alt = ""
     product_reviews = list(
         ProductReview.objects.filter(product=product, is_approved=True)
         .select_related("user")
@@ -369,22 +400,45 @@ def product_detail(request, id, slug):
     }
     product_specifications = list(product.specifications.all().order_by("order", "id"))
 
-    related_products = list(
-        Product.objects.filter(category=product.category, available=True)
+    also_chosen_candidates = list(
+        Product.objects.filter(also_chosen_for__product=product, available=True, stock__gt=0)
         .select_related("category", "brand")
         .prefetch_related(available_variant_prefetch)
-        .exclude(id=product.id)[:4]
+        .exclude(id=product.id)
+        .order_by("also_chosen_for__sort_order", "also_chosen_for__id")
     )
+    also_chosen_products = [
+        item for item in also_chosen_candidates
+        if is_product_visible_in_recommendations(item)
+    ][:5]
+    also_chosen_product_ids = [item.id for item in also_chosen_products]
+
+    related_candidates = list(
+        Product.objects.filter(category=product.category, available=True, stock__gt=0)
+        .select_related("category", "brand")
+        .prefetch_related(available_variant_prefetch)
+        .exclude(id=product.id)
+        .exclude(id__in=also_chosen_product_ids)
+    )
+    related_products = [
+        item for item in related_candidates
+        if is_product_visible_in_recommendations(item)
+    ][:8]
+    mark_liked_products(also_chosen_products, liked_product_ids)
     mark_liked_products(related_products, liked_product_ids)
 
     return render(request, "main/product/detail.html", {
         "product": product,
+        "also_chosen_products": also_chosen_products,
         "related_products": related_products,
         "is_liked": product.is_liked,
         "badge": product.badge_data,
         "available_variants": available_variants,
         "display_variants": display_variants,
         "display_variant_groups": display_variant_groups,
+        "initial_gallery_variant": initial_gallery_variant,
+        "gallery_start_image_url": gallery_start_image_url,
+        "gallery_start_image_alt": gallery_start_image_alt,
         "additional_images": additional_images,
         "product_reviews": product_reviews,
         "product_reviews_count": product_reviews_count,

@@ -1,0 +1,49 @@
+<article class="review-card" data-id="{{ review.id }}">
+  <div class="rc-top">
+    <div class="rc-avatar c1">
+      {% if review.avatar %}{{ review.avatar }}{% elif review.author_name %}{{ review.author_name|slice:":1" }}{% else %}{{ review.name|slice:":1" }}{% endif %}
+    </div>
+    <div class="rc-info">
+      <div class="rc-name-row">
+        <span class="rc-name">{% if review.author_name %}{{ review.author_name }}{% else %}{{ review.name }}{% endif %}</span>
+        {% if review.is_verified or review.verified %}
+          <span class="rc-verified" title="Проверенный покупатель">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M13 19L16 22L21 17" stroke="var(--accent, var(--detail-accent, #bff747))" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="M9 22H7C5.89543 22 5 21.1046 5 20V11.1817C5 11.0632 4.96494 10.9474 4.89923 10.8488L3.10077 8.15115C3.03506 8.05259 3 7.93679 3 7.81833V2.6C3 2.26863 3.26863 2 3.6 2H5.4C5.73137 2 6 2.26863 6 2.6V4.4C6 4.73137 6.26863 5 6.6 5H9.4C9.73137 5 10 4.73137 10 4.4V2.6C10 2.26863 10.2686 2 10.6 2H13.4C13.7314 2 14 2.26863 14 2.6V4.4C14 4.73137 14.2686 5 14.6 5H17.4C17.7314 5 18 4.73137 18 4.4V2.6C18 2.26863 18.2686 2 18.6 2H20.4C20.7314 2 21 2.26863 21 2.6V7.81833C21 7.93679 20.9649 8.05259 20.8992 8.15115L19.1008 10.8488C19.0351 10.9474 19 11.0632 19 11.1817V13.5" stroke="var(--accent, var(--detail-accent, #bff747))" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </span>
+        {% endif %}
+      </div>
+      <div class="rc-meta-row">
+        <span class="rc-date">{% if review.date %}{{ review.date }}{% else %}{{ review.created|date:"d.m.Y" }}{% endif %}</span>
+        {% if show_product %}
+          <span class="rc-product-tag">
+            {% if review.product.name %}{{ review.product.name }}{% else %}{{ review.product }}{% endif %}
+          </span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="rc-stars-block" aria-label="Оценка {{ review.rating }} из 5">
+      {% for i in "12345" %}
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="{% if forloop.counter <= review.rating %}var(--buda, #fce122){% else %}rgba(255,255,255,.12){% endif %}"></path>
+        </svg>
+      {% endfor %}
+    </div>
+  </div>
+
+  <p class="rc-text">{{ review.text }}</p>
+
+  <div class="rc-footer">
+    <div class="rc-helpful">
+      <span class="rc-helpful-label">Полезно?</span>
+      <div class="rc-vote-btns">
+        <button class="rc-vote{% if review.liked or review.id in liked_review_ids %} liked is-liked{% endif %}" type="button" data_review_helpful_id="{{ review.id }}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10v12M15 5.88L14 10h5.83a2 2 0 011.92 2.56l-2.33 8A2 2 0 0117.5 22H4a2 2 0 01-2-2v-8a2 2 0 012-2h2.76a2 2 0 001.79-1.11L12 2a3.13 3.13 0 013 3.88z"></path></svg>
+          <span>{{ review.helpful|default:review.helpful_count }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</article>

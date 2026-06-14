@@ -7,6 +7,7 @@
     <title>{{ product.name }} | WAVE</title>
     <link rel="stylesheet" href="{% static 'assets/css/theme.css' %}" />
     <link rel="icon" type="image/png" href="{% static 'assets/img/mini_logo.png' %}" />
+    <link rel="stylesheet" href="{% static 'assets/css/review_card.css' %}" />
     <style>
       :root {
         --detail-bg: var(--bg, #0a0a0c);
@@ -718,6 +719,10 @@
 
       .product-info__button {
         min-height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
         border-radius: 8px;
         font-size: 12px;
         font-weight: 700;
@@ -734,6 +739,13 @@
       .product-info__button--cart {
         background: var(--buda);
         color: #08090a;
+      }
+
+      .product-info__button--cart img {
+        width: 18px;
+        height: 18px;
+        display: block;
+        object-fit: contain;
       }
 
       .product-info__button--cart.success_state {
@@ -949,66 +961,68 @@
         display: grid;
       }
 
-      .product-reviews__card {
-        padding: 14px;
-        border: 1px solid var(--detail-border);
-        border-radius: 10px;
-        background: var(--detail-surface);
-      }
-
-      .product-reviews__meta {
+      .product-reviews__pagination {
         display: flex;
         align-items: center;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 8px;
-        color: var(--detail-faint);
-        font-size: 12px;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 18px;
       }
 
-      .product-reviews__author {
-        color: var(--detail-text);
-        font-weight: 800;
+      .product-reviews__pagination[hidden] {
+        display: none;
       }
 
-      .product-reviews__stars {
-        color: var(--buda);
-        letter-spacing: 0.04em;
-      }
-
-      .product-reviews__text {
-        margin: 0;
-        color: var(--detail-muted);
-        font-size: 14px;
-        line-height: 1.65;
-      }
-
-      .product-reviews__helpful {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        margin-top: 10px;
+      .product-reviews__page-btn {
+        width: 34px;
+        height: 34px;
+        display: inline-grid;
+        place-items: center;
         padding: 0;
-        border: 0;
-        background: transparent;
-        color: var(--detail-faint);
+        border: 1px solid var(--detail-border);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        color: rgba(241, 241, 241, 0.72);
         cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+      }
+
+      .product-reviews__page-btn svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .product-reviews__page-btn:hover:not(:disabled) {
+        border-color: rgba(255, 255, 255, 0.22);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--detail-text);
+      }
+
+      .product-reviews__page-btn:disabled {
+        opacity: 0;
+        cursor: default;
+        pointer-events: none;
+      }
+
+      .product-reviews__page-info {
+        color: var(--detail-faint);
         font-size: 12px;
         font-weight: 700;
-        transition: color 0.15s ease;
       }
 
-      .product-reviews__helpful:hover,
-      .product-reviews__helpful.is-liked {
-        color: var(--detail-accent);
-      }
-
+      .product-cross-sell,
       .related-products {
         margin-top: 80px;
         padding-top: 40px;
         border-top: 1px solid var(--detail-border);
       }
 
+      .product-cross-sell__title,
       .related-products__title {
         margin: 0 0 24px;
         color: var(--detail-text);
@@ -1017,6 +1031,7 @@
         letter-spacing: 0.02em;
       }
 
+      .product-cross-sell__grid,
       .related-products__grid {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1342,6 +1357,7 @@
         }
 
 
+        .product-cross-sell__grid,
         .related-products__grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
@@ -1425,6 +1441,7 @@
           flex-direction: column;
         }
 
+        .product-cross-sell__grid,
         .related-products__grid {
           grid-template-columns: 1fr;
         }
@@ -1655,11 +1672,11 @@
             <span>{{ product.name }}</span>
           </nav>
 
-          {% if product.promo_video or product.image or additional_images %}
+          {% if product.promo_video or gallery_start_image_url %}
             <div class="product-gallery__thumbs" id="js_gallery_thumbnails" aria-label="Изображения товара">
               {% if product.promo_video %}
                 <button
-                  class="product-gallery__thumb product-gallery__thumb--video gallery_thumbnail_button{% if not product.image and not additional_images %} active{% endif %}"
+                  class="product-gallery__thumb product-gallery__thumb--video gallery_thumbnail_button{% if not gallery_start_image_url %} active{% endif %}"
                   type="button"
                   data_gallery_type="video"
                   data_gallery_video_src="{{ product.promo_video.url }}"
@@ -1676,17 +1693,32 @@
                 </button>
               {% endif %}
 
-              {% if product.image %}
-                <button class="product-gallery__thumb gallery_thumbnail_button active" type="button" data_gallery_src="{{ product.image.url }}" data_gallery_alt="{{ product.name }}" aria-label="Основное изображение">
-                  <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" />
+              {% if initial_gallery_variant %}
+                <button
+                  class="product-gallery__thumb gallery_thumbnail_button active"
+                  id="js_gallery_variant_thumb"
+                  type="button"
+                  data_gallery_role="variant"
+                  data_gallery_variant_id="{{ initial_gallery_variant.id }}"
+                  data_gallery_src="{{ initial_gallery_variant.image.url }}"
+                  data_gallery_alt="{{ initial_gallery_variant.variant.name }}"
+                  aria-label="Изображение выбранного варианта"
+                >
+                  <img src="{{ initial_gallery_variant.image.url }}" alt="{{ initial_gallery_variant.variant.name }}" loading="lazy" />
                 </button>
               {% endif %}
 
               {% for image in additional_images %}
-                <button class="product-gallery__thumb gallery_thumbnail_button{% if not product.image and forloop.first %} active{% endif %}" type="button" data_gallery_src="{{ image.image.url }}" data_gallery_alt="{{ image.alt_text|default:product.name }}" aria-label="Изображение {{ forloop.counter }}">
+                <button class="product-gallery__thumb gallery_thumbnail_button{% if not initial_gallery_variant and forloop.first %} active{% endif %}" type="button" data_gallery_src="{{ image.image.url }}" data_gallery_alt="{{ image.alt_text|default:product.name }}" aria-label="Изображение {{ forloop.counter }}">
                   <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy" />
                 </button>
               {% endfor %}
+
+              {% if product.image and not initial_gallery_variant and not additional_images %}
+                <button class="product-gallery__thumb gallery_thumbnail_button active" type="button" data_gallery_src="{{ product.image.url }}" data_gallery_alt="{{ product.name }}" aria-label="Основное изображение">
+                  <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" />
+                </button>
+              {% endif %}
             </div>
           {% endif %}
 
@@ -1695,12 +1727,8 @@
               <span class="product-gallery__badge product-gallery__badge--{{ badge.type }}">{{ badge.label }}</span>
             {% endif %}
 
-            {% if product.image %}
-              <img class="product-gallery__image" id="js_main_image" src="{{ product.image.url }}" alt="{{ product.name }}" />
-            {% elif additional_images %}
-              {% with first_image=additional_images.0 %}
-                <img class="product-gallery__image" id="js_main_image" src="{{ first_image.image.url }}" alt="{{ first_image.alt_text|default:product.name }}" />
-              {% endwith %}
+            {% if gallery_start_image_url %}
+              <img class="product-gallery__image" id="js_main_image" src="{{ gallery_start_image_url }}" alt="{{ gallery_start_image_alt }}" />
             {% elif product.promo_video %}
               <img class="product-gallery__image" id="js_main_image" src="" alt="" hidden />
             {% else %}
@@ -1715,9 +1743,9 @@
                 playsinline
                 preload="metadata"
                 {% if product.promo_video_poster %}poster="{{ product.promo_video_poster.url }}"{% elif product.image %}poster="{{ product.image.url }}"{% endif %}
-                {% if product.image or additional_images %}hidden{% else %}src="{{ product.promo_video.url }}"{% endif %}
+                {% if gallery_start_image_url %}hidden{% else %}src="{{ product.promo_video.url }}"{% endif %}
               ></video>
-              <button class="product-gallery__video-sound" id="js_video_sound_toggle" type="button" aria-label="Включить звук" {% if product.image or additional_images %}hidden{% endif %}>
+              <button class="product-gallery__video-sound" id="js_video_sound_toggle" type="button" aria-label="Включить звук" {% if gallery_start_image_url %}hidden{% endif %}>
                 <svg class="product-gallery__video-sound-muted" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M4 9v6h4l5 4V5L8 9H4z"></path>
                   <path d="M18 9l4 4"></path>
@@ -1729,7 +1757,7 @@
                   <path d="M19.5 6.5a8 8 0 0 1 0 11"></path>
                 </svg>
               </button>
-              <div class="product-gallery__video-progress" id="js_video_progress" {% if product.image or additional_images %}hidden{% endif %}>
+              <div class="product-gallery__video-progress" id="js_video_progress" {% if gallery_start_image_url %}hidden{% endif %}>
                 <div class="product-gallery__video-progress-fill" id="js_video_progress_fill"></div>
               </div>
             {% endif %}
@@ -1781,6 +1809,7 @@
                         type="button"
                         data_variant_id="{{ product_variant.id }}"
                         data_variant_name="{{ product_variant.name }}"
+                        data_variant_image_url="{{ product_variant.image_url }}"
                         {% if not product_variant.available %}disabled{% endif %}
                       >
                         {% if product_variant.image_url %}
@@ -1796,6 +1825,7 @@
                         type="button"
                         data_variant_id="{{ product_variant.id }}"
                         data_variant_name="{{ product_variant.name }}"
+                        data_variant_image_url="{{ product_variant.image_url }}"
                         {% if not product_variant.available %}disabled{% endif %}
                       >
                         {{ product_variant.name }}
@@ -1826,7 +1856,8 @@
                 <button class="product-info__quantity-button product-info__quantity-button--plus" id="js_quantity_plus" type="button" aria-label="Увеличить количество"></button>
               </div>
               <button class="product-info__button product-info__button--cart" id="js_add_to_cart" type="button" data_product_id="{{ product.id }}">
-                Добавить в корзину
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAACPklEQVR4nO2ZT0hUQRzHP2GbXpIuHjoEQqu3vAR7UBAPJt5avWRQ1CXsEqEdIrx4UNBQ9KqdAvegnYwQrFuHgk4RUpldIjqlFV0MlJKRefBDdt+feTOT4nzgx9s3zO878112fvtmHgQCgUDAAl3A/Zi4Bpww1C4Cw/rqhGZgB/iXENcN9T/r/E/8ZwNzhvpSwxmdwBgwcSAWxOAvD7OBWpwTg3/Hv4E+YAUoG469v3B/iwk0JfQvit98Uqh+cQu7Dvil+26SgzdiUPVTi+NeyslHMRyj1SL6fctj4LEQGkzoq77RjZSTV1XpfIxWWfR9nsfAAyE063ENjIi8GXJwWQitejRQEXm3yEGrEPrq0cBbkddODk4Cf7TQX6AxY/6GwT9xHbAtDJwhJ++EWCljrlrYQwkL1lkFilgSgjdwT9lWBYoYFYLqEcM1I7YqUMQVIbiMeyq2KlBEmxBUi9I178V4HTYEG4BdLaiuPUC3o5gSk/8B1GOJtI8INuMhFln2PPlnQMGmgQkh/gV44Sjm9T7AOjeFgUWOICVhYJ0jyClgS5iYBi45qELNLk1Meli8Oyl2fsYUdHVwbeIOjunX1cJFFXoEnHZtIHBYaAQuGuzS5LlTqw7Tw2Njbott37a+z8JZ4LVYuK90mxfaxNNpFOr+QgaNJ1Wqj9r5eeFujfKn2tPys0q+avPC1RoGBjJofKyS/wFPqA3O2oHB13R7WtQLE1svUYxQZzXjwFP9bsHk7KZX738r+nMgEDhu7AHM/4ko6mUOlwAAAABJRU5ErkJggg==" alt="" aria-hidden="true" />
+                <span data_cart_button_text>Добавить в корзину</span>
               </button>
               <button
                 class="product-info__favorite{% if is_liked %} active{% endif %}"
@@ -1891,6 +1922,19 @@
               {{ product.description|default:"Описание товара пока не добавлено."|linebreaks }}
             </div>
           </div>
+
+          <div class="product-info__description product-info__warranty">
+            <button class="product-info__toggle-title product-info__description-title" type="button" aria-expanded="false" data_collapsible_trigger="product-warranty-content">
+              <span>Гарантия</span>
+              <span class="product-info__toggle-icon" aria-hidden="true">
+                <svg viewBox="0 0 15 15" fill="currentColor" width="15" height="15"><g stroke="none" fill="none" stroke-width="1" fill-rule="evenodd"><g fill="currentColor" fill-rule="nonzero"><g transform="translate(2 7)"><path d="M0 0L11 0 11 1 0 1z"></path></g></g></g></svg>
+                <svg class="product-info__toggle-icon-plus" viewBox="0 0 15 15" fill="currentColor" width="15" height="15"><g stroke="none" fill="none" stroke-width="1" fill-rule="evenodd"><g fill="currentColor" fill-rule="nonzero"><g transform="translate(2 7)"><path d="M0 0L11 0 11 1 0 1z"></path></g></g></g></svg>
+              </span>
+            </button>
+            <div class="product-info__collapsible is-collapsed" id="product-warranty-content">
+              <p>Обмен и возврат в течение 14 дней для товаров, не бывших в употреблении. (Картриджи, испарители и жидкости не подлежат обмену и возврату)</p>
+            </div>
+          </div>
         </article>
         </div>
       </section>
@@ -1906,21 +1950,33 @@
           </div>
           <div class="product-reviews__body" id="js_product_reviews_body">
             {% for review in product_reviews %}
-              <article class="product-reviews__card">
-                <div class="product-reviews__meta">
-                  <span class="product-reviews__author">{{ review.author_name }}</span>
-                  <span>{{ review.created|date:"d.m.Y" }}</span>
-                  <span class="product-reviews__stars" aria-label="Оценка {{ review.rating }} из 5">
-                    {% for i in "12345" %}
-                      {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}
-                    {% endfor %}
-                  </span>
-                </div>
-                <p class="product-reviews__text">{{ review.text }}</p>
-                <button class="product-reviews__helpful{% if review.id in liked_review_ids %} is-liked{% endif %}" type="button" data_review_helpful_id="{{ review.id }}">
-                  Полезно? <span>{{ review.helpful_count }}</span>
-                </button>
-              </article>
+              {% include 'main/includes/review_card.html' with review=review show_product=False %}
+            {% endfor %}
+          </div>
+          {% if product_reviews_count > 10 %}
+            <div class="product-reviews__pagination" id="js_product_reviews_pagination" hidden>
+              <button class="product-reviews__page-btn" id="js_product_reviews_prev" type="button" aria-label="Предыдущая страница отзывов">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+              <span class="product-reviews__page-info" id="js_product_reviews_page_info">1 / 1</span>
+              <button class="product-reviews__page-btn" id="js_product_reviews_next" type="button" aria-label="Следующая страница отзывов">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 6l6 6-6 6" />
+                </svg>
+              </button>
+            </div>
+          {% endif %}
+        </section>
+      {% endif %}
+
+      {% if also_chosen_products %}
+        <section class="product-cross-sell">
+          <h2 class="product-cross-sell__title">Также выбирают</h2>
+          <div class="product-cross-sell__grid">
+            {% for product in also_chosen_products %}
+              {% include 'main/includes/product_card.html' with product=product %}
             {% endfor %}
           </div>
         </section>
@@ -1928,7 +1984,7 @@
 
       {% if related_products %}
         <section class="related-products">
-          <h2 class="related-products__title">Похожие товары</h2>
+          <h2 class="related-products__title">Рекомендации</h2>
           <div class="related-products__grid">
             {% for product in related_products %}
               {% include 'main/includes/product_card.html' with product=product %}
@@ -1983,6 +2039,7 @@
         const videoProgressFill = document.getElementById("js_video_progress_fill");
         const galleryFrame = document.getElementById("js_gallery_frame");
         const thumbnailButtons = [...document.querySelectorAll(".gallery_thumbnail_button")];
+        const variantGalleryThumb = document.getElementById("js_gallery_variant_thumb");
         const lightbox = document.getElementById("js_product_lightbox");
         const lightboxImage = document.getElementById("js_product_lightbox_image");
         const lightboxClose = document.getElementById("js_product_lightbox_close");
@@ -2074,6 +2131,26 @@
           }
 
           showGalleryImage(button);
+        }
+
+        function updateVariantGalleryImage(variantButton) {
+          if (!variantGalleryThumb || !variantButton) return;
+          const imageUrl = variantButton.getAttribute("data_variant_image_url") || "";
+          if (!imageUrl) return;
+
+          const variantName = variantButton.getAttribute("data_variant_name") || "";
+          const image = variantGalleryThumb.querySelector("img");
+          variantGalleryThumb.setAttribute("data_gallery_variant_id", variantButton.getAttribute("data_variant_id") || "");
+          variantGalleryThumb.setAttribute("data_gallery_src", imageUrl);
+          variantGalleryThumb.setAttribute("data_gallery_alt", variantName);
+          if (image) {
+            image.src = imageUrl;
+            image.alt = variantName;
+          }
+
+          if (variantGalleryThumb.classList.contains("active")) {
+            showGalleryImage(variantGalleryThumb);
+          }
         }
 
         function openLightbox() {
@@ -2244,6 +2321,7 @@
         const variantButtons = [...document.querySelectorAll(".variant_btn")];
         const availableVariantButtons = variantButtons.filter((button) => !button.disabled);
         const variantGroups = [...document.querySelectorAll(".product-info__variant-group")];
+        const initialGalleryVariantId = variantGalleryThumb?.getAttribute("data_gallery_variant_id") || "";
         const urlParams = new URLSearchParams(window.location.search);
         const requestedVariantIds = new Set([
           ...urlParams.getAll("variant_id"),
@@ -2261,7 +2339,8 @@
           const groupButtons = [...group.querySelectorAll(".variant_btn")];
           const availableGroupButtons = groupButtons.filter((button) => !button.disabled);
           const requestedButton = availableGroupButtons.find((button) => requestedVariantIds.has(button.getAttribute("data_variant_id")));
-          (requestedButton || availableGroupButtons[0])?.classList.add("active");
+          const initialGalleryButton = availableGroupButtons.find((button) => button.getAttribute("data_variant_id") === initialGalleryVariantId);
+          (requestedButton || initialGalleryButton || availableGroupButtons[0])?.classList.add("active");
           updateSelectedVariantName(group);
         });
 
@@ -2272,6 +2351,7 @@
             group?.querySelectorAll(".variant_btn").forEach((item) => item.classList.remove("active"));
             button.classList.add("active");
             updateSelectedVariantName(group);
+            updateVariantGalleryImage(button);
           });
         });
 
@@ -2331,12 +2411,13 @@
           showToast("Товар добавлен в корзину");
 
           if (button) {
-            const original = button.textContent;
+            const buttonText = button.querySelector("[data_cart_button_text]");
+            const original = buttonText?.textContent || "Добавить в корзину";
             button.classList.add("success_state");
-            button.textContent = "Добавлено";
+            if (buttonText) buttonText.textContent = "Добавлено";
             setTimeout(() => {
               button.classList.remove("success_state");
-              button.textContent = original;
+              if (buttonText) buttonText.textContent = original;
             }, 1600);
           }
 
@@ -2379,16 +2460,63 @@
         const productReviews = document.getElementById("product-reviews");
         const productReviewsToggle = document.getElementById("js_product_reviews_toggle");
         const productReviewsLink = document.getElementById("js_product_reviews_link");
+        const productReviewCards = [...document.querySelectorAll("#js_product_reviews_body .review-card")];
+        const productReviewsPagination = document.getElementById("js_product_reviews_pagination");
+        const productReviewsPrev = document.getElementById("js_product_reviews_prev");
+        const productReviewsNext = document.getElementById("js_product_reviews_next");
+        const productReviewsPageInfo = document.getElementById("js_product_reviews_page_info");
+        const productReviewsPerPage = 10;
+        let currentProductReviewsPage = 1;
+        const totalProductReviewPages = Math.ceil(productReviewCards.length / productReviewsPerPage);
+
+        function renderProductReviewsPage() {
+          if (!productReviewCards.length) return;
+          const reviewsAreOpen = productReviews?.classList.contains("is-open");
+          const start = (currentProductReviewsPage - 1) * productReviewsPerPage;
+          const end = start + productReviewsPerPage;
+
+          productReviewCards.forEach((card, index) => {
+            card.hidden = index < start || index >= end;
+          });
+
+          if (productReviewsPagination) {
+            productReviewsPagination.hidden = !reviewsAreOpen || totalProductReviewPages <= 1;
+          }
+          if (productReviewsPrev) {
+            productReviewsPrev.disabled = currentProductReviewsPage === 1;
+          }
+          if (productReviewsNext) {
+            productReviewsNext.disabled = currentProductReviewsPage === totalProductReviewPages;
+          }
+          if (productReviewsPageInfo) {
+            productReviewsPageInfo.textContent = `${currentProductReviewsPage} / ${totalProductReviewPages}`;
+          }
+        }
 
         function setProductReviewsOpen(open) {
           if (!productReviews || !productReviewsToggle) return;
           productReviews.classList.toggle("is-open", open);
           productReviewsToggle.setAttribute("aria-expanded", open ? "true" : "false");
           productReviewsToggle.textContent = open ? "Скрыть" : "Показать";
+          renderProductReviewsPage();
         }
+
+        renderProductReviewsPage();
 
         productReviewsToggle?.addEventListener("click", () => {
           setProductReviewsOpen(!productReviews?.classList.contains("is-open"));
+        });
+
+        productReviewsPrev?.addEventListener("click", () => {
+          if (currentProductReviewsPage <= 1) return;
+          currentProductReviewsPage -= 1;
+          renderProductReviewsPage();
+        });
+
+        productReviewsNext?.addEventListener("click", () => {
+          if (currentProductReviewsPage >= totalProductReviewPages) return;
+          currentProductReviewsPage += 1;
+          renderProductReviewsPage();
         });
 
         productReviewsLink?.addEventListener("click", (event) => {
@@ -2414,6 +2542,7 @@
               showToast("Не удалось обновить отзыв", true);
               return;
             }
+            button.classList.toggle("liked", Boolean(data.liked));
             button.classList.toggle("is-liked", Boolean(data.liked));
             const counter = button.querySelector("span");
             if (counter) counter.textContent = data.helpful;

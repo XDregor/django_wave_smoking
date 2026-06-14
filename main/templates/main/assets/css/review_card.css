@@ -1,0 +1,260 @@
+.review-card {
+  position: relative;
+  margin-bottom: 8px;
+  padding: 20px 22px;
+  border: 1px solid var(--border, var(--detail-border, rgba(255, 255, 255, 0.07)));
+  border-radius: 16px;
+  background: var(--surface, var(--detail-surface, #111113));
+  transition: border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
+}
+
+.review-card:hover {
+  border-color: rgba(255, 255, 255, 0.09);
+  background: #0f0f10;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+}
+
+.rc-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.rc-avatar {
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 38px;
+  background: #222224;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: "JetBrains Mono", "IBM Plex Mono", monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.rc-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.rc-name-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 3px;
+}
+
+.rc-name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--white, var(--detail-text, #f1f1f1));
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rc-verified {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.rc-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rc-date {
+  color: var(--muted, var(--detail-muted, rgba(241, 241, 241, 0.58)));
+  font-family: "JetBrains Mono", "IBM Plex Mono", monospace;
+  font-size: 12px;
+}
+
+.rc-product-tag {
+  max-width: 160px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  color: var(--muted, var(--detail-muted, rgba(241, 241, 241, 0.58)));
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rc-product-tag::before {
+  content: "·";
+  color: var(--muted, var(--detail-muted, rgba(241, 241, 241, 0.58)));
+}
+
+.rc-stars-block {
+  flex-shrink: 0;
+  display: flex;
+  gap: 2px;
+}
+
+.rc-stars-block svg {
+  width: 16px;
+  height: 16px;
+}
+
+.rc-text {
+  margin: 0;
+  color: rgba(232, 232, 232, 0.85);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.rc-text.truncated {
+  display: -webkit-box;
+  line-clamp: 3;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.rc-read-more {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted-2, var(--detail-muted, rgba(241, 241, 241, 0.58)));
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: color 0.18s ease;
+}
+
+.rc-read-more:hover {
+  color: var(--text, var(--detail-text, #f1f1f1));
+}
+
+.rc-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border, var(--detail-border, rgba(255, 255, 255, 0.07)));
+}
+
+.rc-helpful {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rc-helpful-label {
+  color: var(--muted, var(--detail-muted, rgba(241, 241, 241, 0.58)));
+  font-size: 12px;
+}
+
+.rc-vote-btns {
+  display: flex;
+  gap: 4px;
+}
+
+.rc-vote {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border: 1px solid var(--border, var(--detail-border, rgba(255, 255, 255, 0.07)));
+  border-radius: 20px;
+  background: transparent;
+  color: var(--muted, var(--detail-muted, rgba(241, 241, 241, 0.58)));
+  cursor: pointer;
+  font-family: "JetBrains Mono", "IBM Plex Mono", monospace;
+  font-size: 12px;
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+}
+
+.rc-vote:hover {
+  border-color: var(--border-2, rgba(255, 255, 255, 0.11));
+  color: var(--text, var(--detail-text, #f1f1f1));
+}
+
+.rc-vote.liked,
+.rc-vote.is-liked {
+  color: var(--accent, var(--detail-accent, #bff747));
+  background: rgba(191, 247, 71, 0.05);
+}
+
+.rc-vote svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (min-width: 861px) {
+  @keyframes cardReveal {
+    0% {
+      opacity: 0;
+      transform: translateX(32px) scale(0.97);
+      filter: blur(4px);
+    }
+    60% {
+      filter: blur(0);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      filter: blur(0);
+    }
+  }
+
+  .review-card {
+    animation: cardReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@media (max-width: 860px) {
+  .rc-top {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .rc-stars-block {
+    margin-left: auto;
+  }
+
+  .rc-meta-row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .rc-product-tag {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .rc-top {
+    align-items: flex-start;
+  }
+
+  .rc-stars-block {
+    width: 100%;
+    margin-left: 50px;
+  }
+
+  .review-card {
+    padding: 17px;
+  }
+}
