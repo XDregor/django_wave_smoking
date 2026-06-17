@@ -8,6 +8,51 @@ from django.db.models import F, Q, Sum
 from django.utils.text import slugify
 
 
+def get_upload_extension(filename):
+    extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    return extension or "webp"
+
+
+def get_product_upload_identity(product):
+    product_id = product.pk or "new"
+    product_slug = product.slug or slugify(product.name) or "product"
+    return product_id, product_slug
+
+
+def product_main_image_upload_to(instance, filename):
+    product_id, product_slug = get_product_upload_identity(instance)
+    extension = get_upload_extension(filename)
+    return f"products/{product_id}/main/product-{product_id}-{product_slug}-main-original.{extension}"
+
+
+def product_video_upload_to(instance, filename):
+    product_id, product_slug = get_product_upload_identity(instance)
+    extension = get_upload_extension(filename)
+    return f"products/{product_id}/video/product-{product_id}-{product_slug}-promo-video.{extension}"
+
+
+def product_video_poster_upload_to(instance, filename):
+    product_id, product_slug = get_product_upload_identity(instance)
+    extension = get_upload_extension(filename)
+    return f"products/{product_id}/video/product-{product_id}-{product_slug}-video-poster-original.{extension}"
+
+
+def product_variant_image_upload_to(instance, filename):
+    product = instance.product
+    product_id, product_slug = get_product_upload_identity(product)
+    variant_slug = instance.variant.slug or slugify(instance.variant.name) or "variant"
+    extension = get_upload_extension(filename)
+    return f"products/{product_id}/variants/product-{product_id}-{product_slug}-variant-{variant_slug}-original.{extension}"
+
+
+def product_gallery_image_upload_to(instance, filename):
+    product = instance.product
+    product_id, product_slug = get_product_upload_identity(product)
+    order = (instance.order or 0) + 1
+    extension = get_upload_extension(filename)
+    return f"products/{product_id}/gallery/product-{product_id}-{product_slug}-gallery-{order:02d}-original.{extension}"
+
+
 def make_unique_slug(model_class, value, instance_pk=None):
     base_slug = slugify(value) or "item"
     slug = base_slug
@@ -118,15 +163,15 @@ class Product(models.Model):
     )
     name = models.CharField(max_length=100, db_index=True, verbose_name="Name")
     slug = models.SlugField(max_length=100, unique=True, blank=True)
-    image = models.ImageField(upload_to="products/%Y/%m/%d", blank=True, verbose_name="Image")
+    image = models.ImageField(upload_to=product_main_image_upload_to, blank=True, verbose_name="Image")
     promo_video = models.FileField(
-        upload_to="products/videos/%Y/%m/%d/",
+        upload_to=product_video_upload_to,
         blank=True,
         null=True,
         verbose_name="Promo video",
     )
     promo_video_poster = models.ImageField(
-        upload_to="products/videos/posters/%Y/%m/%d/",
+        upload_to=product_video_poster_upload_to,
         blank=True,
         null=True,
         verbose_name="Promo video poster",
@@ -224,6 +269,7 @@ class Product(models.Model):
                 "slug": item.variant.slug,
                 "group": item.variant.group,
                 "image_url": item.image.url if item.image else "",
+                "thumbnail_url": item.thumbnail_url,
                 "stock": item.stock,
                 "available": True,
             }
@@ -242,6 +288,7 @@ class Product(models.Model):
                 "slug": product_variant.variant.slug,
                 "group": product_variant.variant.group,
                 "image_url": product_variant.image.url if product_variant.image else "",
+                "thumbnail_url": product_variant.thumbnail_url,
                 "stock": product_variant.stock,
                 "available": bool(product_variant.available and product_variant.stock > 0),
             }
@@ -314,7 +361,7 @@ class ProductVariant(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Variant",
     )
-    image = models.ImageField(upload_to="products/variants/%Y/%m/%d/", blank=True, verbose_name="Variant image")
+    image = models.ImageField(upload_to=product_variant_image_upload_to, blank=True, verbose_name="Variant image")
     stock = models.PositiveIntegerField(default=0, verbose_name="Stock")
     available = models.BooleanField(default=False, verbose_name="Available")
 
@@ -343,6 +390,13 @@ class ProductVariant(models.Model):
     def __str__(self):
         return f"{self.product} / {self.variant}"
 
+    @property
+    def thumbnail_url(self):
+        thumbnail_url = getattr(self.image, "thumbnail_url", "")
+        if thumbnail_url:
+            return thumbnail_url
+        return self.image.url if self.image else ""
+
 
 class ProductImage(models.Model):
     product = models.ForeignKey(
@@ -351,7 +405,7 @@ class ProductImage(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Product",
     )
-    image = models.ImageField(upload_to="products/additional/%Y/%m/%d/", verbose_name="Image")
+    image = models.ImageField(upload_to=product_gallery_image_upload_to, verbose_name="Image")
     order = models.PositiveIntegerField(default=0, verbose_name="Order")
     alt_text = models.CharField(max_length=200, blank=True, verbose_name="Alt text")
     created = models.DateTimeField(auto_now_add=True)
@@ -363,6 +417,13 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return self.alt_text or f"{self.product} image {self.pk}"
+
+    @property
+    def thumbnail_url(self):
+        thumbnail_url = getattr(self.image, "thumbnail_url", "")
+        if thumbnail_url:
+            return thumbnail_url
+        return self.image.url if self.image else ""
 
 
 class ProductSpecification(models.Model):

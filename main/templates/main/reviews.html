@@ -357,6 +357,13 @@
         padding: 64px 20px;
         color: var(--muted);
       }
+      .empty-illustration {
+        display: block;
+        width: min(220px, 72vw);
+        height: auto;
+        margin: 0 auto 18px;
+        opacity: 0.82;
+      }
       .empty-title {
         font-size: 14px;
         font-weight: 600;
@@ -958,7 +965,7 @@
       function renderReviews(data) {
         var el = document.getElementById("reviewsList");
         if (!data.length) {
-          el.innerHTML = '<div class="empty"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" style="margin:0 auto 14px;display:block;opacity:.25"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg><p class="empty-title">Отзывы не найдены</p><p class="empty-sub">Попробуйте изменить фильтр</p></div>';
+          el.innerHTML = '<div class="empty"><img class="empty-illustration" src="{% static 'assets/img/reviews_empty.svg' %}" alt="" loading="lazy" decoding="async"><p class="empty-title">Отзывы не найдены</p><p class="empty-sub">Попробуйте изменить фильтр</p></div>';
           return;
         }
         var tagIcon = '<svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 2A1.5 1.5 0 000 3.5v4.793a1.5 1.5 0 00.44 1.06l6.75 6.75a1.5 1.5 0 002.12 0l4.794-4.794a1.5 1.5 0 000-2.12L7.353.44A1.5 1.5 0 006.293 0H1.5zm2.5 4a1 1 0 110-2 1 1 0 010 2z"/></svg>';

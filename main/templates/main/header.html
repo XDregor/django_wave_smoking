@@ -523,6 +523,137 @@
           box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
+      .search_results_dropdown {
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 50%;
+        z-index: 1400;
+        width: min(420px, 92vw);
+        padding: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 14px;
+        background: rgba(16, 16, 18, 0.96);
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
+        opacity: 0;
+        visibility: hidden;
+        transform: translate(-50%, 8px);
+        transition:
+          opacity 0.18s ease,
+          visibility 0.18s ease,
+          transform 0.18s ease;
+        backdrop-filter: blur(14px);
+      }
+
+      .search_results_dropdown.is-open {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, 0);
+      }
+
+      .search_results_list {
+        display: grid;
+        gap: 4px;
+      }
+
+      .search_result_item {
+        display: grid;
+        grid-template-columns: 48px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        min-height: 62px;
+        padding: 7px;
+        border-radius: 10px;
+        color: var(--text);
+        transition:
+          background 0.16s ease,
+          border-color 0.16s ease;
+      }
+
+      .search_result_item:hover {
+        background: rgba(255, 255, 255, 0.055);
+      }
+
+      .search_result_image {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        object-fit: cover;
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .search_result_content {
+        min-width: 0;
+      }
+
+      .search_result_name {
+        overflow: hidden;
+        color: rgba(241, 241, 241, 0.9);
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.25;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .search_result_meta {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-top: 4px;
+        color: rgba(241, 241, 241, 0.45);
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .search_result_price {
+        color: rgba(241, 241, 241, 0.86);
+        font-size: 13px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+
+      .search_result_status {
+        display: inline-flex;
+        align-items: center;
+        color: rgba(241, 241, 241, 0.48);
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .search_result_footer {
+        display: flex;
+        justify-content: center;
+        margin-top: 6px;
+        padding-top: 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .search_result_footer a,
+      .search_result_empty_link {
+        color: rgba(241, 241, 241, 0.66);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+
+      .search_result_footer a:hover,
+      .search_result_empty_link:hover {
+        color: rgba(241, 241, 241, 0.95);
+      }
+
+      .search_results_empty {
+        padding: 18px 12px;
+        text-align: center;
+      }
+
+      .search_results_empty_title {
+        color: rgba(241, 241, 241, 0.78);
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+
       /* Source: assets/css/promo_banner.css */
       /* Info Line Carousel */
       .promo_banner {
@@ -3695,6 +3826,24 @@
         flex-shrink: 0;
       }
 
+      .mobile_search_results_dropdown {
+        position: static;
+        left: auto;
+        width: 100%;
+        max-height: min(68vh, 520px);
+        overflow-y: auto;
+        border-width: 1px 0 0;
+        border-radius: 0 0 16px 16px;
+        background: transparent;
+        box-shadow: none;
+        transform: none;
+        backdrop-filter: none;
+      }
+
+      .mobile_search_results_dropdown.is-open {
+        transform: none;
+      }
+
       /* --- Universal dropdown mobile override --- */
       @media (max-width: 768px) {
         .shop_panel {
@@ -4661,8 +4810,8 @@
       }
 
       .delivery_progress_line.delivery_progress_line_active {
-        background: var(--delivery_accent_color);
-        box-shadow: 0 0 12px rgba(191, 247, 71, 0.5);
+        background: var(--buda);
+        box-shadow: 0 0 12px rgba(235, 247, 71, 0.5);
       }
 
       .delivery_header_section {
@@ -4681,16 +4830,10 @@
         justify-content: center;
         border: 1px solid var(--delivery_border_color);
         border-radius: 14px;
-        background: var(--delivery_surface_hover_color);
-        color: var(--delivery_accent_color);
+        color: var(--white);
         transition:
           background 0.25s ease,
           border-color 0.25s ease;
-      }
-
-      .delivery_header_icon_slot:hover {
-        background: rgba(191, 247, 71, 0.08);
-        border-color: rgba(191, 247, 71, 0.25);
       }
 
       .delivery_header_icon_slot svg {
@@ -4761,16 +4904,6 @@
 
       .delivery_info_item:last-child {
         border-bottom: none;
-      }
-
-      .delivery_info_bullet {
-        width: 7px;
-        height: 7px;
-        min-width: 7px;
-        flex-shrink: 0;
-        margin-top: 5px;
-        border-radius: 50%;
-        background: var(--delivery_accent_color);
       }
 
       .delivery_info_highlight {
@@ -4890,13 +5023,6 @@
           line-height: 1.45;
           gap: 9px;
           padding: 8px 0;
-        }
-
-        .delivery_info_bullet {
-          width: 6px;
-          height: 6px;
-          min-width: 6px;
-          margin-top: 4px;
         }
       }
 
@@ -5036,7 +5162,7 @@
         width: 48px;
         height: 48px;
         border-radius: 14px;
-        background: linear-gradient(135deg, var(--accent) 0%, #8bc34a 100%);
+        background: linear-gradient(90deg, #ff6b6b, #ffa500);;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -5251,7 +5377,7 @@
           <nav class="header_navigation" aria-label="Главная навигация">
             <ul class="navigation_primary_list">
               <li class="navigation_item navigation_item_label_new navigation_item_dropdown navigation_item_catalog navigation_item_accent" data-mega-menu-trigger data-mega-menu-section="collections">
-                <a href="{% url 'main:catalog' %}" aria-haspopup="true" aria-expanded="false">Категории</a>
+                <a href="{% url 'main:catalog' %}" aria-haspopup="true" aria-expanded="false">Каталог</a>
                 <span class="notification_badge notification_badge_new">new</span>
               </li>
 
@@ -5295,6 +5421,7 @@
                       </button>
                     </div>
                   </div>
+                  <div class="search_results_dropdown" data-search-results aria-live="polite"></div>
                 </li>
 
                 <li class="account_button" data-account-button>
@@ -5461,6 +5588,7 @@
               <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
+          <div class="search_results_dropdown mobile_search_results_dropdown" id="mobileSearchResults" aria-live="polite"></div>
         </div>
       </div>
 
@@ -5552,53 +5680,42 @@
         <div class="delivery_panels_viewport" id="delivery_panels_viewport">
           <div class="delivery_panel_item delivery_panel_item_active">
             <div class="delivery_info_item">
-              <span class="delivery_info_bullet"></span>
               <span>Отправка только <span class="delivery_info_highlight">Новой почтой</span> в отделения и почтоматы. Цена согласно тарифам перевозчика.</span>
             </div>
             <div class="delivery_info_item">
-              <span class="delivery_info_bullet"></span>
               <span>Комплектация заказа занимает <span class="delivery_info_highlight">1-2 рабочих дня</span> после оплаты.</span>
             </div>
             <div class="delivery_info_item">
-              <span class="delivery_info_bullet"></span>
               <span>Доставка в течение <span class="delivery_info_highlight">1-3 рабочих дней</span> после отправки.</span>
             </div>
             <div class="delivery_info_item">
-              <span class="delivery_info_bullet"></span>
               <span>После отправки вы получите <span class="delivery_info_highlight">ТТН для отслеживания</span> посылки.</span>
             </div>
             <div class="delivery_info_item">
-              <span class="delivery_info_bullet"></span>
               <span>Стоимость доставки рассчитывается <span class="delivery_info_highlight">индивидуально</span> в зависимости от веса и габаритов.</span>
             </div>
           </div>
 
           <div class="delivery_panel_item">
             <div class="delivery_info_item">
-              <span class="delivery_info_bullet"></span>
               <span><span class="delivery_info_highlight">Наложенный платёж</span> доступен при получении в отделении или у курьера Новой почты.</span>
             </div>
             <div class="delivery_info_item">
-              <span class="delivery_info_bullet"></span>
               <span><span class="delivery_info_highlight">Предоплата на банковскую карту</span> выполняется после оформления заказа. Комиссия зависит от тарифа вашего банка.</span>
             </div>
           </div>
 
           <div class="delivery_panel_item">
             <div class="delivery_info_item">
-              <span class="delivery_info_bullet"></span>
               <span><span class="delivery_info_highlight">Проверка товара:</span> обязательно осмотрите заказ при получении в присутствии сотрудника Новой почты. Претензии без проверки не принимаются.</span>
             </div>
             <div class="delivery_info_item">
-              <span class="delivery_info_bullet"></span>
               <span>Одновременно допускается не более <span class="delivery_info_highlight">2 заказов с наложенным платежом</span>. Новые заказы оформляются после получения предыдущих.</span>
             </div>
             <div class="delivery_info_item">
-              <span class="delivery_info_bullet"></span>
               <span>Хранение в отделении составляет <span class="delivery_info_highlight">7 рабочих дней</span>, после чего заказ возвращается.</span>
             </div>
             <div class="delivery_info_item">
-              <span class="delivery_info_bullet"></span>
               <span>Доставка возможна только по <span class="delivery_info_highlight">безопасной территории</span>. Отправка в зоны активных боевых действий не гарантируется.</span>
             </div>
           </div>
@@ -5767,6 +5884,182 @@
         }
       }
 
+      class HeaderProductSearchResults {
+        constructor(input, dropdown, options = {}) {
+          this.input = input;
+          this.dropdown = dropdown;
+          this.onSelect = options.onSelect || null;
+          this.debounceId = null;
+          this.abortController = null;
+
+          if (!this.input || !this.dropdown) return;
+          this.bindEvents();
+        }
+
+        bindEvents() {
+          this.input.addEventListener("input", () => this.handleInput());
+          this.input.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+              const query = this.getQuery();
+              if (!query) return;
+              event.preventDefault();
+              this.goToCatalog(query);
+            }
+            if (event.key === "Escape") {
+              this.hide();
+            }
+          });
+        }
+
+        getQuery() {
+          return String(this.input.value || "").trim().replace(/\s+/g, " ");
+        }
+
+        shouldSearch(query) {
+          return query.length >= 2 || /^\d+$/.test(query);
+        }
+
+        catalogUrl(query) {
+          const params = new URLSearchParams();
+          params.set("q", query);
+          params.set("search", "1");
+          return `/catalog/?${params.toString()}`;
+        }
+
+        goToCatalog(query = this.getQuery()) {
+          if (!query) return;
+          window.location.href = this.catalogUrl(query);
+        }
+
+        handleInput() {
+          const query = this.getQuery();
+          window.clearTimeout(this.debounceId);
+
+          if (!query) {
+            this.hide();
+            return;
+          }
+
+          if (!this.shouldSearch(query)) {
+            this.renderMessage("Введите минимум 2 символа");
+            return;
+          }
+
+          this.debounceId = window.setTimeout(() => this.fetchResults(query), 280);
+        }
+
+        fetchResults(query) {
+          this.abortController?.abort();
+          this.abortController = new AbortController();
+          this.renderMessage("Ищем...");
+
+          fetch(`/api/search/products/?q=${encodeURIComponent(query)}`, {
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+            signal: this.abortController.signal,
+          })
+            .then((response) => response.ok ? response.json() : Promise.reject(response))
+            .then((data) => this.renderResults(query, data))
+            .catch((error) => {
+              if (error?.name === "AbortError") return;
+              this.renderMessage("Поиск временно недоступен");
+            });
+        }
+
+        escapeHtml(value) {
+          return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#039;",
+          })[char]);
+        }
+
+        formatPrice(value) {
+          return `${Number(value || 0).toLocaleString("uk-UA")}₴`;
+        }
+
+        renderMessage(message) {
+          this.dropdown.innerHTML = `
+            <div class="search_results_empty">
+              <div class="search_results_empty_title">${this.escapeHtml(message)}</div>
+            </div>
+          `;
+          this.show();
+        }
+
+        renderResults(query, data) {
+          const results = Array.isArray(data?.results) ? data.results : [];
+          const total = Number(data?.total || 0);
+          const catalogUrl = this.catalogUrl(query);
+
+          if (!results.length) {
+            this.dropdown.innerHTML = `
+              <div class="search_results_empty">
+                <div class="search_results_empty_title">Ничего не найдено</div>
+                <a class="search_result_empty_link" href="${catalogUrl}">Перейти в каталог</a>
+              </div>
+            `;
+            this.show();
+            return;
+          }
+
+          this.dropdown.innerHTML = `
+            <div class="search_results_list">
+              ${results.map((product) => this.renderProduct(product)).join("")}
+            </div>
+            <div class="search_result_footer">
+              <a href="${catalogUrl}">Показать все результаты${total > results.length ? ` (${total})` : ""}</a>
+            </div>
+          `;
+          this.dropdown.querySelectorAll(".search_result_item").forEach((item) => {
+            item.addEventListener("click", () => {
+              this.onSelect?.();
+            });
+          });
+          this.show();
+        }
+
+        renderProduct(product) {
+          const image = product.image_url
+            ? `<img class="search_result_image" src="${this.escapeHtml(product.image_url)}" alt="${this.escapeHtml(product.name)}" loading="lazy">`
+            : `<span class="search_result_image" aria-hidden="true"></span>`;
+          const statusHtml = product.available ? "" : '<span class="search_result_status">Нет в наличии</span>';
+          return `
+            <a class="search_result_item" href="${this.escapeHtml(product.url)}">
+              ${image}
+              <span class="search_result_content">
+                <span class="search_result_name">${this.escapeHtml(product.name)}</span>
+                <span class="search_result_meta">
+                  <span>${this.escapeHtml(product.brand || "Без бренда")}</span>
+                  <span>${this.escapeHtml(product.code || "")}</span>
+                </span>
+              </span>
+              <span>
+                <span class="search_result_price">${this.formatPrice(product.price)}</span>
+                ${statusHtml}
+              </span>
+            </a>
+          `;
+        }
+
+        show() {
+          this.dropdown.classList.add("is-open");
+        }
+
+        hide() {
+          this.dropdown.classList.remove("is-open");
+          this.dropdown.innerHTML = "";
+        }
+
+        clear() {
+          this.input.value = "";
+          this.hide();
+          window.clearTimeout(this.debounceId);
+          this.abortController?.abort();
+        }
+      }
+
       class HeaderSearchController {
         constructor(accountButtonController) {
           this.accountButtonController = accountButtonController;
@@ -5774,6 +6067,7 @@
           this.openButton = document.querySelector("[data-search-open]");
           this.closeButton = document.querySelector("[data-search-close]");
           this.input = document.querySelector("[data-search-input]");
+          this.results = document.querySelector("[data-search-results]");
           this.underline = document.querySelector(".search_input_underline");
           this.isOpen = false;
 
@@ -5781,6 +6075,9 @@
             return;
           }
 
+          this.searchResults = new HeaderProductSearchResults(this.input, this.results, {
+            onSelect: () => this.close(false),
+          });
           this.bindEvents();
         }
 
@@ -5810,7 +6107,7 @@
           });
 
           document.addEventListener("click", (event) => {
-            if (this.isOpen && !this.searchRoot.contains(event.target)) {
+            if (this.isOpen && !this.searchRoot.contains(event.target) && !this.results?.contains(event.target)) {
               this.close();
             }
           });
@@ -5835,13 +6132,18 @@
           }, 180);
         }
 
-        close() {
+        close(clearInput = true) {
           this.isOpen = false;
           this.searchRoot.classList.remove("search_widget_active");
           this.accountButtonController?.setCompactMode(false);
+          if (clearInput) {
+            this.searchResults?.clear();
+          } else {
+            this.searchResults?.hide();
+          }
 
           window.setTimeout(() => {
-            this.input.value = "";
+            if (clearInput) this.input.value = "";
             this.input.blur();
             if (this.underline) {
               this.underline.style.transform = "scaleX(0)";
@@ -7185,12 +7487,16 @@
           this.searchOverlay = document.getElementById("mobileSearchOverlay");
           this.searchInput = document.getElementById("mobileSearchInput");
           this.searchCloseBtn = document.getElementById("mobileSearchClose");
+          this.searchResults = document.getElementById("mobileSearchResults");
           this.mobileBasketBadge = document.getElementById("mobileBasketBadge");
 
           // Accordion items
           this.accordionLinks = document.querySelectorAll("[data-accordion]");
 
           this.isOpen = false;
+          this.searchResultsController = new HeaderProductSearchResults(this.searchInput, this.searchResults, {
+            onSelect: () => this.closeSearch(false),
+          });
           this.bindEvents();
         }
 
@@ -7296,9 +7602,14 @@
           window.setTimeout(() => this.searchInput?.focus(), 120);
         }
 
-        closeSearch() {
+        closeSearch(clearInput = true) {
           this.searchOverlay.classList.remove("open");
-          if (this.searchInput) this.searchInput.value = "";
+          if (clearInput) {
+            this.searchResultsController?.clear();
+          } else {
+            this.searchResultsController?.hide();
+          }
+          if (this.searchInput && clearInput) this.searchInput.value = "";
         }
 
         // Called by ShopPanelController to sync cart_widget notification_badge

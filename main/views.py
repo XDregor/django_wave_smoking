@@ -1,9 +1,10 @@
 import json
 from decimal import Decimal
 
-from django.http import Http404, JsonResponse
+from django.http import JsonResponse
 from django.db.models import Avg, Count, F, Prefetch, Q
-from django.shortcuts import get_object_or_404, render
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
@@ -39,6 +40,20 @@ def is_product_visible_in_recommendations(product):
     product_variants = product.display_product_variants
     available_variants = product.available_product_variants
     return product.stock > 0 and (not product_variants or bool(available_variants))
+
+
+def get_image_original_url(image):
+    if not image:
+        return ""
+    try:
+        return image.url
+    except ValueError:
+        return ""
+
+
+def get_image_thumbnail_url(owner, image):
+    thumbnail_url = getattr(owner, "thumbnail_url", "") if owner is not None else ""
+    return thumbnail_url or get_image_original_url(image)
 
 
 def get_liked_product_ids(request):
@@ -86,6 +101,89 @@ def serialize_product(product, liked_product_ids=None):
         "likes": product.likes,
         "is_liked": product.id in liked_product_ids,
         "detail_url": f"/products/{product.id}/{product.slug}/",
+    }
+
+
+def get_product_search_code(product):
+    return f"654{str(product.id).zfill(4)}"
+
+
+def normalize_product_search(value):
+    return " ".join(str(value or "").lower().strip().split())
+
+
+def product_matches_search(product, query):
+    normalized_query = normalize_product_search(query)
+    if not normalized_query:
+        return True
+
+    fields = [
+        product.name,
+        product.brand.name if product.brand else "",
+        product.brand.slug if product.brand else "",
+        product.category.name if product.category else "",
+        product.category.slug if product.category else "",
+        get_product_search_code(product),
+        product.id,
+    ]
+    for product_variant in product.display_product_variants:
+        fields.extend((
+            product_variant.get("name"),
+            product_variant.get("slug"),
+            product_variant.get("group"),
+        ))
+
+    return any(normalized_query in normalize_product_search(field) for field in fields if field)
+
+
+def get_product_search_rank(product, query):
+    normalized_query = normalize_product_search(query)
+    if not normalized_query:
+        return 99
+
+    code = normalize_product_search(get_product_search_code(product))
+    name = normalize_product_search(product.name)
+    brand = normalize_product_search(product.brand.name if product.brand else "")
+    variant_values = [
+        normalize_product_search(value)
+        for product_variant in product.display_product_variants
+        for value in (
+            product_variant.get("name"),
+            product_variant.get("slug"),
+            product_variant.get("group"),
+        )
+        if value
+    ]
+
+    if code == normalized_query:
+        return 0
+    if name == normalized_query:
+        return 1
+    if name.startswith(normalized_query):
+        return 2
+    if normalized_query in brand:
+        return 3
+    if any(normalized_query in value for value in variant_values):
+        return 4
+    return 5
+
+
+def is_product_available_for_purchase(product):
+    display_variants = product.display_product_variants
+    available_variants = product.available_product_variants
+    return product.stock > 0 and (not display_variants or bool(available_variants))
+
+
+def serialize_search_product(product):
+    return {
+        "id": product.id,
+        "name": product.name,
+        "brand": product.brand.name if product.brand else "",
+        "price": float(product.price),
+        "image_url": product.image.url if product.image else "",
+        "url": f"/products/{product.id}/{product.slug}/",
+        "available": is_product_available_for_purchase(product),
+        "code": get_product_search_code(product),
     }
 
 
@@ -237,11 +335,45 @@ def catalog(request):
         for category in Category.objects.all()
     ]
 
+    catalog_search_query = request.GET.get("q", "").strip()
+
     return render(request, "main/сatalog.html", {
         "products": products,
         "products_json": products_data,
         "categories_json": categories_data,
         "liked_product_ids": liked_product_ids,
+        "catalog_search_query": catalog_search_query,
+        "catalog_search_mode": bool(catalog_search_query or request.GET.get("search")),
+    })
+
+
+@require_GET
+def api_search_products(request):
+    query = request.GET.get("q", "").strip()
+    normalized_query = normalize_product_search(query)
+    if len(normalized_query) < 2 and not normalized_query.isdigit():
+        return JsonResponse({"results": [], "total": 0})
+
+    products = list(
+        Product.objects.filter(available=True)
+        .select_related("category", "brand")
+        .prefetch_related(available_variant_prefetch)
+    )
+    matched_products = [
+        product
+        for product in products
+        if product_matches_search(product, normalized_query)
+    ]
+    matched_products.sort(key=lambda product: (
+        0 if is_product_available_for_purchase(product) else 1,
+        get_product_search_rank(product, normalized_query),
+        -int(product.likes or 0),
+        product.name.lower(),
+    ))
+
+    return JsonResponse({
+        "results": [serialize_search_product(product) for product in matched_products[:6]],
+        "total": len(matched_products),
     })
 
 
@@ -302,7 +434,7 @@ def reviews(request):
 
 def product_list(request, category_slug=None):
     categories = Category.objects.all()
-    products = (
+    products_queryset = (
         Product.objects.filter(available=True)
         .select_related("category", "brand")
         .prefetch_related(available_variant_prefetch)
@@ -311,30 +443,56 @@ def product_list(request, category_slug=None):
     category = None
     if category_slug:
         category = get_object_or_404(Category, slug=category_slug)
-        products = products.filter(category=category)
+        products_queryset = products_queryset.filter(category=category)
 
-    products = list(products)
-    mark_liked_products(products, get_liked_product_ids(request))
+    products = list(products_queryset)
+    liked_product_ids = get_liked_product_ids(request)
+    mark_liked_products(products, liked_product_ids)
 
-    return render(request, "main/product/list.html", {
+    products_data = []
+    for p in products:
+        item = serialize_product(p, liked_product_ids)
+        item.update({
+            "category_id": p.category_id,
+            "category_name": p.category.name if p.category else "",
+            "brand_id": p.brand_id,
+            "brand_slug": p.brand.slug if p.brand else "",
+            "brand": p.brand.name if p.brand else "",
+            "stock": p.stock,
+            "created": p.created.isoformat() if p.created else "",
+        })
+        products_data.append(item)
+
+    categories_data = [
+        {"id": item.id, "name": item.name, "slug": item.slug}
+        for item in categories
+    ]
+
+    return render(request, "main/сatalog.html", {
         "category": category,
         "categories": categories,
         "products": products,
+        "products_json": products_data,
+        "categories_json": categories_data,
+        "liked_product_ids": liked_product_ids,
     })
 
 
 @ensure_csrf_cookie
 def product_detail(request, id, slug):
-    product = get_object_or_404(
+    product = (
         Product.objects.select_related("category", "brand").prefetch_related(
             available_variant_prefetch,
             "additional_images",
             "specifications",
-        ),
-        id=id,
-        slug=slug,
-        available=True,
+        )
+        .filter(id=id, slug=slug, available=True)
+        .first()
     )
+    if not product:
+        messages.info(request, "Товар больше недоступен.")
+        return redirect("main:catalog")
+
     display_variants = product.display_product_variants
     available_variants = product.available_product_variants
     requested_variant_ids = set(request.GET.getlist("variant_id"))
@@ -353,13 +511,15 @@ def product_detail(request, id, slug):
         display_variant_groups[-1]["variants"].append(product_variant)
         if product_variant.get("image_url"):
             display_variant_groups[-1]["has_images"] = True
-    if product.stock <= 0 or (display_variants and not available_variants):
-        raise Http404("Product is not available")
+    is_product_available = product.stock > 0 and (not display_variants or bool(available_variants))
 
     liked_product_ids = get_liked_product_ids(request)
     liked_review_ids = get_liked_review_ids(request)
     product.is_liked = product.id in liked_product_ids
     product.badge_data = product.get_badge_data()
+    product_price_saving = None
+    if product.old_price and product.price and product.old_price > product.price:
+        product_price_saving = product.old_price - product.price
     additional_images = list(product.additional_images.all().order_by("order", "id"))
     image_variants = [product_variant for product_variant in available_variants if product_variant.image]
     initial_gallery_variant = next(
@@ -370,14 +530,14 @@ def product_detail(request, id, slug):
         image_variants[0] if image_variants else None,
     )
     if initial_gallery_variant:
-        gallery_start_image_url = initial_gallery_variant.image.url
+        gallery_start_image_url = get_image_original_url(initial_gallery_variant.image)
         gallery_start_image_alt = initial_gallery_variant.variant.name
     elif additional_images:
         first_gallery_image = additional_images[0]
-        gallery_start_image_url = first_gallery_image.image.url
+        gallery_start_image_url = get_image_original_url(first_gallery_image.image)
         gallery_start_image_alt = first_gallery_image.alt_text or product.name
     elif product.image:
-        gallery_start_image_url = product.image.url
+        gallery_start_image_url = get_image_original_url(product.image)
         gallery_start_image_alt = product.name
     else:
         gallery_start_image_url = ""
@@ -411,24 +571,25 @@ def product_detail(request, id, slug):
         item for item in also_chosen_candidates
         if is_product_visible_in_recommendations(item)
     ][:5]
-    also_chosen_product_ids = [item.id for item in also_chosen_products]
+    also_chosen_product_ids = {item.id for item in also_chosen_products}
 
     related_candidates = list(
         Product.objects.filter(category=product.category, available=True, stock__gt=0)
         .select_related("category", "brand")
         .prefetch_related(available_variant_prefetch)
         .exclude(id=product.id)
-        .exclude(id__in=also_chosen_product_ids)
     )
     related_products = [
         item for item in related_candidates
-        if is_product_visible_in_recommendations(item)
-    ][:8]
+        if item.id not in also_chosen_product_ids and is_product_visible_in_recommendations(item)
+    ][:5]
     mark_liked_products(also_chosen_products, liked_product_ids)
     mark_liked_products(related_products, liked_product_ids)
 
-    return render(request, "main/product/detail.html", {
+    return render(request, "main/includes/product_detail.html", {
         "product": product,
+        "product_price_saving": product_price_saving,
+        "is_product_available": is_product_available,
         "also_chosen_products": also_chosen_products,
         "related_products": related_products,
         "is_liked": product.is_liked,
@@ -524,6 +685,12 @@ def api_cart_add(request):
         id=product_id,
         available=True,
     )
+    if product.stock <= 0:
+        return JsonResponse(
+            {"success": False, "error": "out_of_stock", "message": "Товар закончился"},
+            status=409,
+        )
+
     product_variant = None
     selected_variant_ids = []
     if product.product_variants.exists():
@@ -542,7 +709,10 @@ def api_cart_add(request):
             return JsonResponse({"error": "Choose only one option per variant group"}, status=400)
         for selected_variant in selected_variants:
             if not selected_variant.available or selected_variant.stock <= 0:
-                return JsonResponse({"error": "Selected variant is not available"}, status=400)
+                return JsonResponse(
+                    {"success": False, "error": "out_of_stock", "message": "Товар закончился"},
+                    status=409,
+                )
             if quantity > selected_variant.stock:
                 return JsonResponse({"error": "Not enough stock"}, status=400)
         selected_variant_ids = [variant.id for variant in selected_variants]

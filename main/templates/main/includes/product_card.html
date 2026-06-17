@@ -2,9 +2,7 @@
 <article
   class="product_card_component{% if product.stock <= 0 or product_variants and not available_variants %} product_card_unavailable_state{% endif %}"
   data_product_card_id="{{ product.id }}"
-  {% if product.stock > 0 and not product_variants or available_variants %}
-    data_product_card_url="{% url 'main:product_detail' product.id product.slug %}"
-  {% endif %}
+  data_product_card_url="{% url 'main:product_detail' product.id product.slug %}"
 >
   <div class="product_card_media_container">
     <div class="product_card_skeleton_element"></div>
@@ -45,11 +43,7 @@
     {% endif %}
 
     <h3 class="product_card_name_text product_card_name_link_element">
-      {% if product.stock > 0 and not product_variants or available_variants %}
-        <a href="{% url 'main:product_detail' product.id product.slug %}">{{ product.name }}</a>
-      {% else %}
-        <span>{{ product.name }}</span>
-      {% endif %}
+      <a href="{% url 'main:product_detail' product.id product.slug %}">{{ product.name }}</a>
     </h3>
 
     <div class="product_card_price_row_container">
@@ -66,18 +60,30 @@
           <div class="product_card_variant_group">
             <span class="product_card_variant_group_label">{{ variant_group.grouper|default:"Вариант" }}:</span>
             <div class="product_card_variant_group_values">
-              {% for product_variant in variant_group.list %}
-                <button
-                  class="product_card_variant_option_button{% if not product_variant.available or product.stock <= 0 or product_variants and not available_variants %} product_card_variant_option_out_state{% endif %}"
-                  type="button"
-                  data_product_variant_id="{{ product_variant.id }}"
-                  data_product_variant_name="{{ product_variant.name }}"
-                  data_product_variant_stock="{{ product_variant.stock }}"
-                  {% if not product_variant.available or product.stock <= 0 or product_variants and not available_variants %}disabled{% endif %}
-                >
-                  {{ product_variant.name }}
-                </button>
-              {% endfor %}
+              {% with variants_count=variant_group.list|length %}
+                {% for product_variant in variant_group.list %}
+                  {% if variants_count <= 4 or forloop.counter <= 3 %}
+                    <button
+                      class="product_card_variant_option_button{% if variants_count > 4 and forloop.counter == 3 %} product_card_variant_option_mobile_hide{% endif %}{% if not product_variant.available or product.stock <= 0 or product_variants and not available_variants %} product_card_variant_option_out_state{% endif %}"
+                      type="button"
+                      data_product_variant_id="{{ product_variant.id }}"
+                      data_product_variant_name="{{ product_variant.name }}"
+                      data_product_variant_stock="{{ product_variant.stock }}"
+                      {% if not product_variant.available or product.stock <= 0 or product_variants and not available_variants %}disabled{% endif %}
+                    >
+                      {{ product_variant.name }}
+                    </button>
+                  {% endif %}
+                {% endfor %}
+                {% if variants_count > 4 %}
+                  <span class="product_card_variant_more_indicator product_card_variant_more_desktop" aria-label="{{ variants_count|add:'-3' }} more variants">
+                    еще {{ variants_count|add:"-3" }}
+                  </span>
+                  <span class="product_card_variant_more_indicator product_card_variant_more_mobile" aria-label="{{ variants_count|add:'-2' }} more variants">
+                    еще {{ variants_count|add:"-2" }}
+                  </span>
+                {% endif %}
+              {% endwith %}
             </div>
           </div>
         {% endfor %}

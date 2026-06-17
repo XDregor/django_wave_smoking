@@ -37,6 +37,21 @@ argon2 = ["argon2-cffi (>=23.1.0)"]
 bcrypt = ["bcrypt (>=4.1.1)"]
 
 [[package]]
+name = "django-unfold"
+version = "0.97.0"
+description = "Modern Django Admin"
+optional = false
+python-versions = "<4.0,>=3.12"
+groups = ["main"]
+files = [
+    {file = "django_unfold-0.97.0-py3-none-any.whl", hash = "sha256:651abadb26b8b46a590caa3c7d1b902a9ddc5a1b13aca2476a36b54acca42500"},
+    {file = "django_unfold-0.97.0.tar.gz", hash = "sha256:35cc862efde910fe2bb37689c1697a9fc87ca7886b39de0a90d7a037e0fd15ae"},
+]
+
+[package.dependencies]
+django = ">=5.2"
+
+[[package]]
 name = "pillow"
 version = "12.2.0"
 description = "Python Imaging Library (fork)"
@@ -176,4 +191,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<4.0"
-content-hash = "a94d27bc7a8840557147a01cddb405bf5573c054a918dfafa1beb91a41eafbb5"
+content-hash = "9b9ac233600c11e91fb2fe131a114e15333d87be7e1fa65a747b152583e6a997"

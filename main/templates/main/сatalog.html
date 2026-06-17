@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="{% static 'assets/css/theme.css' %}" />
     <link rel="icon" type="image/png" href="{% static 'assets/img/mini_logo.png' %}" />
+    <link rel="stylesheet" href="{% static 'assets/css/product_card.css' %}?v=unavailable-clickable-1" />
     <style>
       /* ===================== TOKENS (shared with main.html) ===================== */
       :root {
@@ -123,6 +124,9 @@
         background: var(--bg);
         color: var(--text);
         overflow-x: hidden;
+      }
+      body.catalog_search_mode .catalog_hero_section {
+        display: none;
       }
       a {
         text-decoration: none;
@@ -1187,285 +1191,6 @@
         padding: 16px 20px 0;
       }
 
-      /* ===================== PRODUCT CARD ===================== */
-      .product_card_component {
-        background: linear-gradient(180deg, rgba(17, 17, 17, 0.96) 0%, rgba(10, 10, 10, 0.98) 100%);
-        border: 1px solid var(--border);
-        border-radius: 20px;
-        overflow: hidden;
-        cursor: pointer;
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
-      }
-      .product_card_component:hover {
-        transform: translateY(-4px);
-        border-color: rgba(255, 255, 255, 0.12);
-        box-shadow: 0 26px 70px rgba(0, 0, 0, 0.36);
-      }
-      .product_card_component.product_card_unavailable_state {
-        cursor: not-allowed;
-      }
-      .product_card_component.product_card_unavailable_state:hover {
-        transform: none;
-        border-color: var(--border);
-        box-shadow: none;
-      }
-      .product_card_media_container {
-        position: relative;
-        aspect-ratio: 3 / 4;
-        background: linear-gradient(135deg, #262626 0%, #1a1a1a 100%);
-        overflow: hidden;
-      }
-      .product_card_media_container::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        z-index: 1;
-        pointer-events: none;
-        background: linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, transparent 42%),
-          linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 58%, rgba(0, 0, 0, 0.22) 100%);
-      }
-      .product_card_skeleton_element {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, #1f1f1f 0%, #171717 100%);
-        overflow: hidden;
-      }
-      .product_card_skeleton_element::before {
-        content: "";
-        position: absolute;
-        inset: -12%;
-        background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.01) 38%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.01) 62%, transparent 100%);
-        transform: translate(-130%, -130%);
-        animation: skeletonSweep 2.8s ease-in-out infinite;
-      }
-      .product_card_image_element {
-        position: absolute;
-        inset: 0;
-        z-index: 0;
-        display: block;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-      .product_card_unavailable_state .product_card_image_element {
-        filter: grayscale(35%) brightness(0.75);
-      }
-      .product_card_unavailable_overlay_element {
-        position: absolute;
-        inset: 0;
-        z-index: 2;
-        background: rgba(0, 0, 0, 0.35);
-        backdrop-filter: blur(2px);
-        pointer-events: none;
-      }
-      .product_card_unavailable_status_text {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        z-index: 4;
-        transform: translate(-50%, -50%);
-        padding: 8px 14px;
-        border-radius: 999px;
-        background: rgba(10, 10, 12, 0.68);
-        color: var(--white);
-        font-size: var(--fs-micro);
-        font-weight: 900;
-        letter-spacing: 0.15em;
-        text-align: center;
-        text-transform: uppercase;
-        white-space: nowrap;
-        pointer-events: none;
-      }
-      .product_card_unavailable_state .product_card_price_row_container {
-        opacity: 0.6;
-      }
-      .product_card_unavailable_state .product_card_name_link_element a {
-        pointer-events: none;
-      }
-      .product_card_badge_element {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        z-index: 2;
-        padding: 4px 9px;
-        border-radius: 999px;
-        font-size: var(--fs-micro);
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-      .product_card_badge_new_variant { background: var(--accent); color: #0b0b0c; }
-      .product_card_badge_sale_variant { background: var(--danger); color: var(--white); }
-      .product_card_badge_hit_variant { background: var(--buda); color: #0b0b0c; }
-      .product_card_like_button {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        z-index: 2;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        min-height: 32px;
-        padding: 0 9px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 999px;
-        background: rgba(15, 15, 15, 0.82);
-        color: rgba(255, 255, 255, 0.86);
-      }
-      .product_card_like_button svg {
-        width: 14px;
-        height: 14px;
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 1.9;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
-      .product_card_like_button.active svg { fill: var(--danger); stroke: var(--danger); }
-      .product_card_like_count_text {
-        font-size: var(--fs-micro);
-        font-weight: 700;
-      }
-      .product_card_info_block {
-        padding: 12px 12px 14px;
-        background: rgba(17, 17, 17, 0.96);
-        border-top: 1px solid rgba(255, 255, 255, 0.06);
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-      }
-      .product_card_brand_text {
-        margin-bottom: 4px;
-        color: rgba(241, 241, 241, 0.35);
-        font-size: var(--fs-micro);
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-      }
-      .product_card_name_text {
-        min-height: 2.5em;
-        margin-bottom: 8px;
-        color: rgba(255, 255, 255, 0.96);
-        font-size: var(--fs-h3);
-        font-weight: 600;
-        line-height: 1.25;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
-      .product_card_price_row_container {
-        display: flex;
-        align-items: baseline;
-        gap: 6px;
-        margin-bottom: 10px;
-      }
-      .product_card_price_value {
-        color: var(--white);
-        font-size: var(--fs-price);
-        font-weight: 800;
-      }
-      .product_card_old_price_value {
-        color: rgba(255, 255, 255, 0.35);
-        font-size: var(--fs-micro);
-        font-weight: 500;
-        text-decoration: line-through;
-      }
-      .product_card_variants_summary {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-        margin-top: auto;
-        padding-top: 8px;
-      }
-      .product_card_variant_group {
-        display: flex;
-        align-items: baseline;
-        gap: 5px;
-        min-width: 0;
-        font-size: var(--fs-micro);
-        line-height: 1.35;
-      }
-      .product_card_variant_group_label {
-        flex: 0 0 auto;
-        color: rgba(241, 241, 241, 0.38);
-        font-weight: 700;
-      }
-      .product_card_variant_group_values {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        min-width: 0;
-        overflow: hidden;
-        white-space: nowrap;
-      }
-      .product_card_variant_option_button {
-        flex: 0 0 auto;
-        min-width: 0;
-        max-width: 92px;
-        height: 22px;
-        padding: 0 7px;
-        overflow: hidden;
-        border: 0;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.05);
-        color: rgba(241, 241, 241, 0.62);
-        cursor: pointer;
-        font-size: var(--fs-micro);
-        font-weight: 600;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        transition: background 0.15s ease, color 0.15s ease, opacity 0.15s ease;
-      }
-      .product_card_variant_option_button:hover:not(:disabled),
-      .product_card_variant_option_button.active {
-        background: rgba(247, 227, 71, 0.1);
-        color: var(--buda);
-      }
-      .product_card_variant_option_button.product_card_variant_option_out_state,
-      .product_card_variant_option_button:disabled {
-        opacity: 0.28;
-        cursor: default;
-        pointer-events: none;
-        text-decoration: line-through;
-      }
-      .product_card_unavailable_state .product_card_variant_group_label,
-      .product_card_unavailable_state .product_card_variant_option_button {
-        color: rgba(241, 241, 241, 0.32);
-      }
-      @media (max-width: 768px) {
-        .product_card_component { border-radius: 16px; }
-        .product_card_media_container { aspect-ratio: 3 / 3.5; }
-      }
-      @media (max-width: 480px) {
-        .product_card_component { border-radius: 12px; }
-        .product_card_component:hover { transform: none; }
-        .product_card_media_container { aspect-ratio: 1 / 1; }
-        .product_card_info_block { padding: 9px 9px 11px; }
-        .product_card_name_text { min-height: 0; font-size: 12px; }
-      }
-      @media (max-width: 900px) {
-        .catalog_grid_container.catalog_grid_one_column_state .product_card_component {
-          display: flex;
-          flex-direction: row;
-          border-radius: 14px;
-        }
-        .catalog_grid_container.catalog_grid_one_column_state .product_card_media_container {
-          width: 120px;
-          min-width: 120px;
-          aspect-ratio: auto;
-        }
-        .catalog_grid_container.catalog_grid_one_column_state .product_card_info_block {
-          flex: 1;
-          border-top: none;
-          border-left: 1px solid rgba(255, 255, 255, 0.06);
-        }
-      }
-
       /* ===================== EMPTY STATE ===================== */
       .catalog_empty_state_container {
         grid-column: 1 / -1;
@@ -1515,6 +1240,26 @@
         border-color: var(--white);
         color: #0b0b0c;
       }
+      .catalog_search_summary {
+        display: none;
+        margin: 0 auto;
+        padding: var(--info-line-height, 32px) var(--pad) 14px;
+      }
+      .catalog_search_mode .catalog_search_summary {
+        display: block;
+      }
+      .catalog_search_summary_title {
+        color: var(--white);
+        font-size: clamp(18px, 2vw, 26px);
+        font-weight: 800;
+        line-height: 1.2;
+      }
+      .catalog_search_summary_text {
+        margin-top: 6px;
+        color: rgba(241, 241, 241, 0.52);
+        font-size: 13px;
+        font-weight: 600;
+      }
       @media (max-width: 480px) {
         .catalog_empty_state_container {
           padding: 60px 16px 80px;
@@ -1530,7 +1275,7 @@
     </style>
     {% include 'main/includes/badges.html' %}
   </head>
-  <body>
+  <body{% if catalog_search_mode %} class="catalog_search_mode"{% endif %}>
     {% include 'main/header.html' %}
     <!-- Hero -->
     <section class="catalog_hero_section" id="pageTop">
@@ -1552,6 +1297,11 @@
     </section>
 
     <!-- Основной layout -->
+    <section class="catalog_search_summary" id="catalog_search_summary_id" aria-live="polite">
+      <h1 class="catalog_search_summary_title" id="catalog_search_summary_title_id"></h1>
+      <p class="catalog_search_summary_text" id="catalog_search_summary_text_id"></p>
+    </section>
+
     <div class="catalog_layout_container">
       <!-- Контент -->
       <main class="catalog_main_content">
@@ -1790,6 +1540,7 @@
     {{ products_json|json_script:"productsData" }}
     {{ categories_json|json_script:"categoriesData" }}
 
+    <script src="{% static 'assets/js/product_card.js' %}"></script>
     <script>
       (() => {
         /* ============================================================
@@ -1835,6 +1586,7 @@
           perPage: 30,
           sort: "recommended",
           view: 4,
+          searchQuery: "",
         };
 
         function parseCsv(value) {
@@ -1875,6 +1627,7 @@
             state.variantFilters[group] = new Set(parseCsv(value).map(String));
           });
           state.sort = params.get("sort") || "recommended";
+          state.searchQuery = (params.get("q") || "").trim();
         }
 
         function writeStateToUrl() {
@@ -1887,6 +1640,10 @@
             if (values.size) params.set(`variant_group_${group}`, [...values].join(","));
           });
           if (state.sort !== "recommended") params.set("sort", state.sort);
+          if (state.searchQuery) {
+            params.set("q", state.searchQuery);
+            params.set("search", "1");
+          }
           const query = params.toString();
           const nextUrl = query ? `${window.location.pathname}?${query}` : window.location.pathname;
           window.history.replaceState({}, "", nextUrl);
@@ -1907,16 +1664,91 @@
         }
 
         function isProductAvailable(product) {
+          if (Number(product.stock) <= 0) return false;
+
           const variants = Array.isArray(product.display_variant_options) ? product.display_variant_options : [];
           if (variants.length) return variants.some((variant) => Boolean(variant.available));
-          return Number(product.stock) > 0;
+          return true;
         }
 
-        function getCookie(name) {
-          const value = `; ${document.cookie}`;
-          const parts = value.split(`; ${name}=`);
-          if (parts.length === 2) return parts.pop().split(";").shift();
-          return "";
+        function normalizeSearch(value) {
+          return String(value || "")
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, " ");
+        }
+
+        function getProductSearchCode(product) {
+          return `654${String(product.id).padStart(4, "0")}`;
+        }
+
+        function matchesProductSearch(product, query) {
+          if (!query) return true;
+
+          const fields = [
+            product.name,
+            product.brand,
+            product.brand_name,
+            product.brand_slug,
+            product.category,
+            product.category_name,
+            getProductSearchCode(product),
+            product.id,
+          ];
+
+          const variants = [
+            ...(Array.isArray(product.variant_options) ? product.variant_options : []),
+            ...(Array.isArray(product.display_variant_options) ? product.display_variant_options : []),
+          ];
+
+          variants.forEach((variant) => {
+            fields.push(variant.name);
+            fields.push(variant.slug);
+            fields.push(variant.group);
+          });
+
+          return fields
+            .filter(Boolean)
+            .some((field) => normalizeSearch(field).includes(query));
+        }
+
+        function getProductSearchRank(product, query) {
+          if (!query) return 99;
+          const code = normalizeSearch(getProductSearchCode(product));
+          const name = normalizeSearch(product.name);
+          const brand = normalizeSearch(product.brand || product.brand_name);
+          const variants = [
+            ...(Array.isArray(product.variant_options) ? product.variant_options : []),
+            ...(Array.isArray(product.display_variant_options) ? product.display_variant_options : []),
+          ];
+          const variantMatch = variants.some((variant) => [variant.name, variant.slug, variant.group].filter(Boolean).some((value) => normalizeSearch(value).includes(query)));
+
+          if (code === query) return 0;
+          if (name === query) return 1;
+          if (name.startsWith(query)) return 2;
+          if (brand.includes(query)) return 3;
+          if (variantMatch) return 4;
+          return 5;
+        }
+
+        function updateCatalogSearchMode(total) {
+          const query = state.searchQuery.trim();
+          document.body.classList.toggle("catalog_search_mode", Boolean(query));
+          const title = document.getElementById("catalog_search_summary_title_id");
+          const text = document.getElementById("catalog_search_summary_text_id");
+          if (!title || !text) return;
+          if (!query) {
+            title.textContent = "";
+            text.textContent = "";
+            return;
+          }
+          if (total > 0) {
+            title.textContent = `Результаты поиска: "${query}"`;
+            text.textContent = `Найдено: ${total.toLocaleString("uk-UA")} товаров`;
+          } else {
+            title.textContent = `По запросу "${query}" ничего не найдено`;
+            text.textContent = "Попробуйте изменить запрос или перейти в каталог.";
+          }
         }
 
         function scrollToTop(smooth = true) {
@@ -1928,6 +1760,8 @@
       ============================================================ */
         function getFiltered() {
           return allProducts.filter((p) => {
+            const query = normalizeSearch(state.searchQuery);
+            if (query && !matchesProductSearch(p, query)) return false;
             if (state.categoryFilter !== "all" && p.category !== state.categoryFilter) return false;
             if (p.price < state.priceMin || p.price > state.priceMax) return false;
             if (state.brandFilters.size && !state.brandFilters.has(String(p.brand_id))) return false;
@@ -1956,15 +1790,18 @@
         function getSorted(arr) {
           const a = [...arr];
           const byAvailability = (x, y) => Number(isProductAvailable(y)) - Number(isProductAvailable(x));
+          const byLikesDesc = (x, y) => Number(y.likes || 0) - Number(x.likes || 0);
+          const byCreatedDesc = (x, y) => String(y.created || "").localeCompare(String(x.created || ""));
           const sortAvailableFirst = (comparator) => a.sort((x, y) => byAvailability(x, y) || comparator(x, y));
-          if (state.sort === "price_asc") return sortAvailableFirst((x, y) => x.price - y.price);
-          if (state.sort === "price_desc") return sortAvailableFirst((x, y) => y.price - x.price);
-          if (state.sort === "hit") return sortAvailableFirst((x, y) => (getBadgeType(y) === "hit" ? 1 : 0) - (getBadgeType(x) === "hit" ? 1 : 0) || (y.likes || 0) - (x.likes || 0));
-          if (state.sort === "new") return sortAvailableFirst((x, y) => (getBadgeType(y) === "new" ? 1 : 0) - (getBadgeType(x) === "new" ? 1 : 0) || String(y.created).localeCompare(String(x.created)));
-          if (state.sort === "sale") return sortAvailableFirst((x, y) => (getDiscountPercent(y) > 0 ? 1 : 0) - (getDiscountPercent(x) > 0 ? 1 : 0) || getDiscountPercent(y) - getDiscountPercent(x));
-          if (state.sort === "discount_pct")
-            return sortAvailableFirst((x, y) => getDiscountPercent(y) - getDiscountPercent(x));
-          return sortAvailableFirst((x, y) => (y.badge ? 1 : 0) - (x.badge ? 1 : 0) || String(y.created).localeCompare(String(x.created)));
+          const query = normalizeSearch(state.searchQuery);
+          if (query) return sortAvailableFirst((x, y) => getProductSearchRank(x, query) - getProductSearchRank(y, query) || byLikesDesc(x, y));
+          if (state.sort === "price_asc") return sortAvailableFirst((x, y) => Number(x.price || 0) - Number(y.price || 0));
+          if (state.sort === "price_desc") return sortAvailableFirst((x, y) => Number(y.price || 0) - Number(x.price || 0));
+          if (state.sort === "hit") return sortAvailableFirst(byLikesDesc);
+          if (state.sort === "new") return sortAvailableFirst(byCreatedDesc);
+          if (state.sort === "sale") return sortAvailableFirst(byLikesDesc);
+          if (state.sort === "discount_pct") return sortAvailableFirst((x, y) => getDiscountPercent(y) - getDiscountPercent(x));
+          return sortAvailableFirst(byLikesDesc);
         }
 
         /* ============================================================
@@ -1998,19 +1835,21 @@
                 <div class="product_card_variant_group">
                   <span class="product_card_variant_group_label">${group}:</span>
                   <div class="product_card_variant_group_values">
-                    ${values.map((variant) => {
+                    ${(values.length > 4 ? values.slice(0, 3) : values).map((variant, index) => {
                       const isAvailable = Boolean(variant.available) && !isUnavailable;
-                      return `<button class="product_card_variant_option_button${isAvailable ? "" : " product_card_variant_option_out_state"}" type="button" data_product_variant_id="${variant.id || ""}" data_product_variant_name="${variant.name}" data_product_variant_stock="${variant.stock || 0}"${isAvailable ? "" : " disabled"}>${variant.name}</button>`;
+                      const mobileHideClass = values.length > 4 && index === 2 ? " product_card_variant_option_mobile_hide" : "";
+                      return `<button class="product_card_variant_option_button${mobileHideClass}${isAvailable ? "" : " product_card_variant_option_out_state"}" type="button" data_product_variant_id="${variant.id || ""}" data_product_variant_name="${variant.name}" data_product_variant_stock="${variant.stock || 0}"${isAvailable ? "" : " disabled"}>${variant.name}</button>`;
                     }).join("")}
+                    ${values.length > 4 ? `<span class="product_card_variant_more_indicator product_card_variant_more_desktop" aria-label="${values.length - 3} more variants">еще ${values.length - 3}</span><span class="product_card_variant_more_indicator product_card_variant_more_mobile" aria-label="${values.length - 2} more variants">еще ${values.length - 2}</span>` : ""}
                   </div>
                 </div>
               `).join("")}</div>` : "";
           const detailUrl = p.slug ? `/products/${p.id}/${p.slug}/` : "#";
           const brandHtml = p.brand ? `<div class="product_card_brand_text">${p.brand}</div>` : "";
-          const detailAttr = isUnavailable ? "" : ` data_product_card_url="${detailUrl}"`;
+          const detailAttr = ` data_product_card_url="${detailUrl}"`;
           const unavailableMediaHtml = isUnavailable
             ? `<div class="product_card_unavailable_overlay_element" aria-hidden="true"></div><div class="product_card_unavailable_status_text">Нет в наличии</div>` : "";
-          const nameHtml = isUnavailable ? `<span>${p.name}</span>` : `<a href="${detailUrl}">${p.name}</a>`;
+          const nameHtml = `<a href="${detailUrl}">${p.name}</a>`;
           return `
           <article class="product_card_component${isUnavailable ? " product_card_unavailable_state" : ""}" data_product_card_id="${p.id}"${detailAttr}>
             <div class="product_card_media_container">
@@ -2037,57 +1876,30 @@
           </article>`;
         }
 
-        async function handleLikeClick(btn) {
-          const id = Number(btn.getAttribute("data_product_card_like_id"));
-          const likeUrl = btn.getAttribute("data_product_card_like_url");
-          if (!id || !likeUrl || btn.disabled) return;
+        document.addEventListener("product-card:liked", (event) => {
+          const id = Number(event.detail?.productId);
+          if (!id) return;
+          const liked = Boolean(event.detail?.liked);
+          const likes = Number(event.detail?.likes || 0);
 
-          btn.disabled = true;
-          try {
-            const response = await fetch(likeUrl, {
-              method: "POST",
-              headers: {
-                "X-CSRFToken": getCookie("csrftoken"),
-                "X-Requested-With": "XMLHttpRequest",
-              },
-            });
-
-            if (response.status === 401 || response.status === 403) {
-              alert("Войдите в аккаунт, чтобы ставить лайки.");
-              return;
-            }
-            if (!response.ok) throw new Error("Like request failed");
-
-            const data = await response.json();
-            const product = allProducts.find((item) => item.id === id);
-            if (product) {
-              product.is_liked = data.liked;
-              product.likes = data.likes;
-            }
-            window._shopPanel?.refreshFavorites?.();
-
-            btn.setAttribute("data_product_card_liked_state", data.liked ? "true" : "false");
-            btn.classList.toggle("active", data.liked);
-            const counter = btn.querySelector(".product_card_like_count_text");
-            if (counter) counter.textContent = data.likes;
-
-            const templateCard = productCardTemplate?.content.querySelector(`.product_card_component[data_product_card_id="${id}"]`);
-            if (templateCard) {
-              const templateBtn = templateCard.querySelector("[data_product_card_like_id]");
-              if (templateBtn) {
-                templateBtn.setAttribute("data_product_card_liked_state", data.liked ? "true" : "false");
-                templateBtn.classList.toggle("active", data.liked);
-              }
-              const templateCounter = templateCard.querySelector(".product_card_like_count_text");
-              if (templateCounter) templateCounter.textContent = data.likes;
-              productCardMap.set(id, templateCard.outerHTML);
-            }
-          } catch (error) {
-            alert("Не удалось обновить лайк. Попробуйте еще раз.");
-          } finally {
-            btn.disabled = false;
+          const product = allProducts.find((item) => Number(item.id) === id);
+          if (product) {
+            product.is_liked = liked;
+            product.likes = likes;
           }
-        }
+
+          const templateCard = productCardTemplate?.content.querySelector(`.product_card_component[data_product_card_id="${id}"]`);
+          if (templateCard) {
+            const templateBtn = templateCard.querySelector("[data_product_card_like_id]");
+            if (templateBtn) {
+              templateBtn.setAttribute("data_product_card_liked_state", liked ? "true" : "false");
+              templateBtn.classList.toggle("active", liked);
+            }
+            const templateCounter = templateCard.querySelector(".product_card_like_count_text");
+            if (templateCounter) templateCounter.textContent = likes;
+            productCardMap.set(id, templateCard.outerHTML);
+          }
+        });
 
         /* ============================================================
          RENDER PAGINATION
@@ -2175,6 +1987,7 @@
           const sorted = getSorted(filtered);
           const total = sorted.length;
           const page = sorted.slice((state.page - 1) * state.perPage, state.page * state.perPage);
+          updateCatalogSearchMode(total);
 
           const grid = document.getElementById("catalog_grid_container_id");
           const empty = document.getElementById("catalog_empty_state_id");
@@ -2196,7 +2009,7 @@
             const catalog_empty_reset_button_idBtn = document.getElementById("catalog_empty_reset_button_id");
             const hasVariantFilters = Object.values(state.variantFilters).some((values) => values.size > 0);
             const hasSortFilter = ["hit", "new", "sale"].includes(state.sort);
-            const isFiltered = state.categoryFilter !== "all" || state.priceMin > 0 || state.priceMax < maxPrice || state.brandFilters.size > 0 || hasVariantFilters || hasSortFilter;
+            const isFiltered = Boolean(state.searchQuery) || state.categoryFilter !== "all" || state.priceMin > 0 || state.priceMax < maxPrice || state.brandFilters.size > 0 || hasVariantFilters || hasSortFilter;
             if (allProducts.length === 0) {
               // Товаров нет вообще в БД
               if (noProducts) noProducts.style.display = "";
@@ -2207,43 +2020,12 @@
               // Есть товары, но фильтры дали 0 результатов
               if (noProducts) noProducts.style.display = "none";
               if (noResults) noResults.style.display = "";
-              if (emptyTitle) emptyTitle.textContent = "Ничего не найдено";
+              if (emptyTitle) emptyTitle.textContent = state.searchQuery ? `По запросу "${state.searchQuery}" ничего не найдено` : "Ничего не найдено";
               if (catalog_empty_reset_button_idBtn) catalog_empty_reset_button_idBtn.style.display = "";
             }
           } else {
             empty.classList.remove("catalog_empty_state_visible");
             grid.innerHTML = page.map(renderCard).join("");
-
-            // Лайки
-            grid.querySelectorAll("[data_product_card_like_id]").forEach((btn) => {
-              btn.addEventListener("click", (e) => {
-                e.stopPropagation();
-                handleLikeClick(btn);
-              });
-            });
-            grid.querySelectorAll(".product_card_variant_option_button").forEach((btn) => {
-              btn.addEventListener("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (btn.disabled) return;
-                const card = btn.closest(".product_card_component");
-                if (!card || card.classList.contains("product_card_unavailable_state")) return;
-                const url = card.getAttribute("data_product_card_url");
-                const variantId = btn.getAttribute("data_product_variant_id");
-                if (!url || !variantId) return;
-                const detailUrl = new URL(url, window.location.origin);
-                detailUrl.searchParams.set("variant_id", variantId);
-                window.location.href = detailUrl.toString();
-              });
-            });
-            grid.querySelectorAll(".product_card_component").forEach((card) => {
-              card.addEventListener("click", (event) => {
-                if (card.classList.contains("product_card_unavailable_state")) return;
-                if (event.target.closest("a, button")) return;
-                const url = card.getAttribute("data_product_card_url");
-                if (url) window.location.href = url;
-              });
-            });
           }
 
           renderPagination(total);
@@ -2654,6 +2436,7 @@
           state.brandFilters = new Set();
           state.variantFilters = {};
           state.sort = "recommended";
+          state.searchQuery = "";
           document.querySelectorAll(".filter_chip_button[data_filter_category_slug]").forEach((b) => b.classList.toggle("active", b.getAttribute("data_filter_category_slug") === "all"));
           document.querySelectorAll(".sort_option_button").forEach((b) => b.classList.toggle("active", b.getAttribute("data_sort_option_key") === "recommended"));
           const rMin = document.getElementById("filter_range_min_slider_id");

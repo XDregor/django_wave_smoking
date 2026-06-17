@@ -1,7 +1,13 @@
 from pathlib import Path
+from django.templatetags.static import static
+from django.urls import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def admin_link(name, query=""):
+    return lambda request: f"{reverse_lazy(name)}{query}"
 
 
 # Quick-start development settings - unsuitable for production
@@ -19,16 +25,124 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'unfold',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+
     # Local apps
     'main',
 ]
+
+UNFOLD = {
+    "SITE_TITLE": "WAVE Admin",
+    "SITE_HEADER": "WAVE",
+    "SITE_SUBHEADER": "Shop management",
+    "SITE_ICON": lambda request: static("assets/img/mini_logo.png"),
+    "SHOW_HISTORY": True,
+    "SHOW_VIEW_ON_SITE": True,
+    "STYLES": [
+        lambda request: static("admin/css/unfold_overrides.css"),
+    ],
+    "COLORS": {
+        "primary": {
+            "50": "255 247 237",
+            "100": "255 237 213",
+            "200": "254 215 170",
+            "300": "253 186 116",
+            "400": "251 146 60",
+            "500": "255 138 42",
+            "600": "234 88 12",
+            "700": "194 65 12",
+            "800": "154 52 18",
+            "900": "124 45 18",
+            "950": "67 20 7",
+        },
+    },
+    "SIDEBAR": {
+        "show_search": False,
+        "show_all_applications": False,
+        "navigation": [
+            {
+                "title": "АККАУНТЫ",
+                "separator": False,
+                "items": [
+                    {
+                        "title": "Администраторы",
+                        "icon": "admin_panel_settings",
+                        "link": admin_link("admin:auth_user_changelist", "?is_staff__exact=1"),
+                    },
+                    {
+                        "title": "Клиенты",
+                        "icon": "group",
+                        "link": admin_link("admin:auth_user_changelist", "?is_staff__exact=0"),
+                    },
+                ],
+            },
+            {
+                "title": "ТОВАРЫ",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Добавить товар",
+                        "icon": "add_circle",
+                        "link": reverse_lazy("admin:main_product_add"),
+                    },
+                    {
+                        "title": "Управление товарами",
+                        "icon": "inventory_2",
+                        "link": reverse_lazy("admin:main_product_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "НАПОЛНЕНИЕ",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Категории",
+                        "icon": "category",
+                        "link": reverse_lazy("admin:main_category_changelist"),
+                    },
+                    {
+                        "title": "Бренды",
+                        "icon": "sell",
+                        "link": reverse_lazy("admin:main_brand_changelist"),
+                    },
+                    {
+                        "title": "Бейджи",
+                        "icon": "local_offer",
+                        "link": reverse_lazy("admin:main_product_changelist"),
+                    },
+                    {
+                        "title": "Медиа",
+                        "icon": "perm_media",
+                        "link": reverse_lazy("admin:main_productimage_changelist"),
+                    },
+                    {
+                        "title": "Варианты",
+                        "icon": "tune",
+                        "link": reverse_lazy("admin:main_variantoption_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "ОТЗЫВЫ",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Отзывы",
+                        "icon": "reviews",
+                        "link": reverse_lazy("admin:main_productreview_changelist"),
+                    },
+                ],
+            },
+        ],
+    },
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -45,7 +159,7 @@ ROOT_URLCONF = 'django_wave_smoking.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'main' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
