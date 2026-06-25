@@ -1,0 +1,45 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {{ site_title|default:_("Django site admin") }}{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<div class="wave-admin-media">
+
+  <form class="wave-admin-media-search" method="get" role="search">
+    <input
+      type="search"
+      name="q"
+      value="{{ media_search_query }}"
+      placeholder="  Поиск по названию или коду товара"
+      autocomplete="off"
+    >
+    {% if media_search_query %}
+      <a href="{% url 'admin:main_product_media_list' %}">Сбросить</a>
+    {% endif %}
+  </form>
+
+  <div class="wave-admin-media-product-list">
+    {% for product in products %}
+      <a class="wave-admin-media-row" href="{% url 'admin:main_product_media_detail' product.id %}">
+        {% if product.image %}
+          <img class="wave-admin-media-thumb" src="{{ product.image.url }}" alt="">
+        {% else %}
+          <span class="wave-admin-media-thumb wave-admin-media-thumb-placeholder">Нет фото</span>
+        {% endif %}
+        <span class="wave-admin-media-name">{{ product.name }}</span>
+      </a>
+    {% empty %}
+      <div class="wave-admin-media-empty">
+        {% if media_search_query %}
+          Товары по запросу «{{ media_search_query }}» не найдены.
+        {% else %}
+          Товаров пока нет.
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

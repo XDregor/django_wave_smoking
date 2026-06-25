@@ -333,6 +333,11 @@
         color: #08090a;
       }
 
+      .product-gallery__badge--top {
+        background: var(--detail-text);
+        color: #08090a;
+      }
+
       .product-gallery__thumb {
         position: relative;
         flex: 0 0 64px;
@@ -526,14 +531,23 @@
       }
 
       .product-info__price-badge {
-        display: none;
-        min-width: 64px;
+        width: 0;
+        flex-shrink: 0;
+        display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         gap: 3px;
-        padding: 14px 16px;
-        border-right: 0.5px solid rgba(255, 255, 255, 0.14);
+        padding: 14px 0;
+        opacity: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        border-right: 0.5px solid transparent;
+        background: rgba(224, 92, 92, 0.08);
+        transition:
+          width 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+          padding 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+          opacity 0.28s ease;
       }
 
       .product-info__price-percent {
@@ -550,10 +564,13 @@
       }
 
       .product-info__price-values {
+        flex: 1;
         display: flex;
         flex-direction: column;
+        align-items: center;
         justify-content: center;
-        padding: 12px 35px;
+        gap: 0;
+        padding: 14px 35px;
       }
 
       .product-info__price-current {
@@ -565,20 +582,38 @@
       }
 
       .product-info__price-old {
-        display: none;
         color: rgba(241, 241, 241, 0.38);
         font-size: 15px;
         text-decoration: line-through;
+        overflow: hidden;
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(-6px);
+        margin-top: 0;
+        transition:
+          max-height 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+          opacity 0.28s ease 0.06s,
+          transform 0.34s cubic-bezier(0.22, 1, 0.36, 1) 0.04s,
+          margin-top 0.38s cubic-bezier(0.22, 1, 0.36, 1);
       }
 
       .product-info__price-saving {
-        display: none;
+        display: flex;
         align-items: center;
         justify-content: center;
         gap: 5px;
-        padding: 8px 16px;
+        padding: 0 16px;
+        overflow: hidden;
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(-4px);
         border-top: 0.5px solid rgba(255, 255, 255, 0.14);
         background: rgba(255, 255, 255, 0.04);
+        transition:
+          max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+          opacity 0.28s ease 0.1s,
+          transform 0.34s cubic-bezier(0.22, 1, 0.36, 1) 0.08s,
+          padding 0.4s cubic-bezier(0.22, 1, 0.36, 1);
       }
 
       .product-info__price-saving svg {
@@ -591,15 +626,53 @@
       .product-info__price-saving span {
         color: rgba(241, 241, 241, 0.45);
         font-size: 12px;
+        white-space: nowrap;
       }
 
-      .product-info__price--discount .product-info__price-badge,
-      .product-info__price--discount .product-info__price-saving {
-        display: flex;
+      .product-info__price--discount .product-info__price-badge {
+        width: 80px;
+        padding: 14px 16px;
+        opacity: 1;
+        border-right-color: rgba(255, 255, 255, 0.14);
       }
 
       .product-info__price--discount .product-info__price-old {
-        display: block;
+        max-height: 28px;
+        opacity: 1;
+        transform: translateY(0);
+        margin-top: 4px;
+      }
+
+      .product-info__price--discount .product-info__price-saving {
+        max-height: 42px;
+        opacity: 1;
+        transform: translateY(0);
+        padding: 8px 16px;
+      }
+
+      @keyframes productPriceTick {
+        from {
+          opacity: 0.35;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .product-info__price-current.is-ticking {
+        animation: productPriceTick 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .product-info__price-badge,
+        .product-info__price-old,
+        .product-info__price-saving,
+        .product-info__price-current {
+          transition: none !important;
+          animation: none !important;
+        }
       }
 
       .product-info__section {
@@ -854,22 +927,14 @@
         height: 18px;
         display: block;
         object-fit: contain;
+        filter: none;
+        opacity: 1;
+        transition: filter 0.15s ease, opacity 0.15s ease;
       }
 
       .product-info__button--cart.success_state {
         background: rgba(191, 247, 71, 0.14);
         color: var(--detail-accent);
-      }
-
-      .product-info__button--buy {
-        width: 100%;
-        border: 1px solid var(--detail-border);
-        background: transparent;
-        color: var(--detail-text);
-      }
-
-      .product-info__button--buy:hover {
-        border-color: rgba(255, 255, 255, 0.22);
       }
 
       .product-info__button--disabled,
@@ -880,6 +945,12 @@
         cursor: not-allowed;
         opacity: 1;
         pointer-events: none;
+      }
+
+      .product-info__button--disabled img,
+      .product-info__button:disabled img {
+        filter: invert(1) opacity(0.38);
+        opacity: 1;
       }
 
       .product-info__favorite {
@@ -1752,6 +1823,7 @@
                         class="product-info__variant product-info__variant--swatch{% if not product_variant.image_url %} product-info__variant--swatch-empty{% endif %} variant_btn"
                         type="button"
                         data_variant_id="{{ product_variant.id }}"
+                        data_variant_option_id="{{ product_variant.option_id }}"
                         data_variant_name="{{ product_variant.name }}"
                         data_variant_image_url="{{ product_variant.image_url }}"
                         data_variant_thumbnail_url="{{ product_variant.thumbnail_url|default:product_variant.image_url }}"
@@ -1769,6 +1841,7 @@
                         class="product-info__variant variant_btn"
                         type="button"
                         data_variant_id="{{ product_variant.id }}"
+                        data_variant_option_id="{{ product_variant.option_id }}"
                         data_variant_name="{{ product_variant.name }}"
                         data_variant_image_url="{{ product_variant.image_url }}"
                         data_variant_thumbnail_url="{{ product_variant.thumbnail_url|default:product_variant.image_url }}"
@@ -1798,40 +1871,36 @@
               </div>
               <div class="product-info__price-values">
                 <span class="product-info__price-current" id="js_product_price_current">{{ product.price|floatformat:0 }}₴</span>
-                {% if product.is_on_sale %}
-                  <span class="product-info__price-old" id="js_product_price_old">{{ product.old_price|floatformat:0 }}₴</span>
-                {% endif %}
+                <span class="product-info__price-old" id="js_product_price_old">{{ product.old_price|floatformat:0 }}₴</span>
               </div>
             </div>
-            {% if product_price_saving %}
-              <div class="product-info__price-saving">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                  <line x1="7" y1="7" x2="7.01" y2="7"></line>
-                </svg>
-                <span id="js_product_price_saving">вы экономите {{ product_price_saving|floatformat:0 }}₴</span>
-              </div>
-            {% endif %}
+            <div class="product-info__price-saving">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                <line x1="7" y1="7" x2="7.01" y2="7"></line>
+              </svg>
+              <span id="js_product_price_saving">вы экономите {{ product_price_saving|floatformat:0 }}₴</span>
+            </div>
           </div>
 
           <div class="product-info__section product-info__section--plain">
             <div class="product-info__actions{% if not is_product_available %} product-info__actions--unavailable{% endif %}">
               {% if is_product_available %}
-                <div class="product-info__quantity" aria-label="Количество товара">
+                <div class="product-info__quantity" aria-label="Количество товара" {% if has_product_skus %}hidden{% endif %}>
                   <button class="product-info__quantity-button product-info__quantity-button--minus" id="js_quantity_minus" type="button" aria-label="Уменьшить количество"></button>
                   <input class="product-info__quantity-input" id="input-quantity" type="number" name="quantity" value="1" min="1" autocomplete="off" />
                   <button class="product-info__quantity-button product-info__quantity-button--plus" id="js_quantity_plus" type="button" aria-label="Увеличить количество"></button>
                 </div>
               {% endif %}
               <button
-                class="product-info__button product-info__button--cart{% if not is_product_available %} product-info__button--disabled{% endif %}"
+                class="product-info__button product-info__button--cart{% if not is_product_available or has_product_skus %} product-info__button--disabled{% endif %}"
                 id="js_add_to_cart"
                 type="button"
                 data_product_id="{{ product.id }}"
-                {% if not is_product_available %}disabled aria-disabled="true"{% endif %}
+                {% if not is_product_available or has_product_skus %}disabled aria-disabled="true"{% endif %}
               >
                 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAACPklEQVR4nO2ZT0hUQRzHP2GbXpIuHjoEQqu3vAR7UBAPJt5avWRQ1CXsEqEdIrx4UNBQ9KqdAvegnYwQrFuHgk4RUpldIjqlFV0MlJKRefBDdt+feTOT4nzgx9s3zO878112fvtmHgQCgUDAAl3A/Zi4Bpww1C4Cw/rqhGZgB/iXENcN9T/r/E/8ZwNzhvpSwxmdwBgwcSAWxOAvD7OBWpwTg3/Hv4E+YAUoG469v3B/iwk0JfQvit98Uqh+cQu7Dvil+26SgzdiUPVTi+NeyslHMRyj1SL6fctj4LEQGkzoq77RjZSTV1XpfIxWWfR9nsfAAyE063ENjIi8GXJwWQitejRQEXm3yEGrEPrq0cBbkddODk4Cf7TQX6AxY/6GwT9xHbAtDJwhJ++EWCljrlrYQwkL1lkFilgSgjdwT9lWBYoYFYLqEcM1I7YqUMQVIbiMeyq2KlBEmxBUi9I178V4HTYEG4BdLaiuPUC3o5gSk/8B1GOJtI8INuMhFln2PPlnQMGmgQkh/gV44Sjm9T7AOjeFgUWOICVhYJ0jyClgS5iYBi45qELNLk1Meli8Oyl2fsYUdHVwbeIOjunX1cJFFXoEnHZtIHBYaAQuGuzS5LlTqw7Tw2Njbott37a+z8JZ4LVYuK90mxfaxNNpFOr+QgaNJ1Wqj9r5eeFujfKn2tPys0q+avPC1RoGBjJofKyS/wFPqA3O2oHB13R7WtQLE1svUYxQZzXjwFP9bsHk7KZX738r+nMgEDhu7AHM/4ko6mUOlwAAAABJRU5ErkJggg==" alt="" aria-hidden="true" />
-                <span data_cart_button_text>{% if is_product_available %}Добавить в корзину{% else %}Нет в наличии{% endif %}</span>
+                <span data_cart_button_text>{% if not is_product_available %}Нет в наличии{% elif has_product_skus %}Выберите вариант товара{% else %}Добавить в корзину{% endif %}</span>
               </button>
               <button
                 class="product-info__favorite{% if is_liked %} active{% endif %}"
@@ -1844,16 +1913,17 @@
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 0 0 1.06-8.84z"/></svg>
               </button>
             </div>
-            {% if is_product_available %}
-              <button class="product-info__button product-info__button--buy" id="js_buy_now" type="button">Купить сейчас</button>
-            {% endif %}
           </div>
 
           <div class="product-info__description">
             <div class="product-info__description-title">О товаре:</div>
             <div class="product-info__description-body" id="product-description-body">
               <div class="product-info__description-content" id="product-description-content">
-                {{ product.description|default:"Описание товара пока не добавлено."|linebreaks }}
+                {% if product.description %}
+                  {{ product.description|safe }}
+                {% else %}
+                  <p>Описание товара пока не добавлено.</p>
+                {% endif %}
               </div>
               <button class="product-info__description-more" id="js_product_description_toggle" type="button" aria-expanded="false" aria-controls="product-description-content">
                 Подробнее
@@ -1861,22 +1931,7 @@
             </div>
           </div>
           
-          {% if product.specifications_text %}
-            <section class="product-info__specs">
-              <button class="product-info__toggle-title product-info__specs-title" type="button" aria-expanded="false" data_collapsible_trigger="product-specs-content">
-                <span>Характеристики</span>
-                <span class="product-info__toggle-icon" aria-hidden="true">
-                  <svg viewBox="0 0 15 15" fill="currentColor" width="15" height="15"><g stroke="none" fill="none" stroke-width="1" fill-rule="evenodd"><g fill="currentColor" fill-rule="nonzero"><g transform="translate(2 7)"><path d="M0 0L11 0 11 1 0 1z"></path></g></g></g></svg>
-                  <svg class="product-info__toggle-icon-plus" viewBox="0 0 15 15" fill="currentColor" width="15" height="15"><g stroke="none" fill="none" stroke-width="1" fill-rule="evenodd"><g fill="currentColor" fill-rule="nonzero"><g transform="translate(2 7)"><path d="M0 0L11 0 11 1 0 1z"></path></g></g></g></svg>
-                </span>
-              </button>
-              <div class="product-info__collapsible is-collapsed" id="product-specs-content">
-                <div class="product-info__specs-text">
-                  {{ product.specifications_text|linebreaks }}
-                </div>
-              </div>
-            </section>
-          {% elif product_specifications %}
+          {% if product_specifications %}
             <section class="product-info__specs">
               <button class="product-info__toggle-title product-info__specs-title" type="button" aria-expanded="false" data_collapsible_trigger="product-specs-content">
                 <span>Характеристики</span>
@@ -2221,6 +2276,7 @@
         const productPriceCurrent = document.getElementById("js_product_price_current");
         const productPriceOld = document.getElementById("js_product_price_old");
         const productPriceSaving = document.getElementById("js_product_price_saving");
+        const productPricePercent = document.querySelector(".product-info__price-percent");
 
         function parsePriceValue(value) {
           const normalized = `${value || ""}`.replace(",", ".");
@@ -2229,7 +2285,16 @@
         }
 
         function formatPriceValue(value) {
-          return `${Math.round(value)}₴`;
+          return `${Math.round(value).toLocaleString("uk-UA").replace(/\u00a0/g, "\u202F")}₴`;
+        }
+
+        function tickProductPrice(element, text) {
+          if (!element) return;
+          element.classList.remove("is-ticking");
+          void element.offsetWidth;
+          element.textContent = text;
+          element.classList.add("is-ticking");
+          element.addEventListener("animationend", () => element.classList.remove("is-ticking"), { once: true });
         }
 
         function updateProductPriceForQuantity(quantity) {
@@ -2238,7 +2303,7 @@
           const unitOldPrice = parsePriceValue(productPrice.getAttribute("data_unit_old_price"));
           const unitSaving = parsePriceValue(productPrice.getAttribute("data_unit_saving"));
 
-          productPriceCurrent.textContent = formatPriceValue(unitPrice * quantity);
+          tickProductPrice(productPriceCurrent, formatPriceValue(unitPrice * quantity));
           if (productPriceOld && unitOldPrice > 0) {
             productPriceOld.textContent = formatPriceValue(unitOldPrice * quantity);
           }
@@ -2376,6 +2441,8 @@
         const variantButtons = [...document.querySelectorAll(".variant_btn")];
         const availableVariantButtons = variantButtons.filter((button) => !button.disabled);
         const variantGroups = [...document.querySelectorAll(".product-info__variant-group")];
+        const skuPayload = {{ sku_payload_json|default:"[]"|safe }};
+        let selectedProductSkuId = null;
         const initialGalleryVariantId = variantGalleryThumb?.getAttribute("data_gallery_variant_id") || "";
         const urlParams = new URLSearchParams(window.location.search);
         const requestedVariantIds = new Set([
@@ -2390,14 +2457,91 @@
           labelValue.textContent = activeButton?.getAttribute("data_variant_name") || "";
         }
 
+        function findSelectedSku() {
+          if (!skuPayload.length) return null;
+          const selectedOptionIds = getSelectedSkuOptionIds();
+          if (!selectedOptionIds.length) return null;
+          return skuPayload.find((sku) => {
+            const skuOptionIds = [...(sku.option_ids || [])].map(Number).sort((a, b) => a - b);
+            return skuOptionIds.length === selectedOptionIds.length && skuOptionIds.every((id, index) => id === selectedOptionIds[index]);
+          }) || null;
+        }
+
+        function getSelectedSkuOptionIds() {
+          return [...document.querySelectorAll(".variant_btn.active")]
+            .map((variant) => Number(variant.getAttribute("data_variant_option_id")))
+            .filter(Boolean)
+            .sort((a, b) => a - b);
+        }
+
+        function updateProductPriceUnit(price, oldPrice) {
+          if (!productPrice || !productPriceCurrent) return;
+          productPrice.setAttribute("data_unit_price", price || 0);
+          productPrice.setAttribute("data_unit_old_price", oldPrice || "");
+          const saving = oldPrice && oldPrice > price ? oldPrice - price : 0;
+          productPrice.setAttribute("data_unit_saving", saving || "");
+          const discount = saving && oldPrice ? Math.round((1 - price / oldPrice) * 100) : 0;
+          productPrice.classList.toggle("product-info__price--discount", discount > 0);
+          if (productPricePercent) productPricePercent.textContent = discount > 0 ? `-${discount}%` : "";
+          updateProductPriceForQuantity(setQuantity(quantityInput?.value));
+        }
+
+        function setProductPurchaseState({ text, disabled, showQuantity = false }) {
+          const cartButton = document.getElementById("js_add_to_cart");
+          const quantity = document.querySelector(".product-info__quantity");
+          if (cartButton) {
+            cartButton.disabled = Boolean(disabled);
+            cartButton.classList.toggle("product-info__button--disabled", Boolean(disabled));
+            cartButton.setAttribute("aria-disabled", disabled ? "true" : "false");
+            const buttonText = cartButton.querySelector("[data_cart_button_text]");
+            if (buttonText && text) buttonText.textContent = text;
+          }
+          if (quantity) quantity.hidden = !showQuantity;
+        }
+
+        function syncSelectedSkuState() {
+          if (!skuPayload.length) return;
+          const requiredVariantGroupCount = variantGroups.filter((group) => group.querySelector(".variant_btn")).length;
+          const selectedOptionIds = getSelectedSkuOptionIds();
+          if (selectedOptionIds.length < requiredVariantGroupCount) {
+            selectedProductSkuId = null;
+            setProductPurchaseState({
+              text: "Выберите вариант товара",
+              disabled: true,
+              showQuantity: false,
+            });
+            return;
+          }
+
+          const sku = findSelectedSku();
+          selectedProductSkuId = sku?.id || null;
+          if (!sku) {
+            setProductPurchaseState({
+              text: "Такой комбинации нет",
+              disabled: true,
+              showQuantity: false,
+            });
+            return;
+          }
+
+          updateProductPriceUnit(Number(sku.price || 0), Number(sku.old_price || 0));
+          const unavailable = !sku.available || Number(sku.stock || 0) <= 0;
+          setProductPurchaseState({
+            text: unavailable ? "Нет в наличии" : "Купить",
+            disabled: unavailable,
+            showQuantity: !unavailable,
+          });
+        }
+
         variantGroups.forEach((group) => {
           const groupButtons = [...group.querySelectorAll(".variant_btn")];
           const availableGroupButtons = groupButtons.filter((button) => !button.disabled);
           const requestedButton = availableGroupButtons.find((button) => requestedVariantIds.has(button.getAttribute("data_variant_id")));
           const initialGalleryButton = availableGroupButtons.find((button) => button.getAttribute("data_variant_id") === initialGalleryVariantId);
-          (requestedButton || initialGalleryButton || availableGroupButtons[0])?.classList.add("active");
+          (skuPayload.length ? requestedButton : (requestedButton || initialGalleryButton || availableGroupButtons[0]))?.classList.add("active");
           updateSelectedVariantName(group);
         });
+        syncSelectedSkuState();
 
         variantButtons.forEach((button) => {
           button.addEventListener("click", () => {
@@ -2407,6 +2551,7 @@
             button.classList.add("active");
             updateSelectedVariantName(group);
             updateVariantGalleryImage(button);
+            syncSelectedSkuState();
           });
         });
 
@@ -2422,15 +2567,22 @@
           }
         });
 
-        async function addToCart(redirectAfter = false) {
+        async function addToCart() {
           const button = document.getElementById("js_add_to_cart");
           if (button?.disabled) return false;
           const productId = Number(button?.getAttribute("data_product_id"));
-          variantGroups.forEach((group) => {
-            if (group.querySelector(".variant_btn.active")) return;
-            const firstAvailable = [...group.querySelectorAll(".variant_btn")].find((item) => !item.disabled);
-            firstAvailable?.classList.add("active");
-          });
+          if (skuPayload.length && !selectedProductSkuId) {
+            syncSelectedSkuState();
+            showToast("Выберите вариант товара", true);
+            return false;
+          }
+          if (!skuPayload.length) {
+            variantGroups.forEach((group) => {
+              if (group.querySelector(".variant_btn.active")) return;
+              const firstAvailable = [...group.querySelectorAll(".variant_btn")].find((item) => !item.disabled);
+              firstAvailable?.classList.add("active");
+            });
+          }
 
           const selectedVariants = [...document.querySelectorAll(".variant_btn.active")];
           const requiredVariantGroupCount = variantGroups.filter((group) => group.querySelector(".variant_btn:not(:disabled)")).length;
@@ -2450,6 +2602,7 @@
             },
             body: JSON.stringify({
               product_id: productId,
+              product_sku_id: selectedProductSkuId,
               variant_id: selectedVariantIds[0] || null,
               variant_ids: selectedVariantIds,
               quantity: setQuantity(quantityInput?.value),
@@ -2468,7 +2621,6 @@
               }
               if (buttonText) buttonText.textContent = "Нет в наличии";
               document.querySelector(".product-info__quantity")?.setAttribute("hidden", "");
-              document.getElementById("js_buy_now")?.setAttribute("hidden", "");
               showToast(data.message || "Товар закончился", true);
               return false;
             }
@@ -2491,12 +2643,10 @@
             }, 1600);
           }
 
-          if (redirectAfter) window.location.href = "/cart/";
           return true;
         }
 
-        document.getElementById("js_add_to_cart")?.addEventListener("click", () => addToCart(false));
-        document.getElementById("js_buy_now")?.addEventListener("click", () => addToCart(true));
+        document.getElementById("js_add_to_cart")?.addEventListener("click", () => addToCart());
 
         document.getElementById("js_wishlist_btn")?.addEventListener("click", async (event) => {
           const button = event.currentTarget;

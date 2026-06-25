@@ -1,0 +1,127 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {{ site_title|default:_("Django site admin") }}{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<form class="wave-admin-media" method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+
+  <section class="wave-admin-media-card">
+    <div class="wave-admin-media-section-title">
+      <h2>Медиа товара</h2>
+      <label class="button">
+        Добавить изображения
+        <input class="wave-admin-media-hidden-input" type="file" name="new_images" accept="image/*" multiple>
+      </label>
+    </div>
+
+    <div class="wave-admin-media-grid">
+      <article class="wave-admin-media-tile">
+        <div class="wave-admin-media-tile-frame">
+        {% if product.image %}
+          <img src="{{ product.image.url }}" alt="">
+        {% else %}
+          <div class="wave-admin-media-placeholder">Нет фото</div>
+        {% endif %}
+          <span class="wave-admin-media-kind">Главное фото</span>
+          <div class="wave-admin-media-tile-actions">
+            <label class="wave-admin-media-action">
+              Заменить
+              <input type="file" name="image" accept="image/*">
+            </label>
+            {% if product.image %}
+              <a class="wave-admin-media-action" href="{{ product.image.url }}" target="_blank" rel="noopener">Открыть</a>
+            {% endif %}
+          </div>
+        </div>
+      </article>
+
+      <article class="wave-admin-media-tile">
+        <div class="wave-admin-media-tile-frame">
+        {% if product.promo_video %}
+          <video controls preload="metadata"{% if product.promo_video_poster %} poster="{{ product.promo_video_poster.url }}"{% endif %}>
+            <source src="{{ product.promo_video.url }}">
+          </video>
+        {% else %}
+          <div class="wave-admin-media-placeholder">Нет видео</div>
+        {% endif %}
+          <span class="wave-admin-media-kind">Промо-видео</span>
+          <div class="wave-admin-media-tile-actions">
+            <label class="wave-admin-media-action">
+              Заменить
+              <input type="file" name="promo_video" accept="video/*">
+            </label>
+            {% if product.promo_video %}
+              <a class="wave-admin-media-action" href="{{ product.promo_video.url }}" target="_blank" rel="noopener">Открыть</a>
+            {% endif %}
+          </div>
+        </div>
+      </article>
+
+      <article class="wave-admin-media-tile">
+        <div class="wave-admin-media-tile-frame">
+        {% if product.promo_video_poster %}
+          <img src="{{ product.promo_video_poster.url }}" alt="">
+        {% else %}
+          <div class="wave-admin-media-placeholder">Нет постера</div>
+        {% endif %}
+          <span class="wave-admin-media-kind">Постер видео</span>
+          <div class="wave-admin-media-tile-actions">
+            <label class="wave-admin-media-action">
+              Заменить
+              <input type="file" name="promo_video_poster" accept="image/*">
+            </label>
+            {% if product.promo_video_poster %}
+              <a class="wave-admin-media-action" href="{{ product.promo_video_poster.url }}" target="_blank" rel="noopener">Открыть</a>
+            {% endif %}
+          </div>
+        </div>
+      </article>
+
+      {% for image in additional_images %}
+        <article class="wave-admin-media-tile">
+          <div class="wave-admin-media-tile-frame">
+            {% if image.image %}
+              <img src="{{ image.image.url }}" alt="">
+            {% else %}
+              <div class="wave-admin-media-placeholder">Нет фото</div>
+            {% endif %}
+            <span class="wave-admin-media-kind">Фото</span>
+            <div class="wave-admin-media-tile-actions wave-admin-media-tile-actions--full">
+              {% if image.image %}
+                <a class="wave-admin-media-action" href="{{ image.image.url }}" target="_blank" rel="noopener">Открыть</a>
+              {% endif %}
+              <label class="wave-admin-media-action wave-admin-media-action--danger">
+                Удалить
+                <input type="checkbox" name="delete_image_{{ image.id }}" value="1">
+              </label>
+              <label class="wave-admin-media-field">
+                Alt
+                <input type="text" name="alt_text_{{ image.id }}" value="{{ image.alt_text }}">
+              </label>
+              <label class="wave-admin-media-field">
+                Order
+                <input type="number" name="order_{{ image.id }}" value="{{ image.order }}" min="0">
+              </label>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+
+      <label class="wave-admin-media-tile wave-admin-media-tile--add">
+        <div class="wave-admin-media-tile-frame">
+          <div class="wave-admin-media-placeholder">Добавить фото</div>
+          <input type="file" name="new_images" accept="image/*" multiple>
+        </div>
+      </label>
+    </div>
+  </section>
+
+  <div class="submit-row wave-admin-media-submit">
+    <input type="submit" class="default" value="Сохранить медиа">
+  </div>
+</form>
+{% endblock %}

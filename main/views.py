@@ -16,17 +16,24 @@ from .models import (
     ProductLike,
     ProductReview,
     ProductReviewHelpful,
+    ProductSKU,
     ProductVariant,
 )
 
 
 available_variant_prefetch = Prefetch(
     "product_variants",
-    queryset=ProductVariant.objects.select_related("variant").order_by(
-        "variant__group",
+    queryset=ProductVariant.objects.select_related("variant", "variant__group").order_by(
+        "variant__group__order",
+        "variant__group__name",
         "variant__order",
         "variant__name",
     ),
+)
+
+product_sku_prefetch = Prefetch(
+    "skus",
+    queryset=ProductSKU.objects.prefetch_related("options").order_by("sort_order", "id"),
 )
 
 
@@ -37,6 +44,9 @@ def mark_liked_products(products, liked_product_ids):
 
 
 def is_product_visible_in_recommendations(product):
+    skus = product.sku_payload
+    if skus:
+        return any(item["available"] for item in skus)
     product_variants = product.display_product_variants
     available_variants = product.available_product_variants
     return product.stock > 0 and (not product_variants or bool(available_variants))
@@ -169,6 +179,9 @@ def get_product_search_rank(product, query):
 
 
 def is_product_available_for_purchase(product):
+    skus = product.sku_payload
+    if skus:
+        return any(item["available"] for item in skus)
     display_variants = product.display_product_variants
     available_variants = product.available_product_variants
     return product.stock > 0 and (not display_variants or bool(available_variants))
@@ -190,7 +203,11 @@ def serialize_search_product(product):
 def serialize_cart_item(item):
     product = item.product
     selected_variant_ids = [int(value) for value in (item.selected_variant_ids or []) if value]
-    if selected_variant_ids:
+    if item.product_sku_id:
+        selected_options = list(item.product_sku.options.all())
+        selected_variant_ids = [option.id for option in selected_options]
+        variant_name = ", ".join(option.name for option in selected_options)
+    elif selected_variant_ids:
         variants_by_id = {
             variant.id: variant
             for variant in ProductVariant.objects.select_related("variant").filter(
@@ -216,6 +233,7 @@ def serialize_cart_item(item):
         "old_price": float(product.old_price) if product.old_price else None,
         "badge": serialize_badge(product),
         "image_url": product.image.url if product.image else None,
+        "product_sku_id": item.product_sku_id,
         "variant_id": item.product_variant_id,
         "variant_ids": selected_variant_ids,
         "variant_name": variant_name,
@@ -230,9 +248,10 @@ def serialize_cart(cart):
             "product",
             "product__brand",
             "product__category",
+            "product_sku",
             "product_variant",
             "product_variant__variant",
-        )
+        ).prefetch_related("product_sku__options")
     )
     total_price = sum((item.total_price for item in items), Decimal("0.00"))
     total_quantity = sum(item.quantity for item in items)
@@ -297,7 +316,7 @@ def home(request):
     products = list(
         Product.objects.filter(available=True)
         .select_related("brand", "category")
-        .prefetch_related(available_variant_prefetch)[:12]
+        .prefetch_related(available_variant_prefetch, product_sku_prefetch)[:12]
     )
     mark_liked_products(products, get_liked_product_ids(request))
     return render(request, "main/main.html", {
@@ -311,7 +330,7 @@ def catalog(request):
     products = list(
         Product.objects.filter(available=True)
         .select_related("category", "brand")
-        .prefetch_related(available_variant_prefetch)
+        .prefetch_related(available_variant_prefetch, product_sku_prefetch)
     )
     liked_product_ids = get_liked_product_ids(request)
     mark_liked_products(products, liked_product_ids)
@@ -357,7 +376,7 @@ def api_search_products(request):
     products = list(
         Product.objects.filter(available=True)
         .select_related("category", "brand")
-        .prefetch_related(available_variant_prefetch)
+        .prefetch_related(available_variant_prefetch, product_sku_prefetch)
     )
     matched_products = [
         product
@@ -437,7 +456,7 @@ def product_list(request, category_slug=None):
     products_queryset = (
         Product.objects.filter(available=True)
         .select_related("category", "brand")
-        .prefetch_related(available_variant_prefetch)
+        .prefetch_related(available_variant_prefetch, product_sku_prefetch)
     )
 
     category = None
@@ -483,6 +502,7 @@ def product_detail(request, id, slug):
     product = (
         Product.objects.select_related("category", "brand").prefetch_related(
             available_variant_prefetch,
+            product_sku_prefetch,
             "additional_images",
             "specifications",
         )
@@ -494,6 +514,7 @@ def product_detail(request, id, slug):
         return redirect("main:catalog")
 
     display_variants = product.display_product_variants
+    sku_payload = product.sku_payload
     available_variants = product.available_product_variants
     requested_variant_ids = set(request.GET.getlist("variant_id"))
     requested_variant_ids.update(
@@ -511,7 +532,11 @@ def product_detail(request, id, slug):
         display_variant_groups[-1]["variants"].append(product_variant)
         if product_variant.get("image_url"):
             display_variant_groups[-1]["has_images"] = True
-    is_product_available = product.stock > 0 and (not display_variants or bool(available_variants))
+    is_product_available = (
+        any(item["available"] for item in sku_payload)
+        if sku_payload
+        else product.stock > 0 and (not display_variants or bool(available_variants))
+    )
 
     liked_product_ids = get_liked_product_ids(request)
     liked_review_ids = get_liked_review_ids(request)
@@ -563,7 +588,7 @@ def product_detail(request, id, slug):
     also_chosen_candidates = list(
         Product.objects.filter(also_chosen_for__product=product, available=True, stock__gt=0)
         .select_related("category", "brand")
-        .prefetch_related(available_variant_prefetch)
+        .prefetch_related(available_variant_prefetch, product_sku_prefetch)
         .exclude(id=product.id)
         .order_by("also_chosen_for__sort_order", "also_chosen_for__id")
     )
@@ -576,7 +601,7 @@ def product_detail(request, id, slug):
     related_candidates = list(
         Product.objects.filter(category=product.category, available=True, stock__gt=0)
         .select_related("category", "brand")
-        .prefetch_related(available_variant_prefetch)
+        .prefetch_related(available_variant_prefetch, product_sku_prefetch)
         .exclude(id=product.id)
     )
     related_products = [
@@ -596,6 +621,8 @@ def product_detail(request, id, slug):
         "badge": product.badge_data,
         "available_variants": available_variants,
         "display_variants": display_variants,
+        "sku_payload_json": json.dumps(sku_payload),
+        "has_product_skus": bool(sku_payload),
         "display_variant_groups": display_variant_groups,
         "initial_gallery_variant": initial_gallery_variant,
         "gallery_start_image_url": gallery_start_image_url,
@@ -649,7 +676,7 @@ def api_favorites(request):
     products = (
         Product.objects.filter(id__in=liked_ids, available=True)
         .select_related("category", "brand")
-        .prefetch_related(available_variant_prefetch)
+        .prefetch_related(available_variant_prefetch, product_sku_prefetch)
         .order_by("name")
     )
     return JsonResponse({
@@ -671,6 +698,7 @@ def api_cart_add(request):
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
     product_id = payload.get("product_id")
+    product_sku_id = payload.get("product_sku_id")
     variant_id = payload.get("variant_id")
     variant_ids = payload.get("variant_ids") or []
     if variant_id and variant_id not in variant_ids:
@@ -681,7 +709,7 @@ def api_cart_add(request):
         return JsonResponse({"error": "Quantity must be at least 1"}, status=400)
 
     product = get_object_or_404(
-        Product.objects.prefetch_related(available_variant_prefetch),
+        Product.objects.prefetch_related(available_variant_prefetch, product_sku_prefetch),
         id=product_id,
         available=True,
     )
@@ -692,19 +720,34 @@ def api_cart_add(request):
         )
 
     product_variant = None
+    product_sku = None
     selected_variant_ids = []
-    if product.product_variants.exists():
+    if product.skus.exists():
+        if not product_sku_id:
+            return JsonResponse({"error": "Choose product SKU"}, status=400)
+        product_sku = ProductSKU.objects.prefetch_related("options").filter(id=product_sku_id, product=product).first()
+        if product_sku is None:
+            return JsonResponse({"error": "Choose product SKU"}, status=400)
+        if not product_sku.available or product_sku.stock <= 0:
+            return JsonResponse(
+                {"success": False, "error": "out_of_stock", "message": "Товар закончился"},
+                status=409,
+            )
+        if quantity > product_sku.stock:
+            return JsonResponse({"error": "Not enough stock"}, status=400)
+        selected_variant_ids = [option.id for option in product_sku.options.all()]
+    elif product.product_variants.exists():
         if not variant_ids:
             return JsonResponse({"error": "Choose product variant"}, status=400)
         selected_variants = list(
             ProductVariant.objects.select_related("product", "variant")
             .filter(id__in=variant_ids, product=product)
-            .order_by("variant__group", "variant__order", "variant__name")
+            .order_by("variant__group__order", "variant__group__name", "variant__order", "variant__name")
         )
         found_ids = {variant.id for variant in selected_variants}
         if found_ids != set(variant_ids):
             return JsonResponse({"error": "Selected variant is not available"}, status=400)
-        selected_groups = [variant.variant.group or "default" for variant in selected_variants]
+        selected_groups = [variant.variant.group_id or "default" for variant in selected_variants]
         if len(selected_groups) != len(set(selected_groups)):
             return JsonResponse({"error": "Choose only one option per variant group"}, status=400)
         for selected_variant in selected_variants:
@@ -725,6 +768,7 @@ def api_cart_add(request):
     item = CartItem.objects.filter(
         cart=cart,
         product=product,
+        product_sku=product_sku,
         product_variant=product_variant,
         selected_variant_ids=selected_variant_ids,
     ).first()
@@ -733,13 +777,16 @@ def api_cart_add(request):
         item = CartItem.objects.create(
             cart=cart,
             product=product,
+            product_sku=product_sku,
             product_variant=product_variant,
             selected_variant_ids=selected_variant_ids,
             quantity=quantity,
-            price=product.price,
+            price=product_sku.price if product_sku else product.price,
         )
     else:
         next_quantity = item.quantity + quantity
+        if product_sku and next_quantity > product_sku.stock:
+            return JsonResponse({"error": "Not enough stock"}, status=400)
         if product_variant and next_quantity > product_variant.stock:
             return JsonResponse({"error": "Not enough stock"}, status=400)
         if selected_variant_ids:
@@ -768,7 +815,9 @@ def api_cart_item(request, item_id):
     if quantity < 1:
         item.delete()
         return JsonResponse({"ok": True, "cart": serialize_cart(cart)})
-    if item.selected_variant_ids:
+    if item.product_sku_id and quantity > item.product_sku.stock:
+        return JsonResponse({"error": "Not enough stock"}, status=400)
+    if item.selected_variant_ids and not item.product_sku_id:
         selected_variants = ProductVariant.objects.filter(id__in=item.selected_variant_ids)
         if any(quantity > selected_variant.stock for selected_variant in selected_variants):
             return JsonResponse({"error": "Not enough stock"}, status=400)

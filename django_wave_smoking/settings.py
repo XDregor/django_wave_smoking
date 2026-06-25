@@ -47,6 +47,9 @@ UNFOLD = {
     "STYLES": [
         lambda request: static("admin/css/unfold_overrides.css"),
     ],
+    "SCRIPTS": [
+        lambda request: static("admin/js/unfold_overrides.js"),
+    ],
     "COLORS": {
         "primary": {
             "50": "255 247 237",
@@ -89,12 +92,12 @@ UNFOLD = {
                     {
                         "title": "Добавить товар",
                         "icon": "add_circle",
-                        "link": reverse_lazy("admin:main_product_add"),
+                        "link": reverse_lazy("admin:main_product_add_sku"),
                     },
                     {
                         "title": "Управление товарами",
                         "icon": "inventory_2",
-                        "link": reverse_lazy("admin:main_product_changelist"),
+                        "link": reverse_lazy("admin:main_product_products_list"),
                     },
                 ],
             },
@@ -113,19 +116,14 @@ UNFOLD = {
                         "link": reverse_lazy("admin:main_brand_changelist"),
                     },
                     {
-                        "title": "Бейджи",
-                        "icon": "local_offer",
-                        "link": reverse_lazy("admin:main_product_changelist"),
+                        "title": "Группы вариантов",
+                        "icon": "tune",
+                        "link": reverse_lazy("admin:main_variantgroup_changelist"),
                     },
                     {
                         "title": "Медиа",
                         "icon": "perm_media",
-                        "link": reverse_lazy("admin:main_productimage_changelist"),
-                    },
-                    {
-                        "title": "Варианты",
-                        "icon": "tune",
-                        "link": reverse_lazy("admin:main_variantoption_changelist"),
+                        "link": reverse_lazy("admin:main_product_media_list"),
                     },
                 ],
             },
