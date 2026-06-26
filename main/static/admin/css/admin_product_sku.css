@@ -29,7 +29,6 @@
         --font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
       }
 
-      body:has(.wave-admin-product-sku),
       .qa-backdrop {
         --bg: #090909;
         --card: #111111;
@@ -74,11 +73,11 @@
         background: var(--text-3);
       }
 
-      .shell {
+      .wave-admin-product-sku .shell {
         display: flex;
         min-height: 100vh;
       }
-      .main {
+      .wave-admin-product-sku .main {
         flex: 1;
         display: flex;
         flex-direction: column;
@@ -86,7 +85,7 @@
         min-width: 0;
       }
 
-      .page-body {
+      .wave-admin-product-sku .page-body {
         flex: 1;
         overflow-y: auto;
         display: flex;
@@ -1573,7 +1572,7 @@
 
       /* ── RESPONSIVE ───────────────────────────────── */
       @media (max-width: 820px) {
-        .page-body {
+        .wave-admin-product-sku .page-body {
           padding: 16px;
         }
         .field-row,
@@ -1628,7 +1627,7 @@
         }
       }
       @media (max-width: 480px) {
-        .page-body {
+        .wave-admin-product-sku .page-body {
           padding: 10px;
         }
         .step-pill .step-num {
@@ -1691,16 +1690,14 @@
 }
 
 body:has(.wave-admin-product-sku) .\@container.px-4.pb-4.grow {
-  background: var(--bg) !important;
+  background: #090909 !important;
 }
 
 body:has(.wave-admin-product-sku) #main,
 body:has(.wave-admin-product-sku) #content,
-body:has(.wave-admin-product-sku) .content,
-body:has(.wave-admin-product-sku) .grow,
-body:has(.wave-admin-product-sku) [class*="bg-white"],
-body:has(.wave-admin-product-sku) [class*="dark:bg-base"] {
-  background: var(--bg) !important;
+body:has(.wave-admin-product-sku) #main > .bg-white,
+body:has(.wave-admin-product-sku) #main > .dark\:bg-base-900 {
+  background: #090909 !important;
 }
 
 .wave-admin-product-sku,

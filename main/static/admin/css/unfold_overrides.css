@@ -56,6 +56,17 @@ aside {
   border-right: 1px solid var(--wave-admin-border-soft) !important;
 }
 
+#nav-sidebar,
+#nav-sidebar-inner,
+#nav-sidebar-apps,
+#nav-sidebar .simplebar-wrapper,
+#nav-sidebar .simplebar-mask,
+#nav-sidebar .simplebar-offset,
+#nav-sidebar .simplebar-content-wrapper,
+#nav-sidebar .simplebar-content {
+  background: linear-gradient(180deg, #0a0b0d, #0e1014) !important;
+}
+
 #nav-sidebar a,
 aside a,
 .breadcrumbs a {
@@ -105,6 +116,22 @@ aside a:hover,
 #nav-sidebar-apps a .material-symbols-outlined {
   margin-right: 10px !important;
   font-size: 17px !important;
+}
+
+#nav-sidebar-apps a.active,
+#nav-sidebar-apps a.bg-base-100,
+#nav-sidebar-apps a[class*="dark:bg-white"],
+#nav-sidebar-apps a[aria-current="page"] {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--primary-500, #ff8a1d) !important;
+  font-weight: 700 !important;
+}
+
+#nav-sidebar-apps a.active .material-symbols-outlined,
+#nav-sidebar-apps a.bg-base-100 .material-symbols-outlined,
+#nav-sidebar-apps a[class*="dark:bg-white"] .material-symbols-outlined,
+#nav-sidebar-apps a[aria-current="page"] .material-symbols-outlined {
+  color: currentColor !important;
 }
 
 .wave-admin-history-nav-link span {

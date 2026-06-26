@@ -2552,6 +2552,7 @@
             updateSelectedVariantName(group);
             updateVariantGalleryImage(button);
             syncSelectedSkuState();
+            syncStickyProductBar();
           });
         });
 
@@ -2677,6 +2678,127 @@
           showToast(data.liked ? "Добавлено в избранное" : "Удалено из избранного");
         });
 
+        const stickyProductBar = document.querySelector("[data-sticky-product-bar]");
+        const stickyProductImage = stickyProductBar?.querySelector("[data-sticky-product-image]");
+        const stickyProductTitle = stickyProductBar?.querySelector("[data-sticky-product-title]");
+        const stickyProductRatingWrap = stickyProductBar?.querySelector("[data-sticky-product-rating-wrap]");
+        const stickyProductRating = stickyProductBar?.querySelector("[data-sticky-product-rating]");
+        const stickyProductPriceCurrent = stickyProductBar?.querySelector("[data-sticky-product-price-current]");
+        const stickyProductPriceOld = stickyProductBar?.querySelector("[data-sticky-product-price-old]");
+        const stickyProductCart = stickyProductBar?.querySelector("[data-sticky-product-cart]");
+        const stickyProductFavorite = stickyProductBar?.querySelector("[data-sticky-product-favorite]");
+        const stickyTriggerSection = document.querySelector("#product-reviews, .product-cross-sell, .related-products");
+        const productTitle = document.querySelector(".product-info__title");
+        const mainCartButton = document.getElementById("js_add_to_cart");
+        const mainFavoriteButton = document.getElementById("js_wishlist_btn");
+        const mainReviewsText = document.querySelector(".product-info__reviews-text");
+        const mainReviewsSummary = document.querySelector(".product-reviews__summary");
+
+        function syncStickyProductImage() {
+          if (!stickyProductImage) return;
+          const activeVariantImage = document.querySelector(".variant_btn.active[data_variant_image_url]")?.getAttribute("data_variant_image_url") || "";
+          const activeGalleryButton = document.querySelector(".gallery_thumbnail_button.active");
+          const galleryImage = activeGalleryButton?.getAttribute("data_gallery_src") || "";
+          const imageSrc = activeVariantImage || galleryImage || mainImage?.src || "";
+          if (!imageSrc) {
+            stickyProductImage.hidden = true;
+            return;
+          }
+          stickyProductImage.hidden = false;
+          stickyProductImage.src = imageSrc;
+          stickyProductImage.alt = productTitle?.textContent?.trim() || "";
+        }
+
+        function syncStickyProductPrice() {
+          if (stickyProductPriceCurrent && productPriceCurrent) {
+            stickyProductPriceCurrent.textContent = productPriceCurrent.textContent.trim();
+          }
+          const hasDiscount = productPrice?.classList.contains("product-info__price--discount");
+          if (stickyProductPriceOld && productPriceOld) {
+            stickyProductPriceOld.textContent = productPriceOld.textContent.trim();
+            stickyProductPriceOld.hidden = !hasDiscount || !productPriceOld.textContent.trim();
+          }
+        }
+
+        function syncStickyProductActions() {
+          if (stickyProductCart && mainCartButton) {
+            const mainText = mainCartButton.querySelector("[data_cart_button_text]")?.textContent?.trim() || "Добавить в корзину";
+            stickyProductCart.innerHTML = `
+              <span class="sticky_product_bar__cart-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 19V5"></path>
+                  <path d="M6 11l6-6 6 6"></path>
+                </svg>
+              </span>
+              <span>${mainText}</span>
+            `;
+            stickyProductCart.disabled = false;
+            stickyProductCart.classList.toggle("is-disabled-look", mainCartButton.disabled);
+            stickyProductCart.setAttribute("aria-disabled", mainCartButton.disabled ? "true" : "false");
+          }
+          if (stickyProductFavorite && mainFavoriteButton) {
+            const isActive = mainFavoriteButton.classList.contains("active");
+            stickyProductFavorite.classList.toggle("active", isActive);
+            stickyProductFavorite.setAttribute("aria-pressed", isActive ? "true" : "false");
+          }
+        }
+
+        function syncStickyProductBar() {
+          if (!stickyProductBar) return;
+          stickyProductBar.hidden = false;
+          if (stickyProductTitle && productTitle) stickyProductTitle.textContent = productTitle.textContent.trim();
+          const reviewsText = mainReviewsText?.textContent?.trim() || mainReviewsSummary?.textContent?.trim() || "";
+          if (stickyProductRating && reviewsText) {
+            stickyProductRating.textContent = reviewsText
+              .trim()
+              .replace(/^★\s*/, "");
+            if (stickyProductRatingWrap) stickyProductRatingWrap.hidden = false;
+          } else if (stickyProductRatingWrap) {
+            stickyProductRatingWrap.hidden = true;
+          }
+          syncStickyProductImage();
+          syncStickyProductPrice();
+          syncStickyProductActions();
+        }
+
+        function syncStickyProductBarVisibility() {
+          if (!stickyProductBar || !stickyTriggerSection) {
+            const wasActive = document.body.classList.contains("product_sticky_bar_active");
+            document.body.classList.remove("product_sticky_bar_active");
+            if (wasActive) window.dispatchEvent(new CustomEvent("product-sticky-bar-change"));
+            return;
+          }
+          const headerHeight = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--header-height")) || 90;
+          const infoLineHeight = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--info-line-height")) || 32;
+          const triggerTop = stickyTriggerSection.getBoundingClientRect().top + window.scrollY;
+          const shouldShow = window.scrollY >= triggerTop - headerHeight - infoLineHeight - 48;
+          const wasActive = document.body.classList.contains("product_sticky_bar_active");
+          document.body.classList.toggle("product_sticky_bar_active", shouldShow);
+          if (wasActive !== shouldShow) window.dispatchEvent(new CustomEvent("product-sticky-bar-change"));
+          if (shouldShow) syncStickyProductBar();
+        }
+
+        function scrollToProductTop() {
+          document.querySelector(".product-detail__hero")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+
+        stickyProductCart?.addEventListener("click", scrollToProductTop);
+
+        stickyProductFavorite?.addEventListener("click", () => {
+          mainFavoriteButton?.click();
+        });
+
+        if (stickyProductBar) {
+          const stickyObserver = new MutationObserver(syncStickyProductBar);
+          [productPrice, productPriceCurrent, productPriceOld, productPriceSaving, mainCartButton, mainFavoriteButton, mainImage].forEach((target) => {
+            if (target) stickyObserver.observe(target, { attributes: true, childList: true, subtree: true, characterData: true });
+          });
+          syncStickyProductBar();
+          syncStickyProductBarVisibility();
+          window.addEventListener("scroll", syncStickyProductBarVisibility, { passive: true });
+          window.addEventListener("resize", syncStickyProductBarVisibility);
+        }
+
         const productReviews = document.getElementById("product-reviews");
         const productReviewsToggle = document.getElementById("js_product_reviews_toggle");
         const productReviewsLink = document.getElementById("js_product_reviews_link");
@@ -2727,6 +2849,11 @@
           setProductReviewsOpen(!productReviews?.classList.contains("is-open"));
         });
 
+        function openProductReviewsAndScroll() {
+          setProductReviewsOpen(true);
+          productReviews?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+
         productReviewsPrev?.addEventListener("click", () => {
           if (currentProductReviewsPage <= 1) return;
           currentProductReviewsPage -= 1;
@@ -2741,8 +2868,11 @@
 
         productReviewsLink?.addEventListener("click", (event) => {
           event.preventDefault();
-          setProductReviewsOpen(true);
-          productReviews?.scrollIntoView({ behavior: "smooth", block: "start" });
+          openProductReviewsAndScroll();
+        });
+
+        stickyProductRatingWrap?.addEventListener("click", () => {
+          openProductReviewsAndScroll();
         });
 
         document.querySelectorAll("[data_review_helpful_id]").forEach((button) => {

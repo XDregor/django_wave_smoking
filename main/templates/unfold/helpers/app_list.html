@@ -2,6 +2,7 @@
 
 {% if sidebar_navigation %}
     {% url "admin:admin_logentry_changelist" as action_history_url %}
+    {% with current_url=request.get_full_path %}
 
     <div id="nav-sidebar-apps" class="h-0 grow overflow-auto" data-simplebar>
         {% for group in sidebar_navigation %}
@@ -30,19 +31,43 @@
                     <ol class="flex flex-col gap-0.5 px-6" {% if group.collapsible %}x-show="navigationOpen"{% endif %}>
                         {% for item in group.items %}
                             {% if item.has_permission %}
-                                <li>
-                                    <a href="{% if item.link_callback %}{{ item.link_callback }}{% else %}{{ item.link }}{% endif %}" class="flex h-[30px] items-center -mx-3 px-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500 {% if item.active %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500 active{% endif %}">
-                                        {% if item.icon %}
-                                            <span class="material-symbols-outlined md-18 mr-3 w-[18px]">
-                                                {{ item.icon }}
-                                            </span>
-                                        {% endif %}
+                                {% if item.link_callback %}
+                                    {% with item_url=item.link_callback %}
+                                    {% with item_url_text=item_url|stringformat:"s" %}
+                                        <li>
+                                            <a href="{{ item_url }}" class="flex h-[30px] items-center -mx-3 px-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500 {% if item.active or current_url == item_url_text or request.path == item_url_text or item_url_text == '/admin/main/product/add/sku/' and request.path == '/admin/main/product/add/sku/' or item_url_text == '/admin/main/product/products/' and request.path == '/admin/main/product/products/' or item_url_text == '/admin/main/product/products/' and '/admin/main/product/' in request.path and '/sku/' in request.path and '/add/sku/' not in request.path %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500 active{% endif %}">
+                                                {% if item.icon %}
+                                                    <span class="material-symbols-outlined md-18 mr-3 w-[18px]">
+                                                        {{ item.icon }}
+                                                    </span>
+                                                {% endif %}
 
-                                        <span>{{ item.title|safe }}</span>
+                                                <span>{{ item.title|safe }}</span>
 
-                                        {% include "unfold/helpers/app_list_badge.html" with item=item %}
-                                    </a>
-                                </li>
+                                                {% include "unfold/helpers/app_list_badge.html" with item=item %}
+                                            </a>
+                                        </li>
+                                    {% endwith %}
+                                    {% endwith %}
+                                {% else %}
+                                    {% with item_url=item.link %}
+                                    {% with item_url_text=item_url|stringformat:"s" %}
+                                        <li>
+                                            <a href="{{ item_url }}" class="flex h-[30px] items-center -mx-3 px-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500 {% if item.active or current_url == item_url_text or request.path == item_url_text or item_url_text == '/admin/main/product/add/sku/' and request.path == '/admin/main/product/add/sku/' or item_url_text == '/admin/main/product/products/' and request.path == '/admin/main/product/products/' or item_url_text == '/admin/main/product/products/' and '/admin/main/product/' in request.path and '/sku/' in request.path and '/add/sku/' not in request.path %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500 active{% endif %}">
+                                                {% if item.icon %}
+                                                    <span class="material-symbols-outlined md-18 mr-3 w-[18px]">
+                                                        {{ item.icon }}
+                                                    </span>
+                                                {% endif %}
+
+                                                <span>{{ item.title|safe }}</span>
+
+                                                {% include "unfold/helpers/app_list_badge.html" with item=item %}
+                                            </a>
+                                        </li>
+                                    {% endwith %}
+                                    {% endwith %}
+                                {% endif %}
                             {% endif %}
                         {% endfor %}
                     </ol>
@@ -59,7 +84,7 @@
 
             <ol class="flex flex-col gap-0.5 px-6">
                 <li>
-                    <a href="{{ action_history_url }}" class="wave-admin-history-nav-link flex h-[30px] items-center -mx-3 px-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500">
+                    <a href="{{ action_history_url }}" class="wave-admin-history-nav-link flex h-[30px] items-center -mx-3 px-3 rounded-default hover:text-primary-600 dark:hover:text-primary-500 {% if request.path == action_history_url %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500 active{% endif %}">
                         <span class="material-symbols-outlined md-18 mr-3 w-[18px]">history</span>
                         <span>История действий</span>
                     </a>
@@ -67,6 +92,7 @@
             </ol>
         </div>
     </div>
+    {% endwith %}
 {% else %}
     <p>
         {% trans "You don't have permission to view or edit anything." as error_message %}

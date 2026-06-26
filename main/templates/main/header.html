@@ -107,6 +107,11 @@
         transition: background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
       }
 
+      body.product_sticky_bar_active .page_header::before {
+        background-color: var(--dark);
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+      }
+
       /* Убираем margin для контейнера, т.к. хедер фиксированный */
       .page_header_module {
         position: relative;
@@ -667,6 +672,7 @@
           transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
           width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
           margin 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+          height 0.34s cubic-bezier(0.16, 1, 0.3, 1),
           border-radius 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         border-radius: 0;
         margin: 0;
@@ -690,10 +696,295 @@
         height: 100%;
         width: 400vw;
         animation: slide 16s linear infinite;
+        transition: opacity 0.24s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
       .promo_banner_track:hover {
         animation-play-state: paused;
+      }
+
+      .sticky_product_bar {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(7px);
+        background: var(--header-bg);
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        color: var(--text);
+        transition:
+          opacity 0.24s ease,
+          visibility 0.24s ease,
+          transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .sticky_product_bar__inner {
+        width: min(1340px, calc(100vw - 32px));
+        height: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 18px;
+      }
+
+      .sticky_product_bar__left,
+      .sticky_product_bar__right {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+      }
+
+      .sticky_product_bar__left {
+        gap: 10px;
+      }
+
+      .sticky_product_bar__right {
+        justify-content: flex-end;
+        gap: 14px;
+      }
+
+      .sticky_product_bar__image {
+        width: 58px;
+        height: 58px;
+        flex: 0 0 58px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 8px;
+        object-fit: cover;
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .sticky_product_bar__text {
+        min-width: 0;
+        display: grid;
+        gap: 2px;
+      }
+
+      .sticky_product_bar__title {
+        overflow: hidden;
+        color: rgba(241, 241, 241, 0.92);
+        font-size: 17px;
+        font-weight: 700;
+        line-height: 1.12;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-bottom: 5px;
+      }
+
+      .sticky_product_bar__rating {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: rgba(241, 241, 241, 0.52);
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1;
+        cursor: pointer;
+        transition: color 0.15s ease;
+      }
+
+      .sticky_product_bar__rating:hover {
+        color: rgba(241, 241, 241, 0.82);
+      }
+
+      .sticky_product_bar__rating[hidden] {
+        display: none;
+      }
+
+      .sticky_product_bar__stars {
+        color: var(--buda);
+        letter-spacing: 0.08em;
+      }
+
+      .sticky_product_bar__rating [data-sticky-product-rating] {
+        display: inline;
+        min-width: 0;
+        overflow: visible;
+        color: inherit;
+        white-space: nowrap;
+      }
+
+      .sticky_product_bar__price {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        white-space: nowrap;
+      }
+
+      .sticky_product_bar__price-current {
+        color: rgba(241, 241, 241, 0.96);
+        font-size: 24px;
+        font-weight: 800;
+        line-height: 1;
+      }
+
+      .sticky_product_bar__price-old {
+        color: rgba(241, 241, 241, 0.38);
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: line-through;
+      }
+
+      .sticky_product_bar__cart {
+        min-height: 40px;
+        min-width: 190px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 0 20px;
+        border: 0;
+        border-radius: 7px;
+        background: var(--buda);
+        color: #08090a;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+
+      .sticky_product_bar__cart-icon {
+        width: 20px;
+        height: 20px;
+        flex: 0 0 20px;
+        display: inline-grid;
+        place-items: center;
+        border-radius: 999px;
+        background: rgba(8, 9, 10, 0.14);
+        color: currentColor;
+      }
+
+      .sticky_product_bar__cart-icon svg {
+        width: 12px;
+        height: 12px;
+        display: block;
+        stroke: currentColor;
+      }
+
+      .sticky_product_bar__cart:hover {
+        opacity: 0.88;
+      }
+
+      .sticky_product_bar__cart:disabled {
+        background: rgba(255, 255, 255, 0.08);
+        color: rgba(241, 241, 241, 0.38);
+        cursor: not-allowed;
+        opacity: 1;
+      }
+
+      .sticky_product_bar__cart.is-disabled-look {
+        background: rgba(255, 255, 255, 0.08);
+        color: rgba(241, 241, 241, 0.38);
+        cursor: pointer;
+        opacity: 1;
+      }
+
+      .sticky_product_bar__favorite {
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 8px;
+        background: transparent;
+        color: rgba(241, 241, 241, 0.58);
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      }
+
+      .sticky_product_bar__favorite svg {
+        width: 18px;
+        height: 18px;
+        fill: currentColor;
+      }
+
+      .sticky_product_bar__favorite:hover,
+      .sticky_product_bar__favorite.active {
+        border-color: rgba(255, 255, 255, 0.22);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--buda);
+      }
+
+      body.product_sticky_bar_active .promo_banner_track {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-7px);
+      }
+
+      body.product_sticky_bar_active .promo_banner {
+        height: 76px;
+      }
+
+      body.product_sticky_bar_active .sticky_product_bar {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0);
+      }
+
+      @media (max-width: 900px) {
+        .sticky_product_bar__inner {
+          width: calc(100vw - 20px);
+          gap: 10px;
+        }
+
+        .sticky_product_bar__image {
+          width: 50px;
+          height: 50px;
+          flex-basis: 50px;
+        }
+
+        .sticky_product_bar__rating,
+        .sticky_product_bar__favorite {
+          display: none;
+        }
+
+        .sticky_product_bar__price-current {
+          font-size: 19px;
+        }
+
+        .sticky_product_bar__cart {
+          min-height: 36px;
+          min-width: 176px;
+          padding: 0 14px;
+          font-size: 11px;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .sticky_product_bar__inner {
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 8px;
+        }
+
+        .sticky_product_bar__title {
+          font-size: 14px;
+        }
+
+        .sticky_product_bar__price-old {
+          display: none;
+        }
+
+        .sticky_product_bar__right {
+          gap: 7px;
+        }
+
+        .sticky_product_bar__cart {
+          min-width: 148px;
+          max-width: 46vw;
+          min-height: 34px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
       }
 
       .promo_banner_item {
@@ -5639,6 +5930,30 @@
             <span>Появились вопросы? Напиши нам!</span>
           </div>
         </div>
+        <div class="sticky_product_bar" data-sticky-product-bar hidden>
+          <div class="sticky_product_bar__inner">
+            <div class="sticky_product_bar__left">
+              <img class="sticky_product_bar__image" data-sticky-product-image alt="" />
+              <div class="sticky_product_bar__text">
+                <div class="sticky_product_bar__title" data-sticky-product-title></div>
+                <button class="sticky_product_bar__rating" data-sticky-product-rating-wrap type="button">
+                  <span class="sticky_product_bar__stars" aria-hidden="true">★</span>
+                  <span data-sticky-product-rating></span>
+                </button>
+              </div>
+            </div>
+            <div class="sticky_product_bar__right">
+              <div class="sticky_product_bar__price">
+                <span class="sticky_product_bar__price-current" data-sticky-product-price-current></span>
+                <span class="sticky_product_bar__price-old" data-sticky-product-price-old hidden></span>
+              </div>
+              <button class="sticky_product_bar__cart" data-sticky-product-cart type="button"></button>
+              <button class="sticky_product_bar__favorite" data-sticky-product-favorite type="button" aria-label="Добавить в избранное">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 0 0 1.06-8.84z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="mega_menu_panel" id="headerDropdown" data-mega-menu-panel>
@@ -7410,6 +7725,12 @@
           window.addEventListener("resize", () => {
             this.updateLayoutVariables();
             this.syncPositions();
+          });
+          window.addEventListener("product-sticky-bar-change", () => {
+            window.setTimeout(() => {
+              this.updateLayoutVariables();
+              this.syncPositions();
+            }, 40);
           });
         }
 

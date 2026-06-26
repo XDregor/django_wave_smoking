@@ -1,7 +1,7 @@
 .product_card_component {
   background: linear-gradient(180deg, rgba(17, 17, 17, 0.96) 0%, rgba(10, 10, 10, 0.98) 100%);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 10px;
   overflow: hidden;
   cursor: pointer;
   display: flex;

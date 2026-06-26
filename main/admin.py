@@ -1168,6 +1168,105 @@ class ProductReviewAdmin(BusinessAdminMixin, ModelAdmin):
     )
     actions = ("approve_reviews", "hide_reviews", "mark_verified")
 
+    def get_urls(self):
+        custom_urls = [
+            path(
+                "toggle-verified/",
+                self.admin_site.admin_view(self.reviews_toggle_verified_view),
+                name="main_productreview_toggle_verified",
+            ),
+            path(
+                "toggle-visibility/",
+                self.admin_site.admin_view(self.reviews_toggle_visibility_view),
+                name="main_productreview_toggle_visibility",
+            ),
+            path(
+                "delete-review/",
+                self.admin_site.admin_view(self.reviews_delete_view),
+                name="main_productreview_delete",
+            ),
+        ]
+        return custom_urls + super().get_urls()
+
+    def changelist_view(self, request, extra_context=None):
+        return self.reviews_list_view(request)
+
+    def reviews_list_view(self, request):
+        reviews = ProductReview.objects.select_related("product", "product__brand", "user").order_by("-created", "-id")
+        context = {
+            **self.admin_site.each_context(request),
+            "title": "Отзывы",
+            "reviews_payload": [self.serialize_admin_review(review) for review in reviews],
+            "toggle_verified_url": reverse("admin:main_productreview_toggle_verified"),
+            "toggle_visibility_url": reverse("admin:main_productreview_toggle_visibility"),
+            "delete_url": reverse("admin:main_productreview_delete"),
+        }
+        return TemplateResponse(request, "unfold/helpers/admin_reviews_list.html", context)
+
+    def get_review_action_id(self, request):
+        try:
+            payload = json.loads(request.body.decode("utf-8") or "{}")
+        except json.JSONDecodeError:
+            return None
+        try:
+            return int(payload.get("id"))
+        except (TypeError, ValueError):
+            return None
+
+    def get_review_for_action(self, request):
+        if request.method != "POST":
+            return None, JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
+        review_id = self.get_review_action_id(request)
+        if not review_id:
+            return None, JsonResponse({"success": False, "message": "Отзыв не выбран."}, status=400)
+        review = ProductReview.objects.select_related("product", "product__brand", "user").filter(pk=review_id).first()
+        if not review:
+            return None, JsonResponse({"success": False, "message": "Отзыв не найден."}, status=404)
+        return review, None
+
+    def reviews_toggle_verified_view(self, request):
+        review, error_response = self.get_review_for_action(request)
+        if error_response:
+            return error_response
+        review.is_verified = not review.is_verified
+        review.save(update_fields=("is_verified", "updated"))
+        return JsonResponse({"success": True, "review": self.serialize_admin_review(review)})
+
+    def reviews_toggle_visibility_view(self, request):
+        review, error_response = self.get_review_for_action(request)
+        if error_response:
+            return error_response
+        review.is_approved = not review.is_approved
+        review.save(update_fields=("is_approved", "updated"))
+        return JsonResponse({"success": True, "review": self.serialize_admin_review(review)})
+
+    def reviews_delete_view(self, request):
+        review, error_response = self.get_review_for_action(request)
+        if error_response:
+            return error_response
+        review_id = review.pk
+        review.delete()
+        return JsonResponse({"success": True, "deleted_id": str(review_id)})
+
+    def serialize_admin_review(self, review):
+        author_name = review.author_name or (review.user.get_username() if review.user_id else "Аноним")
+        initials = "".join(part[:1] for part in author_name.split()[:2]).upper() or "??"
+        return {
+            "id": str(review.pk),
+            "author_name": author_name,
+            "user_name": review.user.get_username() if review.user_id else "",
+            "initials": initials[:2],
+            "product_id": str(review.product_id) if review.product_id else "",
+            "product_name": review.product.name if review.product_id else "",
+            "rating": review.rating,
+            "text": review.text,
+            "is_verified": bool(review.is_verified),
+            "is_published": bool(review.is_approved),
+            "helpful_count": review.helpful_count,
+            "created_label": review.created.strftime("%d.%m.%Y") if review.created else "",
+            "created_ts": int(review.created.timestamp()) if review.created else 0,
+        }
+
     @admin.display(description="Оценка", ordering="rating")
     def rating_badge(self, obj):
         return format_html('<span class="wave-admin-value">{} / 5</span>', obj.rating)

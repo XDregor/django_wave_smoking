@@ -527,30 +527,16 @@
         .wave-admin-products-list .stat-label { font-size: 10px; }
       }
 
-body:has(.wave-admin-products-list) {
-  --bg: #090909;
-  --card: #111111;
-  --card-hi: #161616;
-  --border: #1d1d1d;
-  --border-hi: #2e2e2e;
-  --text-1: #ffffff;
-  --text-2: #9a9a9a;
-  --text-3: #666666;
-  --font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
 body:has(.wave-admin-products-list) #main,
 body:has(.wave-admin-products-list) #content,
-body:has(.wave-admin-products-list) .content,
-body:has(.wave-admin-products-list) .grow,
-body:has(.wave-admin-products-list) [class*="bg-white"],
-body:has(.wave-admin-products-list) [class*="dark:bg-base"] {
-  background: var(--bg) !important;
+body:has(.wave-admin-products-list) #main > .bg-white,
+body:has(.wave-admin-products-list) #main > .dark\:bg-base-900 {
+  background: #090909 !important;
 }
 
 body:has(.wave-admin-products-list) .bg-white.border-b.border-base-200.mb-4.px-4.z-40,
 body:has(.wave-admin-products-list) .\@container.px-4.pb-4.grow {
-  background: var(--bg) !important;
+  background: #090909 !important;
 }
 
 body:has(.wave-admin-products-list) #main {
@@ -576,7 +562,7 @@ body:has(.wave-admin-products-list) .wave-admin-products-list {
   flex-direction: column;
   margin: -1rem;
   padding: 1rem;
-  background: var(--bg) !important;
+  background: #090909 !important;
   min-height: auto;
 }
 
@@ -593,5 +579,5 @@ body:has(.wave-admin-products-list) .wave-admin-products-list .page-body {
   flex: 1 1 auto;
   min-height: 0;
   overflow: visible;
-  background: var(--bg) !important;
+  background: #090909 !important;
 }

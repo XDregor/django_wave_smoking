@@ -45,7 +45,7 @@ UNFOLD = {
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": True,
     "STYLES": [
-        lambda request: static("admin/css/unfold_overrides.css"),
+        lambda request: f"{static('admin/css/unfold_overrides.css')}?v=sidebar-active2",
     ],
     "SCRIPTS": [
         lambda request: static("admin/js/unfold_overrides.js"),
