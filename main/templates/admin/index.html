@@ -1,18 +1,98 @@
 {% extends "admin/base_site.html" %}
-{% load i18n %}
+{% load static i18n %}
 
 {% block breadcrumbs %}{% endblock %}
 
 {% block title %}
     {% if subtitle %}{{ subtitle }} |{% endif %}
+    Панель управления | {{ site_title|default:_("Django site admin") }}
+{% endblock %}
 
-    {{ title }} | {{ site_title|default:_("Django site admin") }}
+{% block content_title %}Панель управления{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'admin/css/admin_home.css' %}?v=home3" />
 {% endblock %}
 
 {% block content %}
-    <div class="flex flex-col lg:flex-row lg:gap-8">
-        <div class="grow">
-            {% include "unfold/helpers/app_list_default.html" %}
+    {% url "admin:main_product_add_sku" as add_product_url %}
+    {% url "admin:main_product_products_list" as products_url %}
+    {% url "admin:main_brand_changelist" as brands_url %}
+    {% url "admin:main_category_changelist" as categories_url %}
+    {% url "admin:main_variantgroup_changelist" as variant_groups_url %}
+    {% url "admin:main_product_media_list" as media_url %}
+    {% url "admin:main_productreview_changelist" as reviews_url %}
+    {% url "admin:admin_logentry_changelist" as history_url %}
+
+    <div class="wa-admin-home">
+        <div class="page-body">
+            <section class="home-section">
+                <div class="section-head">
+                    <h2>Товары</h2>
+                </div>
+                <div class="home-grid two">
+                    <a class="home-card" href="{{ add_product_url }}">
+                        <span class="material-symbols-outlined home-icon">add_circle</span>
+                        <span class="home-card-title">Добавить товар</span>
+                        <span class="home-card-sub">Создание товара через карточный мастер</span>
+                    </a>
+                    <a class="home-card" href="{{ products_url }}">
+                        <span class="material-symbols-outlined home-icon">inventory_2</span>
+                        <span class="home-card-title">Управление товарами</span>
+                        <span class="home-card-sub">Список, поиск, публикация и массовые действия</span>
+                    </a>
+                </div>
+            </section>
+
+            <section class="home-section">
+                <div class="section-head">
+                    <h2>Наполнение</h2>
+                </div>
+                <div class="home-grid four">
+                    <a class="home-card" href="{{ brands_url }}">
+                        <span class="material-symbols-outlined home-icon">sell</span>
+                        <span class="home-card-title">Бренды</span>
+                        <span class="home-card-sub">Логотипы и карусель брендов</span>
+                    </a>
+                    <a class="home-card" href="{{ categories_url }}">
+                        <span class="material-symbols-outlined home-icon">category</span>
+                        <span class="home-card-title">Категории</span>
+                        <span class="home-card-sub">Структура каталога</span>
+                    </a>
+                    <a class="home-card" href="{{ variant_groups_url }}">
+                        <span class="material-symbols-outlined home-icon">tune</span>
+                        <span class="home-card-title">Группы вариантов</span>
+                        <span class="home-card-sub">Цвета, вкусы, крепость и другие варианты</span>
+                    </a>
+                    <a class="home-card" href="{{ media_url }}">
+                        <span class="material-symbols-outlined home-icon">perm_media</span>
+                        <span class="home-card-title">Медиа</span>
+                        <span class="home-card-sub">Фото, видео, постеры и изображения вариантов</span>
+                    </a>
+                </div>
+            </section>
+
+            <section class="home-section">
+                <div class="section-head">
+                    <h2>Модерация и история</h2>
+                </div>
+                <div class="home-grid two">
+                    <a class="home-card" href="{{ reviews_url }}">
+                        <span class="material-symbols-outlined home-icon">reviews</span>
+                        <span class="home-card-title">Отзывы</span>
+                        <span class="home-card-sub">Проверка, публикация и удаление отзывов</span>
+                    </a>
+                    <a class="home-card" href="{{ history_url }}">
+                        <span class="material-symbols-outlined home-icon">history</span>
+                        <span class="home-card-title">История действий</span>
+                        <span class="home-card-sub">Журнал изменений в админке</span>
+                    </a>
+                </div>
+            </section>
         </div>
     </div>
 {% endblock %}

@@ -1,20 +1,22 @@
 import json
+from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 
 from django import forms
 from django.contrib import admin
-from django.contrib.admin.models import LogEntry
+from django.contrib.admin.models import ADDITION, CHANGE, DELETION, LogEntry
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import transaction
-from django.db.models import Avg, Count, Max, Sum
+from django.db.models import Avg, Count, Max, Prefetch, Sum
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
+from django.utils import timezone
 from django.utils.html import format_html, strip_tags
 
 try:
@@ -74,7 +76,7 @@ class SuperuserOnlyAdminMixin:
 class ProductVariantInline(TabularInline):
     model = ProductVariant
     extra = 0
-    fields = ("variant", "image", "stock", "available")
+    fields = ("variant", "image", "image_order", "stock", "available")
     autocomplete_fields = ("variant",)
     show_change_link = True
 
@@ -82,7 +84,7 @@ class ProductVariantInline(TabularInline):
 class VariantOptionInline(TabularInline):
     model = VariantOption
     extra = 0
-    fields = ("name", "slug", "order")
+    fields = ("name", "filter_name", "slug", "order")
     readonly_fields = ("slug",)
     show_change_link = True
 
@@ -308,7 +310,10 @@ class ProductAdmin(BusinessAdminMixin, ModelAdmin):
         ids = self.get_products_bulk_ids(request)
         if not ids:
             return JsonResponse({"success": False, "message": "Не выбраны товары."}, status=400)
+        products = list(Product.objects.filter(pk__in=ids))
         updated = Product.objects.filter(pk__in=ids).update(available=False)
+        for product in products:
+            self.log_change(request, product, "Товар отправлен в черновик через массовое действие.")
         return JsonResponse({"success": True, "updated": updated, "ids": [str(pk) for pk in ids]})
 
     def products_bulk_publish_view(self, request):
@@ -317,7 +322,10 @@ class ProductAdmin(BusinessAdminMixin, ModelAdmin):
         ids = self.get_products_bulk_ids(request)
         if not ids:
             return JsonResponse({"success": False, "message": "No products selected."}, status=400)
+        products = list(Product.objects.filter(pk__in=ids))
         updated = Product.objects.filter(pk__in=ids).update(available=True)
+        for product in products:
+            self.log_change(request, product, "Товар опубликован через массовое действие.")
         return JsonResponse({"success": True, "updated": updated, "ids": [str(pk) for pk in ids]})
 
     def products_bulk_delete_view(self, request):
@@ -327,6 +335,8 @@ class ProductAdmin(BusinessAdminMixin, ModelAdmin):
         if not ids:
             return JsonResponse({"success": False, "message": "Не выбраны товары."}, status=400)
         products = Product.objects.filter(pk__in=ids)
+        for product in products:
+            self.log_deletion(request, product, f"Товар удалён через массовое действие: {product}")
         deleted_ids = [str(pk) for pk in products.values_list("pk", flat=True)]
         deleted_count, _ = products.delete()
         return JsonResponse({"success": True, "deleted": deleted_count, "ids": deleted_ids})
@@ -379,25 +389,15 @@ class ProductAdmin(BusinessAdminMixin, ModelAdmin):
         }
 
     def media_products_view(self, request):
-        query = (request.GET.get("q") or "").strip()
         products = list(
             Product.objects.select_related("brand", "category")
-            .annotate(admin_media_count=Count("additional_images"))
+            .prefetch_related("additional_images", "product_variants")
             .order_by("name")
         )
-        if query:
-            normalized_query = self.normalize_media_search(query)
-            products = [
-                product for product in products
-                if normalized_query in self.normalize_media_search(product.name)
-                or normalized_query in self.normalize_media_search(self.get_media_product_code(product))
-                or normalized_query == str(product.id)
-            ]
         context = {
             **self.admin_site.each_context(request),
             "title": "Медиа товаров",
-            "products": products,
-            "media_search_query": query,
+            "media_products_payload": [self.serialize_media_product(product) for product in products],
         }
         return TemplateResponse(request, "unfold/helpers/product_media_list.html", context)
 
@@ -407,21 +407,59 @@ class ProductAdmin(BusinessAdminMixin, ModelAdmin):
     def normalize_media_search(self, value):
         return "".join(str(value or "").lower().replace("#", "").split())
 
+    def serialize_media_product(self, product):
+        variant_image_count = sum(1 for item in product.product_variants.all() if item.image)
+        additional_count = len(product.additional_images.all())
+        return {
+            "id": str(product.pk),
+            "name": product.name,
+            "code": self.get_media_product_code(product),
+            "brand": product.brand.name if product.brand else "",
+            "category": product.category.name if product.category else "",
+            "image": self.media_url(product.image),
+            "media_count": sum((bool(product.image), bool(product.promo_video), bool(product.promo_video_poster)))
+            + additional_count
+            + variant_image_count,
+            "variant_image_count": variant_image_count,
+            "url": reverse("admin:main_product_media_detail", args=(product.pk,)),
+        }
+
     def product_media_view(self, request, product_id):
         product = get_object_or_404(
-            Product.objects.select_related("brand", "category").prefetch_related("additional_images"),
+            Product.objects.select_related("brand", "category", "variant_image_group").prefetch_related(
+                "additional_images",
+                Prefetch(
+                    "product_variants",
+                    queryset=ProductVariant.objects.select_related("variant", "variant__group").order_by(
+                        "variant__group__order",
+                        "variant__group__name",
+                        "image_order",
+                        "variant__order",
+                        "variant__name",
+                    ),
+                ),
+            ),
             pk=product_id,
         )
         if request.method == "POST":
             self.save_product_media(product, request.POST, request.FILES)
-            self.message_user(request, f"Медиа товара «{product.name}» обновлены.", messages.SUCCESS)
-            return redirect("admin:main_product_media_detail", product_id=product.pk)
+            self.log_change(request, product, "Медиа товара обновлены.")
+            return redirect("admin:main_product_media_list")
 
+        product_variants = list(product.product_variants.all())
+        variant_image_group = self.get_product_variant_image_group(product, product_variants)
+        image_group_variants = [
+            item for item in product_variants
+            if variant_image_group and item.variant.group_id == variant_image_group.pk
+        ]
         context = {
             **self.admin_site.each_context(request),
             "title": f"Медиа: {product.name}",
             "product": product,
             "additional_images": product.additional_images.all().order_by("order", "id"),
+            "variant_image_group": variant_image_group,
+            "product_variants": image_group_variants,
+            "has_product_variants": bool(product_variants),
             "media_list_url": reverse("admin:main_product_media_list"),
         }
         return TemplateResponse(request, "unfold/helpers/product_media_detail.html", context)
@@ -429,10 +467,17 @@ class ProductAdmin(BusinessAdminMixin, ModelAdmin):
     def save_product_media(self, product, post_data, files):
         product_update_fields = []
         for field_name in ("image", "promo_video", "promo_video_poster"):
+            if post_data.get(f"delete_{field_name}"):
+                current_file = getattr(product, field_name)
+                if current_file:
+                    current_file.delete(save=False)
+                setattr(product, field_name, "")
+                product_update_fields.append(field_name)
             uploaded_file = files.get(field_name)
             if uploaded_file:
                 setattr(product, field_name, uploaded_file)
-                product_update_fields.append(field_name)
+                if field_name not in product_update_fields:
+                    product_update_fields.append(field_name)
         if product_update_fields:
             product_update_fields.append("updated")
             product.save(update_fields=product_update_fields)
@@ -443,6 +488,12 @@ class ProductAdmin(BusinessAdminMixin, ModelAdmin):
                 continue
 
             update_fields = []
+            replacement = files.get(f"replace_image_{image.id}")
+            if replacement:
+                if image.image:
+                    image.image.delete(save=False)
+                image.image = replacement
+                update_fields.append("image")
             alt_text = post_data.get(f"alt_text_{image.id}", image.alt_text)
             if alt_text != image.alt_text:
                 image.alt_text = alt_text
@@ -460,6 +511,37 @@ class ProductAdmin(BusinessAdminMixin, ModelAdmin):
             if update_fields:
                 image.save(update_fields=update_fields)
 
+        variant_image_group = self.get_product_variant_image_group(product)
+        variant_images = ProductVariant.objects.filter(product=product).select_related("variant")
+        if variant_image_group:
+            variant_images = variant_images.filter(variant__group=variant_image_group)
+        else:
+            variant_images = variant_images.none()
+        for product_variant in variant_images:
+            update_variant_fields = []
+            if post_data.get(f"delete_variant_image_{product_variant.id}"):
+                if product_variant.image:
+                    product_variant.image.delete(save=False)
+                product_variant.image = ""
+                update_variant_fields.append("image")
+            uploaded_variant_image = files.get(f"variant_image_{product_variant.id}")
+            if uploaded_variant_image:
+                if product_variant.image:
+                    product_variant.image.delete(save=False)
+                product_variant.image = uploaded_variant_image
+                if "image" not in update_variant_fields:
+                    update_variant_fields.append("image")
+            raw_image_order = post_data.get(f"image_order_{product_variant.id}")
+            try:
+                image_order = max(0, int(raw_image_order))
+            except (TypeError, ValueError):
+                image_order = product_variant.image_order
+            if image_order != product_variant.image_order:
+                product_variant.image_order = image_order
+                update_variant_fields.append("image_order")
+            if update_variant_fields:
+                product_variant.save(update_fields=tuple(update_variant_fields))
+
         max_order = ProductImage.objects.filter(product=product).aggregate(value=Max("order"))["value"] or 0
         for index, uploaded_file in enumerate(files.getlist("new_images"), start=1):
             ProductImage.objects.create(
@@ -468,6 +550,20 @@ class ProductAdmin(BusinessAdminMixin, ModelAdmin):
                 order=max_order + index,
                 alt_text=product.name,
             )
+
+    def get_product_variant_image_group(self, product, product_variants=None):
+        if product.variant_image_group_id:
+            return product.variant_image_group
+
+        variants = list(product_variants) if product_variants is not None else list(
+            product.product_variants.select_related("variant__group").all()
+        )
+        image_variant = next((item for item in variants if item.image), None)
+        if image_variant:
+            return image_variant.variant.group
+
+        groups = {item.variant.group_id: item.variant.group for item in variants}
+        return next(iter(groups.values())) if len(groups) == 1 else None
 
     def add_sku_view(self, request):
         if request.method == "POST":
@@ -484,7 +580,11 @@ class ProductAdmin(BusinessAdminMixin, ModelAdmin):
                     "id": str(group.pk),
                     "name": group.name,
                     "options": [
-                        {"id": str(option.pk), "name": option.name}
+                        {
+                            "id": str(option.pk),
+                            "name": option.name,
+                            "filterName": option.filter_name or option.name,
+                        }
                         for option in group.options.all()
                     ],
                 }
@@ -519,7 +619,11 @@ class ProductAdmin(BusinessAdminMixin, ModelAdmin):
                     "id": str(group.pk),
                     "name": group.name,
                     "options": [
-                        {"id": str(option.pk), "name": option.name}
+                        {
+                            "id": str(option.pk),
+                            "name": option.name,
+                            "filterName": option.filter_name or option.name,
+                        }
                         for option in group.options.all()
                     ],
                 }
@@ -548,12 +652,16 @@ class ProductAdmin(BusinessAdminMixin, ModelAdmin):
             root_old_price = product.old_price
         groups = []
         group_index = {}
-        product_variants = product.product_variants.select_related("variant__group").order_by(
-            "variant__group__order",
-            "variant__group__name",
-            "variant__order",
-            "variant__name",
+        product_variants = list(
+            product.product_variants.select_related("variant__group").order_by(
+                "variant__group__order",
+                "variant__group__name",
+                "variant__order",
+                "variant__name",
+            )
         )
+        selected_image_group = self.get_product_variant_image_group(product, product_variants)
+        selected_image_group_id = selected_image_group.pk if selected_image_group else None
         for product_variant in product_variants:
             option = product_variant.variant
             group = option.group
@@ -564,17 +672,18 @@ class ProductAdmin(BusinessAdminMixin, ModelAdmin):
                     "id": group_key,
                     "catalogGroupId": group_key,
                     "name": group.name,
-                    "hasImages": False,
+                    "hasImages": group.pk == selected_image_group_id,
                     "variants": [],
                 })
             image_url = self.media_url(product_variant.image)
             group_data = groups[group_index[group_key]]
-            group_data["hasImages"] = group_data["hasImages"] or bool(image_url)
             group_data["variants"].append({
                 "id": str(option.pk),
                 "catalogOptionId": str(option.pk),
                 "name": option.name,
+                "filterName": option.filter_name or option.name,
                 "imageUrl": image_url,
+                "imageOrder": product_variant.image_order,
             })
 
         skus = []
@@ -677,6 +786,11 @@ class ProductAdmin(BusinessAdminMixin, ModelAdmin):
             message = "; ".join(exc.messages) if hasattr(exc, "messages") else str(exc)
             return JsonResponse({"success": False, "message": message}, status=400)
 
+        if created:
+            self.log_addition(request, product, "Товар создан через карточный мастер.")
+        else:
+            self.log_change(request, product, "Товар обновлён через карточный мастер.")
+
         return JsonResponse(
             {
                 "success": True,
@@ -730,6 +844,30 @@ class ProductAdmin(BusinessAdminMixin, ModelAdmin):
             errors.append("Root-цена SKU должна быть больше нуля.")
         if root_old_price is not None and root_price is not None and root_old_price < root_price:
             errors.append("Root-старая цена SKU не может быть ниже финальной.")
+
+        option_name_max = VariantOption._meta.get_field("name").max_length
+        filter_name_max = VariantOption._meta.get_field("filter_name").max_length
+        for group in payload.get("groups") or []:
+            for value in group.get("values") or []:
+                raw_name = str(value.get("name") or "").strip()
+                name = strip_tags(raw_name).strip()
+                raw_filter_name = str(
+                    value.get("filter_name") or value.get("filterName") or name
+                ).strip()
+                filter_name = strip_tags(raw_filter_name).strip()
+                if not name:
+                    errors.append("У каждого варианта должно быть отображаемое название.")
+                    break
+                if name != raw_name or filter_name != raw_filter_name:
+                    errors.append("Названия вариантов не должны содержать HTML.")
+                    break
+                if len(name) > option_name_max or len(filter_name) > filter_name_max:
+                    errors.append(
+                        f"Название варианта и значение фильтра должны быть не длиннее {option_name_max} символов."
+                    )
+                    break
+            if errors and errors[-1].startswith(("У каждого варианта", "Названия вариантов", "Название варианта")):
+                break
 
         specification_name_max = ProductSpecification._meta.get_field("name").max_length
         specification_value_max = ProductSpecification._meta.get_field("value").max_length
@@ -795,13 +933,21 @@ class ProductAdmin(BusinessAdminMixin, ModelAdmin):
                 )
 
         option_map = self.create_variant_options(payload.get("groups") or [])
+        product.variant_image_group = self.resolve_variant_image_group(payload.get("groups") or [], option_map)
+        product.save(update_fields=("variant_image_group", "updated"))
+        image_order_map = self.variant_image_order_map(payload.get("groups") or [])
         option_stock = self.calculate_option_stock(payload.get("groups") or [], skus)
         for key, option in option_map.items():
             stock = option_stock.get(key, 0)
             ProductVariant.objects.create(
                 product=product,
                 variant=option,
-                image=files.get(f"variant_image__{key[0]}__{key[1]}"),
+                image=(
+                    files.get(f"variant_image__{key[0]}__{key[1]}")
+                    if option.group_id == product.variant_image_group_id
+                    else None
+                ),
+                image_order=image_order_map.get(key, 0),
                 stock=stock,
                 available=stock > 0,
             )
@@ -887,18 +1033,22 @@ class ProductAdmin(BusinessAdminMixin, ModelAdmin):
         ProductVariant.objects.filter(product=product).delete()
 
         option_map = self.create_variant_options(payload.get("groups") or [])
+        product.variant_image_group = self.resolve_variant_image_group(payload.get("groups") or [], option_map)
+        product.save(update_fields=("variant_image_group", "updated"))
+        image_order_map = self.variant_image_order_map(payload.get("groups") or [])
         option_stock = self.calculate_option_stock(payload.get("groups") or [], skus)
         for key, option in option_map.items():
             product_variant = ProductVariant(
                 product=product,
                 variant=option,
+                image_order=image_order_map.get(key, 0),
                 stock=option_stock.get(key, 0),
                 available=option_stock.get(key, 0) > 0,
             )
             uploaded_image = files.get(f"variant_image__{key[0]}__{key[1]}")
-            if uploaded_image:
+            if uploaded_image and option.group_id == product.variant_image_group_id:
                 product_variant.image = uploaded_image
-            elif old_variant_images.get(option.pk):
+            elif old_variant_images.get(option.pk) and option.group_id == product.variant_image_group_id:
                 product_variant.image = old_variant_images[option.pk]
             product_variant.save()
 
@@ -931,17 +1081,46 @@ class ProductAdmin(BusinessAdminMixin, ModelAdmin):
                 value_name = str(value.get("name") or "").strip()
                 if not value_name:
                     continue
+                filter_name = str(
+                    value.get("filter_name") or value.get("filterName") or value_name
+                ).strip() or value_name
                 variant_group, _ = VariantGroup.objects.get_or_create(
                     name=group_name,
                     defaults={"order": group_index},
                 )
-                option, _ = VariantOption.objects.get_or_create(
+                option, created = VariantOption.objects.get_or_create(
                     group=variant_group,
                     name=value_name,
-                    defaults={"order": value_index},
+                    defaults={"order": value_index, "filter_name": filter_name},
                 )
+                if not created and option.filter_name != filter_name:
+                    option.filter_name = filter_name
+                    option.save(update_fields=("filter_name",))
                 option_map[(str(group.get("id")), str(value.get("id")))] = option
         return option_map
+
+    def resolve_variant_image_group(self, groups, option_map):
+        image_group = next((group for group in groups if group.get("hasImages")), None)
+        if not image_group:
+            return None
+        group_id = str(image_group.get("id"))
+        for value in image_group.get("values") or []:
+            option = option_map.get((group_id, str(value.get("id"))))
+            if option:
+                return option.group
+        return None
+
+    def variant_image_order_map(self, groups):
+        result = {}
+        for group in groups:
+            group_id = str(group.get("id"))
+            for index, value in enumerate(group.get("values") or []):
+                try:
+                    image_order = max(0, int(value.get("image_order", index)))
+                except (TypeError, ValueError):
+                    image_order = index
+                result[(group_id, str(value.get("id")))] = image_order
+        return result
 
     def calculate_option_stock(self, groups, skus):
         group_slots = self.build_group_slots(groups)
@@ -1115,6 +1294,105 @@ class CategoryAdmin(BusinessAdminMixin, ModelAdmin):
     search_fields = ("name", "slug")
     readonly_fields = ("slug",)
 
+    def get_urls(self):
+        custom_urls = [
+            path(
+                "save-category/",
+                self.admin_site.admin_view(self.categories_save_view),
+                name="main_category_save",
+            ),
+            path(
+                "delete-category/",
+                self.admin_site.admin_view(self.categories_delete_view),
+                name="main_category_delete",
+            ),
+        ]
+        return custom_urls + super().get_urls()
+
+    def changelist_view(self, request, extra_context=None):
+        return self.categories_list_view(request)
+
+    def categories_list_view(self, request):
+        categories = Category.objects.annotate(admin_product_count=Count("products")).order_by("name")
+        context = {
+            **self.admin_site.each_context(request),
+            "title": "Категории",
+            "categories_payload": [self.serialize_admin_category(category) for category in categories],
+            "save_url": reverse("admin:main_category_save"),
+            "delete_url": reverse("admin:main_category_delete"),
+        }
+        return TemplateResponse(request, "unfold/helpers/admin_categories_list.html", context)
+
+    def categories_save_view(self, request):
+        if request.method != "POST":
+            return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
+
+        raw_id = request.POST.get("id")
+        try:
+            category_id = int(raw_id) if raw_id else None
+        except (TypeError, ValueError):
+            return JsonResponse({"success": False, "message": "Некорректная категория."}, status=400)
+
+        category = Category.objects.filter(pk=category_id).first() if category_id else Category()
+        if raw_id and not category:
+            return JsonResponse({"success": False, "message": "Категория не найдена."}, status=404)
+
+        name = (request.POST.get("name") or "").strip()
+        if not name:
+            return JsonResponse({"success": False, "message": "Введите название категории."}, status=400)
+        if len(name) > Category._meta.get_field("name").max_length:
+            return JsonResponse({"success": False, "message": "Название категории слишком длинное."}, status=400)
+
+        duplicate = Category.objects.filter(name__iexact=name)
+        if category.pk:
+            duplicate = duplicate.exclude(pk=category.pk)
+        if duplicate.exists():
+            return JsonResponse({"success": False, "message": "Категория с таким названием уже существует."}, status=409)
+
+        is_created = not bool(category.pk)
+        category.name = name
+        category.save()
+        if is_created:
+            self.log_addition(request, category, "Категория создана через кастомное меню.")
+        else:
+            self.log_change(request, category, "Категория обновлена через кастомное меню.")
+        category.admin_product_count = category.products.count()
+        return JsonResponse({"success": True, "category": self.serialize_admin_category(category)})
+
+    def categories_delete_view(self, request):
+        if request.method != "POST":
+            return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
+        try:
+            payload = json.loads(request.body.decode("utf-8") or "{}")
+            category_id = int(payload.get("id"))
+        except (json.JSONDecodeError, TypeError, ValueError):
+            return JsonResponse({"success": False, "message": "Некорректная категория."}, status=400)
+
+        category = Category.objects.filter(pk=category_id).annotate(admin_product_count=Count("products")).first()
+        if not category:
+            return JsonResponse({"success": False, "message": "Категория не найдена."}, status=404)
+        if category.admin_product_count:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Нельзя удалить категорию, пока к ней привязаны товары.",
+                },
+                status=409,
+            )
+
+        deleted_id = category.pk
+        self.log_deletion(request, category, f"Категория удалена: {category}")
+        category.delete()
+        return JsonResponse({"success": True, "deleted_id": str(deleted_id)})
+
+    def serialize_admin_category(self, category):
+        return {
+            "id": str(category.pk),
+            "name": category.name,
+            "slug": category.slug,
+            "product_count": getattr(category, "admin_product_count", category.products.count()),
+        }
+
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(admin_product_count=Count("products"))
 
@@ -1125,9 +1403,130 @@ class CategoryAdmin(BusinessAdminMixin, ModelAdmin):
 
 @admin.register(Brand)
 class BrandAdmin(BusinessAdminMixin, ModelAdmin):
-    list_display = ("name", "slug", "product_count")
+    list_display = ("name", "slug", "show_in_carousel", "product_count")
     search_fields = ("name", "slug")
     readonly_fields = ("slug",)
+    fields = ("name", "slug", "image", "show_in_carousel")
+
+    def get_urls(self):
+        custom_urls = [
+            path(
+                "save-brand/",
+                self.admin_site.admin_view(self.brands_save_view),
+                name="main_brand_save",
+            ),
+            path(
+                "delete-brand/",
+                self.admin_site.admin_view(self.brands_delete_view),
+                name="main_brand_delete",
+            ),
+            path(
+                "toggle-carousel/",
+                self.admin_site.admin_view(self.brands_toggle_carousel_view),
+                name="main_brand_toggle_carousel",
+            ),
+        ]
+        return custom_urls + super().get_urls()
+
+    def changelist_view(self, request, extra_context=None):
+        return self.brands_list_view(request)
+
+    def brands_list_view(self, request):
+        brands = Brand.objects.annotate(admin_product_count=Count("products")).order_by("name")
+        context = {
+            **self.admin_site.each_context(request),
+            "title": "Бренды",
+            "brands_payload": [self.serialize_admin_brand(brand) for brand in brands],
+            "save_url": reverse("admin:main_brand_save"),
+            "delete_url": reverse("admin:main_brand_delete"),
+            "toggle_carousel_url": reverse("admin:main_brand_toggle_carousel"),
+        }
+        return TemplateResponse(request, "unfold/helpers/admin_brands_list.html", context)
+
+    def get_brand_action_id(self, request):
+        try:
+            payload = json.loads(request.body.decode("utf-8") or "{}")
+        except json.JSONDecodeError:
+            return None, {}
+        try:
+            return int(payload.get("id")), payload
+        except (TypeError, ValueError):
+            return None, payload
+
+    def brands_save_view(self, request):
+        if request.method != "POST":
+            return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
+        raw_id = request.POST.get("id")
+        try:
+            brand_id = int(raw_id) if raw_id else None
+        except (TypeError, ValueError):
+            return JsonResponse({"success": False, "message": "Некорректный бренд."}, status=400)
+        brand = Brand.objects.filter(pk=brand_id).first() if brand_id else Brand()
+        if raw_id and not brand:
+            return JsonResponse({"success": False, "message": "Бренд не найден."}, status=404)
+        name = (request.POST.get("name") or "").strip()
+        if not name:
+            return JsonResponse({"success": False, "message": "Введите название бренда."}, status=400)
+        duplicate = Brand.objects.filter(name__iexact=name)
+        if brand.pk:
+            duplicate = duplicate.exclude(pk=brand.pk)
+        if duplicate.exists():
+            return JsonResponse({"success": False, "message": "Бренд с таким названием уже существует."}, status=409)
+        is_created = not bool(brand.pk)
+        brand.name = name
+        brand.show_in_carousel = request.POST.get("show_in_carousel") == "1"
+        if request.FILES.get("image"):
+            brand.image = request.FILES["image"]
+        brand.save()
+        if is_created:
+            self.log_addition(request, brand, "Бренд создан через кастомное меню.")
+        else:
+            self.log_change(request, brand, "Бренд обновлён через кастомное меню.")
+        brand.admin_product_count = brand.products.count()
+        return JsonResponse({"success": True, "brand": self.serialize_admin_brand(brand)})
+
+    def brands_delete_view(self, request):
+        if request.method != "POST":
+            return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
+        brand_id, _payload = self.get_brand_action_id(request)
+        brand = Brand.objects.filter(pk=brand_id).first() if brand_id else None
+        if not brand:
+            return JsonResponse({"success": False, "message": "Бренд не найден."}, status=404)
+        brand_id = brand.pk
+        self.log_deletion(request, brand, f"Бренд удалён: {brand}")
+        brand.delete()
+        return JsonResponse({"success": True, "deleted_id": str(brand_id)})
+
+    def brands_toggle_carousel_view(self, request):
+        if request.method != "POST":
+            return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
+        brand_id, payload = self.get_brand_action_id(request)
+        brand = Brand.objects.filter(pk=brand_id).first() if brand_id else None
+        if not brand:
+            return JsonResponse({"success": False, "message": "Бренд не найден."}, status=404)
+        brand.show_in_carousel = bool(payload.get("show_in_carousel"))
+        brand.save(update_fields=("show_in_carousel",))
+        self.log_change(request, brand, "Участие бренда в карусели изменено.")
+        brand.admin_product_count = brand.products.count()
+        return JsonResponse({"success": True, "brand": self.serialize_admin_brand(brand)})
+
+    def get_brand_image_url(self, brand):
+        if not brand.image:
+            return ""
+        try:
+            return brand.image.url
+        except ValueError:
+            return ""
+
+    def serialize_admin_brand(self, brand):
+        return {
+            "id": str(brand.pk),
+            "name": brand.name,
+            "slug": brand.slug,
+            "image": self.get_brand_image_url(brand),
+            "in_carousel": bool(brand.show_in_carousel),
+            "product_count": getattr(brand, "admin_product_count", brand.products.count()),
+        }
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(admin_product_count=Count("products"))
@@ -1230,6 +1629,7 @@ class ProductReviewAdmin(BusinessAdminMixin, ModelAdmin):
             return error_response
         review.is_verified = not review.is_verified
         review.save(update_fields=("is_verified", "updated"))
+        self.log_change(request, review, "Статус проверки отзыва изменён.")
         return JsonResponse({"success": True, "review": self.serialize_admin_review(review)})
 
     def reviews_toggle_visibility_view(self, request):
@@ -1238,6 +1638,7 @@ class ProductReviewAdmin(BusinessAdminMixin, ModelAdmin):
             return error_response
         review.is_approved = not review.is_approved
         review.save(update_fields=("is_approved", "updated"))
+        self.log_change(request, review, "Видимость отзыва изменена.")
         return JsonResponse({"success": True, "review": self.serialize_admin_review(review)})
 
     def reviews_delete_view(self, request):
@@ -1245,6 +1646,7 @@ class ProductReviewAdmin(BusinessAdminMixin, ModelAdmin):
         if error_response:
             return error_response
         review_id = review.pk
+        self.log_deletion(request, review, f"Отзыв удалён: {review}")
         review.delete()
         return JsonResponse({"success": True, "deleted_id": str(review_id)})
 
@@ -1300,6 +1702,215 @@ class VariantGroupAdmin(BusinessAdminMixin, ModelAdmin):
     readonly_fields = ("slug",)
     inlines = (VariantOptionInline,)
 
+    def get_urls(self):
+        custom_urls = [
+            path(
+                "save-group/",
+                self.admin_site.admin_view(self.variant_groups_save_view),
+                name="main_variantgroup_save",
+            ),
+            path(
+                "delete-group/",
+                self.admin_site.admin_view(self.variant_groups_delete_view),
+                name="main_variantgroup_delete",
+            ),
+        ]
+        return custom_urls + super().get_urls()
+
+    def changelist_view(self, request, extra_context=None):
+        return self.variant_groups_list_view(request)
+
+    def variant_groups_list_view(self, request):
+        option_queryset = VariantOption.objects.annotate(
+            admin_product_count=Count("product_variants__product", distinct=True),
+            admin_sku_count=Count("product_skus", distinct=True),
+        ).order_by("order", "name")
+        groups = VariantGroup.objects.prefetch_related(
+            Prefetch("options", queryset=option_queryset, to_attr="admin_options")
+        ).order_by("order", "name")
+        context = {
+            **self.admin_site.each_context(request),
+            "title": "Группы вариантов",
+            "variant_groups_payload": [self.serialize_admin_variant_group(group) for group in groups],
+            "save_url": reverse("admin:main_variantgroup_save"),
+            "delete_url": reverse("admin:main_variantgroup_delete"),
+        }
+        return TemplateResponse(request, "unfold/helpers/admin_variant_groups_list.html", context)
+
+    def variant_groups_save_view(self, request):
+        if request.method != "POST":
+            return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
+        try:
+            payload = json.loads(request.body.decode("utf-8") or "{}")
+        except json.JSONDecodeError:
+            return JsonResponse({"success": False, "message": "Некорректные данные."}, status=400)
+
+        raw_group_id = payload.get("id")
+        try:
+            group_id = int(raw_group_id) if raw_group_id else None
+        except (TypeError, ValueError):
+            return JsonResponse({"success": False, "message": "Некорректная группа вариантов."}, status=400)
+
+        group = VariantGroup.objects.filter(pk=group_id).first() if group_id else VariantGroup()
+        if raw_group_id and not group:
+            return JsonResponse({"success": False, "message": "Группа вариантов не найдена."}, status=404)
+
+        name = strip_tags(str(payload.get("name") or "")).strip()
+        if not name:
+            return JsonResponse({"success": False, "message": "Введите название группы."}, status=400)
+        if len(name) > VariantGroup._meta.get_field("name").max_length:
+            return JsonResponse({"success": False, "message": "Название группы слишком длинное."}, status=400)
+        duplicate_group = VariantGroup.objects.filter(name__iexact=name)
+        if group.pk:
+            duplicate_group = duplicate_group.exclude(pk=group.pk)
+        if duplicate_group.exists():
+            return JsonResponse({"success": False, "message": "Группа с таким названием уже существует."}, status=409)
+
+        try:
+            order = max(0, int(payload.get("order") or 0))
+        except (TypeError, ValueError):
+            order = 0
+
+        raw_options = payload.get("options") or []
+        if not isinstance(raw_options, list):
+            return JsonResponse({"success": False, "message": "Некорректный список вариантов."}, status=400)
+
+        option_name_max = VariantOption._meta.get_field("name").max_length
+        normalized_options = []
+        seen_names = set()
+        for index, item in enumerate(raw_options):
+            if not isinstance(item, dict):
+                return JsonResponse({"success": False, "message": "Некорректное значение варианта."}, status=400)
+            option_name = strip_tags(str(item.get("name") or "")).strip()
+            filter_name = strip_tags(str(item.get("filter_name") or option_name)).strip() or option_name
+            if not option_name:
+                return JsonResponse({"success": False, "message": "Укажите название каждого варианта."}, status=400)
+            if len(option_name) > option_name_max or len(filter_name) > option_name_max:
+                return JsonResponse(
+                    {"success": False, "message": f"Названия вариантов должны быть не длиннее {option_name_max} символов."},
+                    status=400,
+                )
+            normalized_name = option_name.casefold()
+            if normalized_name in seen_names:
+                return JsonResponse({"success": False, "message": "Названия вариантов внутри группы не должны повторяться."}, status=409)
+            seen_names.add(normalized_name)
+            try:
+                option_id = int(item.get("id")) if item.get("id") else None
+            except (TypeError, ValueError):
+                option_id = None
+            normalized_options.append({
+                "id": option_id,
+                "name": option_name,
+                "filter_name": filter_name,
+                "order": index,
+            })
+
+        existing_options = {option.pk: option for option in group.options.all()} if group.pk else {}
+        submitted_existing_ids = {item["id"] for item in normalized_options if item["id"] in existing_options}
+        removed_options = [option for option_id, option in existing_options.items() if option_id not in submitted_existing_ids]
+        protected_removed = [
+            option.name
+            for option in removed_options
+            if option.product_variants.exists() or option.product_skus.exists()
+        ]
+        if protected_removed:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Нельзя удалить используемые варианты: " + ", ".join(protected_removed),
+                },
+                status=409,
+            )
+
+        is_created = not bool(group.pk)
+        with transaction.atomic():
+            group.name = name
+            group.order = order
+            group.save()
+
+            for item in normalized_options:
+                option = existing_options.get(item["id"])
+                if option and option.name != item["name"]:
+                    VariantOption.objects.filter(pk=option.pk).update(name=f"__wave_tmp_{option.pk}__")
+
+            for item in normalized_options:
+                option = existing_options.get(item["id"])
+                if option is None:
+                    option = VariantOption(group=group)
+                option.name = item["name"]
+                option.filter_name = item["filter_name"]
+                option.order = item["order"]
+                option.save()
+
+            for option in removed_options:
+                option.delete()
+
+        refreshed_group = VariantGroup.objects.prefetch_related(
+            Prefetch(
+                "options",
+                queryset=VariantOption.objects.annotate(
+                    admin_product_count=Count("product_variants__product", distinct=True),
+                    admin_sku_count=Count("product_skus", distinct=True),
+                ).order_by("order", "name"),
+                to_attr="admin_options",
+            )
+        ).get(pk=group.pk)
+        if is_created:
+            self.log_addition(request, refreshed_group, "Группа вариантов создана через кастомное меню.")
+        else:
+            self.log_change(request, refreshed_group, "Группа вариантов обновлена через кастомное меню.")
+        return JsonResponse({"success": True, "group": self.serialize_admin_variant_group(refreshed_group)})
+
+    def variant_groups_delete_view(self, request):
+        if request.method != "POST":
+            return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
+        try:
+            payload = json.loads(request.body.decode("utf-8") or "{}")
+            group_id = int(payload.get("id"))
+        except (json.JSONDecodeError, TypeError, ValueError):
+            return JsonResponse({"success": False, "message": "Некорректная группа вариантов."}, status=400)
+
+        group = VariantGroup.objects.filter(pk=group_id).first()
+        if not group:
+            return JsonResponse({"success": False, "message": "Группа вариантов не найдена."}, status=404)
+        if ProductVariant.objects.filter(variant__group=group).exists() or ProductSKU.objects.filter(options__group=group).exists():
+            return JsonResponse(
+                {"success": False, "message": "Нельзя удалить группу, варианты которой используются товарами или SKU."},
+                status=409,
+            )
+
+        deleted_id = group.pk
+        self.log_deletion(request, group, f"Группа вариантов удалена: {group}")
+        group.delete()
+        return JsonResponse({"success": True, "deleted_id": str(deleted_id)})
+
+    def serialize_admin_variant_group(self, group):
+        options = group.admin_options if hasattr(group, "admin_options") else list(group.options.all())
+        return {
+            "id": str(group.pk),
+            "name": group.name,
+            "slug": group.slug,
+            "order": group.order,
+            "options": [self.serialize_admin_variant_option(option) for option in options],
+        }
+
+    def serialize_admin_variant_option(self, option):
+        product_count = getattr(option, "admin_product_count", None)
+        if product_count is None:
+            product_count = option.product_variants.values("product_id").distinct().count()
+        sku_count = getattr(option, "admin_sku_count", None)
+        if sku_count is None:
+            sku_count = option.product_skus.count()
+        return {
+            "id": str(option.pk),
+            "name": option.name,
+            "filter_name": option.filter_name or option.name,
+            "order": option.order,
+            "product_count": product_count,
+            "sku_count": sku_count,
+            "is_used": bool(product_count or sku_count),
+        }
+
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(admin_options_count=Count("options"))
 
@@ -1310,9 +1921,9 @@ class VariantGroupAdmin(BusinessAdminMixin, ModelAdmin):
 
 @admin.register(VariantOption)
 class VariantOptionAdmin(HiddenFromMenuAdminMixin, ModelAdmin):
-    list_display = ("name", "group", "order", "slug")
+    list_display = ("name", "filter_name", "group", "order", "slug")
     list_filter = ("group",)
-    search_fields = ("name", "group__name")
+    search_fields = ("name", "filter_name", "group__name")
     autocomplete_fields = ("group",)
     readonly_fields = ("slug",)
     ordering = ("group__order", "group__name", "order", "name")
@@ -1324,7 +1935,7 @@ class ProductVariantAdmin(HiddenFromMenuAdminMixin, ModelAdmin):
     list_filter = ("available", "variant__group")
     search_fields = ("product__name", "variant__name", "variant__group__name")
     autocomplete_fields = ("product", "variant")
-    fields = ("product", "variant", "image", "stock", "available")
+    fields = ("product", "variant", "image", "image_order", "stock", "available")
 
 
 @admin.register(ProductSKU)
@@ -1465,6 +2076,108 @@ class ActionHistoryAdmin(ModelAdmin):
     )
     date_hierarchy = "action_time"
     ordering = ("-action_time",)
+    retention_days = 30
+
+    def get_urls(self):
+        custom_urls = [
+            path(
+                "cleanup/",
+                self.admin_site.admin_view(self.action_history_cleanup_view),
+                name="admin_logentry_cleanup",
+            ),
+        ]
+        return custom_urls + super().get_urls()
+
+    def changelist_view(self, request, extra_context=None):
+        self.cleanup_expired_entries()
+        entries = (
+            LogEntry.objects.select_related("user", "content_type")
+            .order_by("-action_time")[:1000]
+        )
+        now = timezone.now()
+        cutoff = now - timedelta(days=self.retention_days)
+        old_count = LogEntry.objects.filter(action_time__lt=cutoff).count()
+        action_counts = LogEntry.objects.values("action_flag").annotate(total=Count("id"))
+        action_stats = {str(item["action_flag"]): item["total"] for item in action_counts}
+        context = {
+            **self.admin_site.each_context(request),
+            "title": "История действий",
+            "history_payload": [self.serialize_action_entry(entry, now) for entry in entries],
+            "cleanup_url": reverse("admin:admin_logentry_cleanup"),
+            "retention_days": self.retention_days,
+            "old_count": old_count,
+            "action_stats": action_stats,
+        }
+        return TemplateResponse(request, "unfold/helpers/admin_action_history.html", context)
+
+    def cleanup_expired_entries(self):
+        cutoff = timezone.now() - timedelta(days=self.retention_days)
+        return LogEntry.objects.filter(action_time__lt=cutoff).delete()[0]
+
+    def action_history_cleanup_view(self, request):
+        if request.method != "POST":
+            return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
+        deleted = self.cleanup_expired_entries()
+        return JsonResponse({"success": True, "deleted": deleted})
+
+    def serialize_action_entry(self, entry, now=None):
+        action_time = entry.action_time
+        now = now or timezone.now()
+        delta = now - action_time
+        if delta.days > 0:
+            relative = f"{delta.days} дн. назад"
+        else:
+            hours = delta.seconds // 3600
+            minutes = (delta.seconds % 3600) // 60
+            relative = f"{hours} ч. назад" if hours else f"{max(minutes, 1)} мин. назад"
+
+        user = entry.user
+        user_name = "Система"
+        user_label = ""
+        if user:
+            full_name = user.get_full_name()
+            user_name = full_name or user.get_username()
+            user_label = user.email or user.get_username()
+
+        action_key = self.get_action_key(entry.action_flag)
+        return {
+            "id": str(entry.pk),
+            "time": action_time.strftime("%d.%m.%Y %H:%M"),
+            "date": action_time.strftime("%d.%m.%Y"),
+            "relative": relative,
+            "timestamp": int(action_time.timestamp()),
+            "user": user_name,
+            "user_label": user_label,
+            "model": entry.content_type.name if entry.content_type_id else "Система",
+            "app": entry.content_type.app_label if entry.content_type_id else "",
+            "object": entry.object_repr or "Объект удалён",
+            "object_id": entry.object_id or "",
+            "action": action_key,
+            "action_label": self.get_action_label(entry.action_flag),
+            "message": self.normalize_change_message(entry),
+        }
+
+    def get_action_key(self, action_flag):
+        if action_flag == ADDITION:
+            return "create"
+        if action_flag == CHANGE:
+            return "change"
+        if action_flag == DELETION:
+            return "delete"
+        return "other"
+
+    def get_action_label(self, action_flag):
+        if action_flag == ADDITION:
+            return "Создание"
+        if action_flag == CHANGE:
+            return "Изменение"
+        if action_flag == DELETION:
+            return "Удаление"
+        return "Действие"
+
+    def normalize_change_message(self, entry):
+        message = entry.get_change_message() or entry.change_message or ""
+        return strip_tags(str(message)).strip() or "Детали действия не указаны."
 
     def has_add_permission(self, request):
         return False

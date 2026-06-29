@@ -1,0 +1,113 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ site_title|default:"WAVE Admin" }}{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'admin/css/admin_categories_list.css' %}?v=categories2" />
+{% endblock %}
+
+{% block content %}
+  {{ categories_payload|json_script:"admin-categories-data" }}
+
+  <div
+    class="wa-categories"
+    data-save-url="{{ save_url }}"
+    data-delete-url="{{ delete_url }}"
+  >
+    <div class="page-body">
+      <div class="topbar">
+        <div class="topbar-summary">
+          <span class="topbar-summary-label">Структура каталога</span>
+          <span class="topbar-summary-count" id="categoryCount">0 категорий</span>
+        </div>
+        <div class="topbar-spacer"></div>
+        <button class="btn btn-ghost" id="createCategoryBtn" type="button">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Добавить категорию</span>
+        </button>
+      </div>
+
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+          </span>
+          <input
+            class="search-input"
+            id="categorySearchInput"
+            type="text"
+            placeholder="Поиск по названию или slug..."
+            autocomplete="off"
+          />
+        </div>
+      </div>
+
+      <div class="category-list" id="categoryList"></div>
+
+      <div class="empty-state" id="emptyState" hidden>
+        <div class="empty-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+            <path d="M3 6h18"></path>
+            <path d="M5 6V4h5l2 2"></path>
+            <path d="M4 6h16v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6Z"></path>
+          </svg>
+        </div>
+        <div class="empty-title">Категории не найдены</div>
+        <div class="empty-sub">Измените поисковый запрос или добавьте новую категорию</div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="categoryModalBackdrop" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="categoryModalTitle">
+        <div class="modal-header">
+          <div>
+            <div class="modal-kicker">Категория</div>
+            <h2 class="modal-title" id="categoryModalTitle">Добавить категорию</h2>
+          </div>
+          <button class="modal-close" id="categoryModalClose" type="button" aria-label="Закрыть">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M18 6 6 18M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-field">
+          <label for="categoryNameInput">Название</label>
+          <input
+            id="categoryNameInput"
+            type="text"
+            maxlength="100"
+            placeholder="Например: POD-системы"
+            autocomplete="off"
+          />
+          <span class="field-hint">Slug сформируется автоматически после сохранения.</span>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn btn-danger" id="deleteCategoryBtn" type="button" hidden>Удалить</button>
+          <div class="modal-actions-spacer"></div>
+          <button class="btn btn-secondary" id="cancelCategoryBtn" type="button">Отмена</button>
+          <button class="btn btn-primary" id="saveCategoryBtn" type="button">Добавить</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast-container" id="categoryToastContainer" aria-live="polite"></div>
+  </div>
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script src="{% static 'admin/js/admin_categories_list.js' %}?v=categories1" defer></script>
+{% endblock %}

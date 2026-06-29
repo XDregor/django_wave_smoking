@@ -46,9 +46,10 @@ UNFOLD = {
     "SHOW_VIEW_ON_SITE": True,
     "STYLES": [
         lambda request: f"{static('admin/css/unfold_overrides.css')}?v=sidebar-active2",
+        lambda request: f"{static('admin/css/admin_responsive.css')}?v=responsive2",
     ],
     "SCRIPTS": [
-        lambda request: static("admin/js/unfold_overrides.js"),
+        lambda request: f"{static('admin/js/unfold_overrides.js')}?v=dark-only1",
     ],
     "COLORS": {
         "primary": {
@@ -70,24 +71,8 @@ UNFOLD = {
         "show_all_applications": False,
         "navigation": [
             {
-                "title": "АККАУНТЫ",
-                "separator": False,
-                "items": [
-                    {
-                        "title": "Администраторы",
-                        "icon": "admin_panel_settings",
-                        "link": admin_link("admin:auth_user_changelist", "?is_staff__exact=1"),
-                    },
-                    {
-                        "title": "Клиенты",
-                        "icon": "group",
-                        "link": admin_link("admin:auth_user_changelist", "?is_staff__exact=0"),
-                    },
-                ],
-            },
-            {
                 "title": "ТОВАРЫ",
-                "separator": True,
+                "separator": False,
                 "items": [
                     {
                         "title": "Добавить товар",
@@ -106,14 +91,14 @@ UNFOLD = {
                 "separator": True,
                 "items": [
                     {
-                        "title": "Категории",
-                        "icon": "category",
-                        "link": reverse_lazy("admin:main_category_changelist"),
-                    },
-                    {
                         "title": "Бренды",
                         "icon": "sell",
                         "link": reverse_lazy("admin:main_brand_changelist"),
+                    },
+                    {
+                        "title": "Категории",
+                        "icon": "category",
+                        "link": reverse_lazy("admin:main_category_changelist"),
                     },
                     {
                         "title": "Группы вариантов",

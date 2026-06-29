@@ -128,6 +128,13 @@ def product_gallery_image_upload_to(instance, filename):
     return f"products/{product_id}/gallery/product-{product_id}-{product_slug}-gallery-{order:02d}-original.{extension}"
 
 
+def brand_image_upload_to(instance, filename):
+    brand_id = instance.pk or "new"
+    brand_slug = instance.slug or slugify(instance.name) or "brand"
+    extension = get_upload_extension(filename)
+    return f"brands/{brand_id}/brand-{brand_id}-{brand_slug}-logo.{extension}"
+
+
 def make_unique_slug(model_class, value, instance_pk=None):
     base_slug = slugify(value) or "item"
     slug = base_slug
@@ -161,6 +168,8 @@ class Category(models.Model):
 class Brand(models.Model):
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=100, unique=True, blank=True)
+    image = models.ImageField(upload_to=brand_image_upload_to, blank=True, verbose_name="Image")
+    show_in_carousel = models.BooleanField(default=False, verbose_name="Show in carousel")
 
     class Meta:
         ordering = ("name",)
@@ -201,6 +210,7 @@ class VariantOption(models.Model):
         verbose_name="Group",
     )
     name = models.CharField(max_length=100, verbose_name="Name")
+    filter_name = models.CharField(max_length=100, blank=True, default="", verbose_name="Filter name")
     slug = models.SlugField(max_length=120, blank=True, verbose_name="Slug")
     order = models.PositiveIntegerField(default=0, verbose_name="Order")
 
@@ -216,9 +226,14 @@ class VariantOption(models.Model):
         )
 
     def save(self, *args, **kwargs):
+        self.filter_name = (self.filter_name or "").strip() or self.name
         base = f"{self.group.slug}-{self.name}" if self.group_id else self.name
         self.slug = make_unique_slug(VariantOption, base, self.pk)
         super().save(*args, **kwargs)
+
+    @property
+    def filter_slug(self):
+        return slugify(self.filter_name or self.name, allow_unicode=True) or self.slug
 
     def __str__(self):
         prefix = f"{self.group.name}: " if self.group_id else ""
@@ -250,6 +265,14 @@ class Product(models.Model):
         null=True,
         blank=True,
         verbose_name="Brand",
+    )
+    variant_image_group = models.ForeignKey(
+        VariantGroup,
+        related_name="image_products",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Variant image group",
     )
     name = models.CharField(max_length=100, db_index=True, verbose_name="Name")
     slug = models.SlugField(max_length=100, unique=True, blank=True)
@@ -409,6 +432,8 @@ class Product(models.Model):
                 "option_id": item.variant_id,
                 "name": item.variant.name,
                 "slug": item.variant.slug,
+                "filter_name": item.variant.filter_name or item.variant.name,
+                "filter_slug": item.variant.filter_slug,
                 "group": item.variant.group.name if item.variant.group_id else "",
                 "image_url": item.image.url if item.image else "",
                 "thumbnail_url": item.thumbnail_url,
@@ -429,6 +454,8 @@ class Product(models.Model):
                 "option_id": product_variant.variant_id,
                 "name": product_variant.variant.name,
                 "slug": product_variant.variant.slug,
+                "filter_name": product_variant.variant.filter_name or product_variant.variant.name,
+                "filter_slug": product_variant.variant.filter_slug,
                 "group": product_variant.variant.group.name if product_variant.variant.group_id else "",
                 "image_url": product_variant.image.url if product_variant.image else "",
                 "thumbnail_url": product_variant.thumbnail_url,
@@ -565,11 +592,18 @@ class ProductVariant(models.Model):
         verbose_name="Variant",
     )
     image = models.ImageField(upload_to=product_variant_image_upload_to, blank=True, verbose_name="Variant image")
+    image_order = models.PositiveIntegerField(default=0, verbose_name="Image order")
     stock = models.PositiveIntegerField(default=0, verbose_name="Stock")
     available = models.BooleanField(default=False, verbose_name="Available")
 
     class Meta:
-        ordering = ("variant__group__order", "variant__group__name", "variant__order", "variant__name")
+        ordering = (
+            "variant__group__order",
+            "variant__group__name",
+            "image_order",
+            "variant__order",
+            "variant__name",
+        )
         unique_together = (("product", "variant"),)
         verbose_name = "Product variant"
         verbose_name_plural = "Product variants"

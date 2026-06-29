@@ -1,0 +1,809 @@
+.wa-variant-groups,
+.wa-variant-groups *,
+.wa-variant-groups *::before,
+.wa-variant-groups *::after {
+    box-sizing: border-box;
+}
+
+.wa-variant-groups {
+    --bg: #090909;
+    --card: #111111;
+    --card-hi: #161616;
+    --card-hover: #1c1c1c;
+    --border: #1d1d1d;
+    --border-hi: #2e2e2e;
+    --accent: #ff8a1d;
+    --accent-dim: rgba(255, 138, 29, 0.12);
+    --accent-glow: rgba(255, 138, 29, 0.25);
+    --danger: #ef4444;
+    --text-1: #fff;
+    --text-2: #9a9a9a;
+    --text-3: #666;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-xs: 6px;
+    --shadow: 0 18px 60px rgba(0, 0, 0, 0.62);
+    --font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: "JetBrains Mono", monospace;
+
+    min-height: calc(100vh - 96px);
+    background: var(--bg);
+    color: var(--text-1);
+    font-family: var(--font);
+    font-size: 14px;
+}
+
+.wa-variant-groups button,
+.wa-variant-groups input {
+    font: inherit;
+}
+
+.wa-variant-groups [hidden] {
+    display: none !important;
+}
+
+.wa-variant-groups .page-body {
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.wa-variant-groups .topbar,
+.wa-variant-groups .topbar-summary,
+.wa-variant-groups .toolbar,
+.wa-variant-groups .options-header,
+.wa-variant-groups .modal-header,
+.wa-variant-groups .modal-actions {
+    display: flex;
+    align-items: center;
+}
+
+.wa-variant-groups .topbar {
+    gap: 14px;
+}
+
+.wa-variant-groups .topbar-summary {
+    gap: 9px;
+    min-width: 0;
+}
+
+.wa-variant-groups .topbar-summary-label {
+    color: var(--text-2);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.wa-variant-groups .topbar-summary-count {
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--card-hi);
+    color: var(--text-3);
+    font-family: var(--mono);
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.wa-variant-groups .topbar-spacer,
+.wa-variant-groups .modal-actions-spacer {
+    flex: 1;
+}
+
+.wa-variant-groups .btn {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 8px 15px;
+    border: 1px solid var(--border-hi);
+    border-radius: var(--radius-sm);
+    background: var(--card-hi);
+    color: var(--text-1);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s, box-shadow 0.15s;
+    white-space: nowrap;
+}
+
+.wa-variant-groups .btn:hover {
+    border-color: #3a3a3a;
+    background: var(--card-hover);
+}
+
+.wa-variant-groups .btn:disabled {
+    opacity: 0.42;
+    cursor: default;
+}
+
+.wa-variant-groups .btn-primary {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #0b0b0c;
+}
+
+.wa-variant-groups .btn-primary:hover {
+    border-color: #ff9a3d;
+    background: #ff9a3d;
+}
+
+.wa-variant-groups .btn-secondary,
+.wa-variant-groups .btn-ghost {
+    background: var(--card);
+}
+
+.wa-variant-groups .btn-danger {
+    border-color: rgba(239, 68, 68, 0.46);
+    background: rgba(239, 68, 68, 0.1);
+    color: #ff8b8b;
+}
+
+.wa-variant-groups .btn-danger:hover {
+    border-color: rgba(239, 68, 68, 0.75);
+    background: rgba(239, 68, 68, 0.16);
+}
+
+.wa-variant-groups .btn-sm {
+    min-height: 32px;
+    padding: 6px 11px;
+    font-size: 11px;
+}
+
+.wa-variant-groups .toolbar {
+    gap: 10px;
+}
+
+.wa-variant-groups .search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+}
+
+.wa-variant-groups .search-icon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    color: var(--text-3);
+    pointer-events: none;
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+.wa-variant-groups .search-icon svg {
+    width: 15px;
+    height: 15px;
+}
+
+.wa-variant-groups .search-input {
+    width: 100%;
+    height: 42px;
+    padding: 10px 14px 10px 44px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    outline: none;
+    background: var(--card);
+    color: var(--text-1);
+    font-size: 14px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.wa-variant-groups .search-input::placeholder {
+    color: var(--text-3);
+}
+
+.wa-variant-groups .search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.wa-variant-groups .variant-groups-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-columns: minmax(0, 1fr);
+    align-items: stretch;
+    gap: 12px;
+}
+
+.wa-variant-groups .variant-group-card {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 170px;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.17s, background 0.17s, transform 0.17s, box-shadow 0.17s;
+    animation: variantGroupIn 0.2s ease both;
+}
+
+.wa-variant-groups .variant-group-card:hover {
+    border-color: var(--border-hi);
+    background: var(--card-hi);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.32);
+}
+
+.wa-variant-groups .group-card-head {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 11px;
+}
+
+.wa-variant-groups .group-card-icon {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    background: rgba(255, 255, 255, 0.025);
+    color: var(--text-2);
+    transition: border-color 0.17s, background 0.17s, color 0.17s;
+}
+
+.wa-variant-groups .variant-group-card:hover .group-card-icon {
+    border-color: var(--accent-glow);
+    background: var(--accent-dim);
+    color: var(--accent);
+}
+
+.wa-variant-groups .group-card-copy {
+    min-width: 0;
+}
+
+.wa-variant-groups .group-card-name {
+    display: block;
+    overflow: hidden;
+    color: var(--text-1);
+    font-size: 14px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wa-variant-groups .group-card-slug {
+    display: block;
+    margin-top: 3px;
+    overflow: hidden;
+    color: var(--text-3);
+    font-family: var(--mono);
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wa-variant-groups .group-card-count {
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-2);
+    font-family: var(--mono);
+    font-size: 9.5px;
+    white-space: nowrap;
+}
+
+.wa-variant-groups .group-card-options {
+    min-height: 55px;
+    display: flex;
+    align-content: flex-start;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 15px;
+}
+
+.wa-variant-groups .group-option-chip,
+.wa-variant-groups .group-option-more {
+    max-width: 150px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.025);
+    color: var(--text-2);
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wa-variant-groups .group-option-more {
+    color: var(--accent);
+}
+
+.wa-variant-groups .group-options-empty {
+    color: var(--text-3);
+    font-size: 11px;
+}
+
+.wa-variant-groups .group-card-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 11px;
+    border-top: 1px solid var(--border);
+    color: var(--text-3);
+    font-size: 10px;
+}
+
+.wa-variant-groups .group-card-footer > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wa-variant-groups .group-card-footer svg {
+    margin-left: auto;
+    transition: color 0.15s, transform 0.15s;
+}
+
+.wa-variant-groups .variant-group-card:hover .group-card-footer svg {
+    color: var(--accent);
+    transform: translateX(2px);
+}
+
+@keyframes variantGroupIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.wa-variant-groups .empty-state {
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 40px 20px;
+    border: 1px dashed var(--border-hi);
+    border-radius: var(--radius);
+    background: var(--card);
+    text-align: center;
+}
+
+.wa-variant-groups .empty-icon {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--text-3);
+}
+
+.wa-variant-groups .empty-title {
+    color: var(--text-2);
+    font-size: 14px;
+    font-weight: 650;
+}
+
+.wa-variant-groups .empty-sub {
+    color: var(--text-3);
+    font-size: 11.5px;
+}
+
+.wa-variant-groups .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+}
+
+.wa-variant-groups .modal-backdrop.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.wa-variant-groups .modal {
+    width: min(760px, 100%);
+    max-height: min(780px, calc(100vh - 36px));
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    overflow: hidden;
+    border: 1px solid var(--border-hi);
+    border-radius: var(--radius);
+    background: var(--card);
+    box-shadow: var(--shadow);
+    transform: translateY(10px) scale(0.985);
+    transition: transform 0.2s;
+}
+
+.wa-variant-groups .modal-backdrop.open .modal {
+    transform: translateY(0) scale(1);
+}
+
+.wa-variant-groups .modal-header {
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.wa-variant-groups .modal-kicker {
+    margin-bottom: 3px;
+    color: var(--accent);
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.wa-variant-groups .modal-title {
+    margin: 0;
+    color: var(--text-1);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.wa-variant-groups .modal-close {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    margin-left: auto;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    background: transparent;
+    color: var(--text-3);
+    cursor: pointer;
+}
+
+.wa-variant-groups .modal-close:hover {
+    border-color: var(--border-hi);
+    background: var(--card-hi);
+    color: var(--text-1);
+}
+
+.wa-variant-groups .group-fields {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 120px;
+    gap: 12px;
+}
+
+.wa-variant-groups .modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.wa-variant-groups .modal-field label {
+    color: var(--text-2);
+    font-size: 11.5px;
+    font-weight: 600;
+}
+
+.wa-variant-groups .modal-field input,
+.wa-variant-groups .option-input {
+    width: 100%;
+    height: 40px;
+    padding: 0 11px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    outline: none;
+    background: var(--card-hi);
+    color: var(--text-1);
+    font-size: 12.5px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.wa-variant-groups .modal-field input:focus,
+.wa-variant-groups .option-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.wa-variant-groups .field-hint {
+    color: var(--text-3);
+    font-size: 10px;
+}
+
+.wa-variant-groups .options-section {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+    padding-top: 17px;
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+}
+
+.wa-variant-groups .options-header {
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 13px;
+}
+
+.wa-variant-groups .options-title {
+    color: var(--text-1);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.wa-variant-groups .options-subtitle {
+    margin-top: 3px;
+    color: var(--text-3);
+    font-size: 10.5px;
+}
+
+.wa-variant-groups .options-column-head,
+.wa-variant-groups .option-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 105px 78px;
+    align-items: center;
+    gap: 8px;
+}
+
+.wa-variant-groups .options-column-head {
+    padding: 0 8px 6px;
+    color: var(--text-3);
+    font-size: 9.5px;
+}
+
+.wa-variant-groups .options-list {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: auto;
+    padding-right: 3px;
+}
+
+.wa-variant-groups .option-row {
+    flex-shrink: 0;
+    padding: 7px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: #0d0d0d;
+}
+
+.wa-variant-groups .option-input {
+    min-width: 0;
+    max-width: 100%;
+    height: 34px;
+    background: var(--card);
+    font-size: 11.5px;
+}
+
+.wa-variant-groups .option-usage {
+    color: var(--text-3);
+    font-size: 9.5px;
+    line-height: 1.35;
+    text-align: center;
+}
+
+.wa-variant-groups .option-usage.is-used {
+    color: var(--text-2);
+}
+
+.wa-variant-groups .option-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+}
+
+.wa-variant-groups .option-action {
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--card-hi);
+    color: var(--text-3);
+    cursor: pointer;
+}
+
+.wa-variant-groups .option-action:hover:not(:disabled) {
+    border-color: var(--border-hi);
+    color: var(--text-1);
+}
+
+.wa-variant-groups .option-remove:hover:not(:disabled) {
+    border-color: rgba(239, 68, 68, 0.45);
+    color: #ff8b8b;
+}
+
+.wa-variant-groups .option-action:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+.wa-variant-groups .options-empty {
+    padding: 24px 12px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-3);
+    font-size: 11px;
+    text-align: center;
+}
+
+.wa-variant-groups .modal-actions {
+    gap: 8px;
+    margin-top: 18px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border);
+}
+
+.wa-variant-groups .toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 130;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.wa-variant-groups .toast {
+    min-width: 230px;
+    max-width: 380px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 13px;
+    border: 1px solid var(--border-hi);
+    border-radius: var(--radius-sm);
+    background: var(--card-hover);
+    color: var(--text-1);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    font-size: 11.5px;
+    transition: opacity 0.18s, transform 0.18s;
+}
+
+.wa-variant-groups .toast-dot {
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--accent);
+}
+
+.wa-variant-groups .toast.error .toast-dot {
+    background: var(--danger);
+}
+
+.wa-variant-groups .toast.fade-out {
+    opacity: 0;
+    transform: translateY(6px);
+}
+
+@media (max-width: 760px) {
+    .wa-variant-groups .variant-groups-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .wa-variant-groups .topbar {
+        flex-wrap: wrap;
+    }
+
+    .wa-variant-groups .topbar-summary,
+    .wa-variant-groups #createVariantGroupBtn {
+        width: 100%;
+    }
+
+    .wa-variant-groups .topbar-spacer {
+        display: none;
+    }
+
+    .wa-variant-groups .group-fields {
+        grid-template-columns: 1fr 90px;
+    }
+
+    .wa-variant-groups .options-column-head {
+        display: none;
+    }
+
+    .wa-variant-groups .option-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .wa-variant-groups .option-usage {
+        text-align: left;
+    }
+}
+
+@media (max-width: 520px) {
+    .wa-variant-groups .modal {
+        padding: 16px;
+    }
+
+    .wa-variant-groups .group-fields,
+    .wa-variant-groups .option-row {
+        grid-template-columns: 1fr;
+    }
+
+    .wa-variant-groups .options-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .wa-variant-groups .option-actions {
+        justify-content: flex-start;
+    }
+
+    .wa-variant-groups .modal-actions {
+        flex-wrap: wrap;
+    }
+
+    .wa-variant-groups .modal-actions-spacer {
+        display: none;
+    }
+
+    .wa-variant-groups .modal-actions .btn {
+        flex: 1;
+    }
+
+    .wa-variant-groups #deleteVariantGroupBtn {
+        flex-basis: 100%;
+    }
+}
+
+body:has(.wa-variant-groups) #main,
+body:has(.wa-variant-groups) #content,
+body:has(.wa-variant-groups) #main > .bg-white,
+body:has(.wa-variant-groups) #main > .dark\:bg-base-900,
+body:has(.wa-variant-groups) .bg-white.border-b.border-base-200.mb-4.px-4.z-40,
+body:has(.wa-variant-groups) .\@container.px-4.pb-4.grow {
+    background: #090909 !important;
+}
+
+body:has(.wa-variant-groups) #content {
+    width: 100%;
+    max-width: none;
+}
+
+/* Brand admin palette alignment */
+body:has(.wa-variant-groups) #main,
+body:has(.wa-variant-groups) #content,
+body:has(.wa-variant-groups) #main > .bg-white,
+body:has(.wa-variant-groups) #main > .dark\:bg-base-900,
+body:has(.wa-variant-groups) .bg-white.border-b.border-base-200.mb-4.px-4.z-40,
+body:has(.wa-variant-groups) .\@container.px-4.pb-4.grow {
+    background: #08080a !important;
+}
+
+.wa-variant-groups {
+    --bg: #08080a;
+    --card: #0f0f12;
+    --card-hi: #17171b;
+    --card-hover: #202025;
+    --border: rgba(255, 255, 255, 0.06);
+    --border-hi: rgba(255, 255, 255, 0.10);
+    --text-1: #f0f0f0;
+    --text-2: #9a9aa0;
+    --text-3: #5c5c64;
+    --accent-dim: rgba(255, 138, 29, 0.10);
+    --accent-glow: rgba(255, 138, 29, 0.18);
+    --danger: #f87171;
+}

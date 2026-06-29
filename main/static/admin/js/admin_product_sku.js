@@ -63,11 +63,13 @@
           catalogGroupId: group.catalogGroupId || null,
           name: group.name || "",
           hasImages: Boolean(group.hasImages),
-          variants: (group.variants || []).map((variant) => ({
+          variants: (group.variants || []).map((variant, variantIndex) => ({
             id: variant.id,
             catalogOptionId: variant.catalogOptionId || null,
             name: variant.name || "",
+            filterName: variant.filterName || variant.name || "",
             imageUrl: variant.imageUrl || "",
+            imageOrder: Number.isFinite(Number(variant.imageOrder)) ? Number(variant.imageOrder) : variantIndex,
           })),
         }));
       }
@@ -1065,9 +1067,12 @@
         return variantGroups.map((group) => ({
           id: group.id,
           name: (group.name || "").trim() || "\u0413\u0440\u0443\u043f\u043f\u0430",
-          values: group.variants.map((variant) => ({
+          hasImages: Boolean(group.hasImages),
+          values: group.variants.map((variant, variantIndex) => ({
             id: variant.id,
             name: (variant.name || "").trim() || "\u0412\u0430\u0440\u0438\u0430\u043d\u0442",
+            filter_name: (variant.filterName || variant.name || "").trim() || "\u0412\u0430\u0440\u0438\u0430\u043d\u0442",
+            image_order: Number.isFinite(Number(variant.imageOrder)) ? Number(variant.imageOrder) : variantIndex,
           })),
         }));
       }
@@ -1417,6 +1422,18 @@
         node.quantity = Math.max(0, parseInt(rawValue.toString().replace(/[^0-9]/g, "")) || 0);
       }
 
+      function skuTreeAdjustQuantity(input, node, direction, largeStep = false) {
+        const currentValue = /^\d+$/.test(input.value) ? Number(input.value) : Number(node.quantity) || 0;
+        const amount = largeStep ? 10 : 1;
+        const nextValue = Math.min(SKU_MAX_QUANTITY, Math.max(0, currentValue + direction * amount));
+        input.value = String(nextValue);
+        node.quantity = nextValue;
+        node._quantityInputInvalid = false;
+        skuTreeSetInputValidity(input, true);
+        skuTreeUpdateNextButton();
+        scheduleSkuAdminStateSave();
+      }
+
       function skuTreeGetColumnWidth(level) {
         if (level === 0) return SKU_PRODUCT_COL_WIDTH;
         if (level === skuTreeState.nodesByLevel.length - 1) return SKU_COL_WIDTH;
@@ -1540,10 +1557,11 @@
         const status = skuTreeCreateStatus(node);
         const reset = node._discountIsManual || node._priceIsManual ? `<button class="reset-btn" data-node-id="${node.id}">&#1057;&#1073;&#1088;&#1086;&#1089;&#1080;&#1090;&#1100;</button>` : "";
         const priceGrid = `<div class="price-grid"><label>&#1041;&#1072;&#1079;&#1086;&#1074;&#1072;&#1103; &#1094;&#1077;&#1085;&#1072;</label><input type="text" inputmode="decimal" class="tree-price-input ${node._priceIsManual ? "manual" : ""}" data-node-id="${node.id}" value="${skuTreeMoney(node._effPrice)}"><label>&#1057;&#1082;&#1080;&#1076;&#1082;&#1072; %</label><select class="tree-discount-select" data-node-id="${node.id}">${skuDiscountOptions.map((d) => `<option value="${d}" ${Math.abs((node._effDiscount || 0) - d) < 0.05 ? "selected" : ""}>${d}%</option>`).join("")}</select><label>&#1062;&#1077;&#1085;&#1072; &#1089;&#1086; &#1089;&#1082;&#1080;&#1076;&#1082;&#1086;&#1081;</label><input type="text" inputmode="decimal" class="tree-saleprice-input ${node._discountMode === "sale_price" && node._discountIsManual ? "manual" : ""}" data-node-id="${node.id}" value="${skuTreeMoney(node._effSalePrice)}"></div>`;
+        const quantityControl = `<div class="sku-qty-stepper"><input type="text" inputmode="numeric" class="sku-qty-input" data-node-id="${node.id}" value="${node.quantity || 0}" aria-label="Количество товара"><span class="sku-qty-stepper-actions"><button class="sku-qty-step" type="button" data-node-id="${node.id}" data-direction="1" aria-label="Увеличить количество"><svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 5 5 1l4 4"/></svg></button><button class="sku-qty-step" type="button" data-node-id="${node.id}" data-direction="-1" aria-label="Уменьшить количество"><svg viewBox="0 0 10 6" aria-hidden="true"><path d="m1 1 4 4 4-4"/></svg></button></span></div>`;
 
         if (node.isSKU) {
           el.classList.add("sku-card");
-          el.innerHTML = `<div class="sku-header"><span class="sku-name">${skuTreeEscape(node.name)}</span>${controls}</div><div class="sku-price-summary ${node.expanded ? "hidden" : ""}">&#1062;&#1077;&#1085;&#1072;: <span>${skuTreeMoney(node._effSalePrice)}</span></div><div class="sku-body ${node.expanded ? "" : "hidden"}"><div class="field-row"><label>&#1050;&#1086;&#1083;-&#1074;&#1086;:</label><input type="text" inputmode="numeric" class="sku-qty-input" data-node-id="${node.id}" value="${node.quantity || 0}"></div>${status}${priceGrid}${reset}</div>`;
+          el.innerHTML = `<div class="sku-header"><span class="sku-name">${skuTreeEscape(node.name)}</span>${controls}</div><div class="sku-price-summary ${node.expanded ? "hidden" : ""}">&#1062;&#1077;&#1085;&#1072;: <span>${skuTreeMoney(node._effSalePrice)}</span></div><div class="sku-body ${node.expanded ? "" : "hidden"}"><div class="field-row"><label>&#1050;&#1086;&#1083;-&#1074;&#1086;:</label>${quantityControl}</div>${status}${priceGrid}${reset}</div>`;
           return el;
         }
 
@@ -1626,6 +1644,10 @@
           const status = target.closest(".inherit-status.inherited");
           if (e.type === "mouseover") skuTreeHighlightInheritance(status.dataset.nodeId, e);
           if (e.type === "mouseout") skuTreeClearHighlights();
+          if (e.type === "click") {
+            e.preventDefault();
+            skuTreeHighlightInheritance(status.dataset.nodeId, e);
+          }
           return;
         }
         if (e.type === "click" && target.closest(".node-expand-btn")) {
@@ -1646,6 +1668,21 @@
           node.available = target.checked;
           skuTreeRecalculateAll();
           skuTreeRenderAll();
+          return;
+        }
+        if (e.type === "click" && target.closest(".sku-qty-step")) {
+          const button = target.closest(".sku-qty-step");
+          const node = skuTreeState.allNodesFlat.find((item) => item.id === button.dataset.nodeId);
+          const input = button.closest(".sku-qty-stepper")?.querySelector(".sku-qty-input");
+          if (node && input) {
+            skuTreeAdjustQuantity(input, node, Number(button.dataset.direction) || 1, e.shiftKey);
+          }
+          return;
+        }
+        if (e.type === "keydown" && target.closest(".sku-qty-input") && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
+          e.preventDefault();
+          const node = skuTreeState.allNodesFlat.find((item) => item.id === target.dataset.nodeId);
+          if (node) skuTreeAdjustQuantity(target, node, e.key === "ArrowUp" ? 1 : -1, e.shiftKey);
           return;
         }
         if ((e.type === "input" || e.type === "change") && target.closest(".tree-price-input,.tree-saleprice-input")) {
@@ -1746,6 +1783,7 @@
         columns.addEventListener("input", skuTreeHandleInteraction);
         columns.addEventListener("change", skuTreeHandleInteraction);
         columns.addEventListener("click", skuTreeHandleInteraction);
+        columns.addEventListener("keydown", skuTreeHandleInteraction);
         columns.addEventListener("mouseover", skuTreeHandleInteraction);
         columns.addEventListener("mouseout", skuTreeHandleInteraction);
         if (nameInput) nameInput.addEventListener("input", skuTreeRebuild);

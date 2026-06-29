@@ -14,6 +14,7 @@
       (group.options || []).map((option) => ({
         id: String(option.id),
         name: String(option.name || "").trim(),
+        filterName: String(option.filterName || option.filter_name || option.name || "").trim(),
       })),
     ])
   );
@@ -61,13 +62,15 @@
     };
   }
 
-  function createNewVariant(catalogOptionId, name) {
+  function createNewVariant(catalogOptionId, name, filterName = name) {
     return {
       id: nextVariantId++,
       catalogOptionId: String(catalogOptionId),
       name: String(name || "").trim(),
+      filterName: String(filterName || name || "").trim(),
       imageData: null,
       imageFile: null,
+      imageOrder: 0,
     };
   }
 
@@ -134,12 +137,14 @@
     assignCatalogGroup(groupId, catalogGroupId, trimmedName);
   }
 
-  function addVariantFromCatalog(groupId, optionId, name) {
+  function addVariantFromCatalog(groupId, optionId, name, filterName = name) {
     const group = variantGroups.find((item) => item.id === groupId);
     if (!group || group.variants.length >= MAX_VARIANTS_PER_GROUP) return;
     const normalizedOptionId = String(optionId);
     if (group.variants.some((variant) => variant.catalogOptionId === normalizedOptionId)) return;
-    group.variants.push(createNewVariant(normalizedOptionId, name));
+    const variant = createNewVariant(normalizedOptionId, name, filterName);
+    variant.imageOrder = group.variants.length;
+    group.variants.push(variant);
     renderAllGroups();
   }
 
@@ -151,13 +156,13 @@
       (option) => option.name.toLocaleLowerCase() === trimmedName.toLocaleLowerCase()
     );
     if (existing) {
-      addVariantFromCatalog(groupId, existing.id, existing.name);
+      addVariantFromCatalog(groupId, existing.id, existing.name, existing.filterName);
       return;
     }
     const optionId = nextRuntimeId("custom_option");
     runtimeOptions[group.catalogGroupId] ||= [];
-    runtimeOptions[group.catalogGroupId].push({ id: optionId, name: trimmedName });
-    addVariantFromCatalog(groupId, optionId, trimmedName);
+    runtimeOptions[group.catalogGroupId].push({ id: optionId, name: trimmedName, filterName: trimmedName });
+    addVariantFromCatalog(groupId, optionId, trimmedName, trimmedName);
   }
 
   function vgRemoveVariant(groupId, variantId) {
@@ -205,8 +210,32 @@
     const group = variantGroups.find((item) => item.id === groupId);
     const variant = group?.variants.find((item) => item.id === variantId);
     if (!variant) return;
+    const previousName = variant.name;
+    const followsDisplayName = !variant.filterName || variant.filterName === previousName;
     variant.name = String(name || "").trimStart();
+    if (followsDisplayName) variant.filterName = variant.name;
     if (window.skuTreeRebuild) window.skuTreeRebuild();
+    return followsDisplayName;
+  }
+
+  function vgRenameVariantFilter(groupId, variantId, filterName) {
+    const group = variantGroups.find((item) => item.id === groupId);
+    const variant = group?.variants.find((item) => item.id === variantId);
+    if (!variant) return;
+    variant.filterName = String(filterName || "").trimStart();
+  }
+
+  function createVariantFilterInput(groupId, variant, className) {
+    const input = document.createElement("input");
+    input.className = className;
+    input.type = "text";
+    input.maxLength = 100;
+    input.value = variant.filterName || variant.name;
+    input.placeholder = "Для фильтра";
+    input.title = "Служебное значение для фильтра каталога";
+    input.setAttribute("aria-label", `Значение фильтра для ${variant.name}`);
+    input.addEventListener("input", () => vgRenameVariantFilter(groupId, variant.id, input.value));
+    return input;
   }
 
   function buildGroupCombobox(group) {
@@ -353,7 +382,7 @@
         option.innerHTML = `<span class="opt-icon">✓</span>${escapeVariantHtml(item.name)}`;
         option.addEventListener("mousedown", (event) => {
           event.preventDefault();
-          addVariantFromCatalog(group.id, item.id, item.name);
+          addVariantFromCatalog(group.id, item.id, item.name, item.filterName);
         });
         dropdown.appendChild(option);
       });
@@ -410,6 +439,8 @@
   }
 
   function createVariantChip(groupId, variant) {
+    const item = document.createElement("div");
+    item.className = "variant-chip-item";
     const chip = document.createElement("div");
     chip.className = "variant-chip";
     const name = document.createElement("span");
@@ -422,7 +453,8 @@
     remove.textContent = "×";
     remove.addEventListener("click", () => vgRemoveVariant(groupId, variant.id));
     chip.append(name, remove);
-    return chip;
+    item.append(chip, createVariantFilterInput(groupId, variant, "variant-chip-filter-name"));
+    return item;
   }
 
   function createVariantPhotoCard(groupId, variant) {
@@ -452,7 +484,12 @@
     name.type = "text";
     name.maxLength = 100;
     name.value = variant.name;
-    name.addEventListener("input", () => vgRenameVariant(groupId, variant.id, name.value));
+    const filterName = createVariantFilterInput(groupId, variant, "variant-photo-filter-name");
+    name.addEventListener("input", () => {
+      if (vgRenameVariant(groupId, variant.id, name.value)) {
+        filterName.value = name.value;
+      }
+    });
 
     const remove = document.createElement("button");
     remove.type = "button";
@@ -460,7 +497,7 @@
     remove.setAttribute("aria-label", `Удалить ${variant.name}`);
     remove.textContent = "×";
     remove.addEventListener("click", () => vgRemoveVariant(groupId, variant.id));
-    item.append(thumb, name, remove);
+    item.append(thumb, name, filterName, remove);
     return item;
   }
 
@@ -612,13 +649,17 @@
       id: String(group.id),
       catalogGroupId: group.catalogGroupId ? String(group.catalogGroupId) : null,
       name: String(group.name || "").trim(),
-      variants: (group.variants || group.values || []).map((variant) => ({
+      variants: (group.variants || group.values || []).map((variant, variantIndex) => ({
         id: String(variant.id),
         catalogOptionId: variant.catalogOptionId ? String(variant.catalogOptionId) : String(variant.id),
         name: String(variant.name || "").trim(),
+        filterName: String(variant.filterName || variant.filter_name || variant.name || "").trim(),
         imageData: null,
         imageFile: null,
         imageUrl: variant.imageUrl || variant.image_url || "",
+        imageOrder: Number.isFinite(Number(variant.imageOrder ?? variant.image_order))
+          ? Number(variant.imageOrder ?? variant.image_order)
+          : variantIndex,
       })),
       hasImages: Boolean(group.hasImages),
     }));

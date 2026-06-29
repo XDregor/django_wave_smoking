@@ -11,6 +11,7 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 from .models import (
     Cart,
     CartItem,
+    Brand,
     Category,
     Product,
     ProductLike,
@@ -26,6 +27,7 @@ available_variant_prefetch = Prefetch(
     queryset=ProductVariant.objects.select_related("variant", "variant__group").order_by(
         "variant__group__order",
         "variant__group__name",
+        "image_order",
         "variant__order",
         "variant__name",
     ),
@@ -319,8 +321,27 @@ def home(request):
         .prefetch_related(available_variant_prefetch, product_sku_prefetch)[:12]
     )
     mark_liked_products(products, get_liked_product_ids(request))
+    brand_carousel_items = [
+        {"name": brand.name, "logo": brand.image.url, "slug": brand.slug}
+        for brand in Brand.objects.filter(show_in_carousel=True)
+        .exclude(image="")
+        .order_by("name")
+        if brand.image
+    ]
+    home_reviews = [
+        serialize_review(review)
+        for review in ProductReview.objects.filter(
+            is_approved=True,
+            is_verified=True,
+            rating__gte=4,
+        )
+        .select_related("product")
+        .order_by("-created")
+    ]
     return render(request, "main/main.html", {
         "products": products,
+        "brand_carousel_items": brand_carousel_items,
+        "home_reviews": home_reviews,
         "disable_header_cursor": True,
     })
 

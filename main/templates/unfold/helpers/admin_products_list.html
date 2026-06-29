@@ -8,7 +8,7 @@
   {{ block.super }}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{% static 'admin/css/admin_products_list.css' %}?v=products15" />
+  <link rel="stylesheet" href="{% static 'admin/css/admin_products_list.css' %}?v=products18" />
 {% endblock %}
 
 {% block content %}
@@ -26,7 +26,6 @@
       <div class="main">
         <div class="page-body">
           <div class="topbar">
-            <div class="topbar-title">Товары</div>
             <div class="topbar-spacer"></div>
             <button class="btn btn-ghost btn-danger-ghost" id="deleteProductsBtn" type="button" hidden>
               <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
@@ -41,29 +40,6 @@
               Добавить товар
             </button>
           </div>
-
-          <div class="stats-row">
-            <div class="stat-card">
-              <div class="stat-label">Всего</div>
-              <div class="stat-val muted" id="statTotal">0</div>
-              <div class="stat-sub">товаров в базе</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Опубликовано</div>
-              <div class="stat-val ok" id="statPub">0</div>
-              <div class="stat-sub">активны в каталоге</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Черновики</div>
-              <div class="stat-val warn" id="statDraft">0</div>
-              <div class="stat-sub">не опубликованы</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Нет в наличии</div>
-              <div class="stat-val muted" id="statOut">0</div>
-            </div>
-          </div>
-
           <div class="toolbar">
             <div class="search-wrap">
               <span class="search-icon">
@@ -149,5 +125,5 @@
 
 {% block extrahead %}
   {{ block.super }}
-  <script src="{% static 'admin/js/admin_products_list.js' %}?v=products11" defer></script>
+  <script src="{% static 'admin/js/admin_products_list.js' %}?v=products13" defer></script>
 {% endblock %}

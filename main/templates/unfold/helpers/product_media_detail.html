@@ -1,127 +1,209 @@
 {% extends "admin/base_site.html" %}
-{% load i18n %}
+{% load static %}
 
-{% block title %}{{ title }} | {{ site_title|default:_("Django site admin") }}{% endblock %}
-
+{% block title %}{{ title }} | {{ site_title|default:"WAVE Admin" }}{% endblock %}
 {% block breadcrumbs %}{% endblock %}
 
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'admin/css/admin_media.css' %}?v=media7" />
+{% endblock %}
+
 {% block content %}
-<form class="wave-admin-media" method="post" enctype="multipart/form-data">
-  {% csrf_token %}
+  <form class="wa-media wa-media-detail" id="mediaManagerForm" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <svg class="media-icon-sprite" aria-hidden="true">
+      <symbol id="media-icon-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M5 20h14" /></symbol>
+      <symbol id="media-icon-open" viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-8 8M19 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" /></symbol>
+      <symbol id="media-icon-delete" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5" /></symbol>
+      <symbol id="media-icon-settings" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M7 14v6" /></symbol>
+      <symbol id="media-icon-drag" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1" /><circle cx="15" cy="6" r="1" /><circle cx="9" cy="12" r="1" /><circle cx="15" cy="12" r="1" /><circle cx="9" cy="18" r="1" /><circle cx="15" cy="18" r="1" /></symbol>
+      <symbol id="media-icon-close" viewBox="0 0 24 24"><path d="m7 7 10 10M17 7 7 17" /></symbol>
+    </svg>
 
-  <section class="wave-admin-media-card">
-    <div class="wave-admin-media-section-title">
-      <h2>Медиа товара</h2>
-      <label class="button">
-        Добавить изображения
-        <input class="wave-admin-media-hidden-input" type="file" name="new_images" accept="image/*" multiple>
-      </label>
-    </div>
+    <div class="page-body">
+      <div class="topbar media-detail-topbar">
+        <a class="btn btn-secondary btn-icon" href="{{ media_list_url }}" aria-label="Вернуться к товарам">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>
+        </a>
+        <div class="product-identity">
+          {% if product.image %}
+            <img src="{{ product.image.url }}" alt="" />
+          {% else %}
+            <span class="product-identity-placeholder">Нет фото</span>
+          {% endif %}
+          <span class="product-identity-copy">
+            <strong>{{ product.name }}</strong>
+            <small>{{ product.brand.name|default:"Без бренда" }} · {{ product.category.name|default:"Без категории" }}</small>
+          </span>
+        </div>
+        <div class="topbar-spacer"></div>
+        <span class="topbar-summary-count" id="mediaItemsCount">0 файлов</span>
+        <button class="btn btn-primary" id="saveMediaBtn" type="submit">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"></path><path d="M17 21v-8H7v8M7 3v5h8"></path></svg>
+          Сохранить
+        </button>
+      </div>
 
-    <div class="wave-admin-media-grid">
-      <article class="wave-admin-media-tile">
-        <div class="wave-admin-media-tile-frame">
-        {% if product.image %}
-          <img src="{{ product.image.url }}" alt="">
-        {% else %}
-          <div class="wave-admin-media-placeholder">Нет фото</div>
-        {% endif %}
-          <span class="wave-admin-media-kind">Главное фото</span>
-          <div class="wave-admin-media-tile-actions">
-            <label class="wave-admin-media-action">
-              Заменить
-              <input type="file" name="image" accept="image/*">
-            </label>
-            {% if product.image %}
-              <a class="wave-admin-media-action" href="{{ product.image.url }}" target="_blank" rel="noopener">Открыть</a>
-            {% endif %}
+      <section class="media-section">
+        <div class="media-section-head">
+          <div>
+            <h2>Основные медиа</h2>
+            <p>Главное изображение, промо-видео и его постер.</p>
           </div>
         </div>
-      </article>
 
-      <article class="wave-admin-media-tile">
-        <div class="wave-admin-media-tile-frame">
-        {% if product.promo_video %}
-          <video controls preload="metadata"{% if product.promo_video_poster %} poster="{{ product.promo_video_poster.url }}"{% endif %}>
-            <source src="{{ product.promo_video.url }}">
-          </video>
-        {% else %}
-          <div class="wave-admin-media-placeholder">Нет видео</div>
-        {% endif %}
-          <span class="wave-admin-media-kind">Промо-видео</span>
-          <div class="wave-admin-media-tile-actions">
-            <label class="wave-admin-media-action">
-              Заменить
-              <input type="file" name="promo_video" accept="video/*">
-            </label>
-            {% if product.promo_video %}
-              <a class="wave-admin-media-action" href="{{ product.promo_video.url }}" target="_blank" rel="noopener">Открыть</a>
-            {% endif %}
+        <div class="media-grid media-grid--primary">
+          <article class="media-tile{% if not product.image %} is-empty{% endif %}" data-existing="{% if product.image %}true{% else %}false{% endif %}">
+            <div class="media-frame">
+              <div class="media-preview-content">
+                {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}" />{% else %}<div class="media-placeholder">Нет главного фото</div>{% endif %}
+              </div>
+              <span class="media-kind">Главное фото</span>
+              <div class="media-actions">
+                <label class="media-action"><svg class="media-action-icon" aria-hidden="true"><use href="#media-icon-upload"></use></svg><span>{% if product.image %}Заменить{% else %}Добавить{% endif %}</span><input type="file" name="image" accept="image/*" data-media-upload="image" /></label>
+                {% if product.image %}<a class="media-action" href="{{ product.image.url }}" target="_blank" rel="noopener"><svg class="media-action-icon" aria-hidden="true"><use href="#media-icon-open"></use></svg><span>Открыть</span></a>{% endif %}
+                {% if product.image %}<label class="media-action is-danger"><svg class="media-action-icon" aria-hidden="true"><use href="#media-icon-delete"></use></svg><span>Удалить</span><input type="checkbox" name="delete_image" value="1" data-media-delete /></label>{% endif %}
+              </div>
+            </div>
+            <div class="media-caption"><strong>Основное изображение</strong><span>Витрина и карточка товара</span></div>
+          </article>
+
+          <article class="media-tile{% if not product.promo_video %} is-empty{% endif %}" data-existing="{% if product.promo_video %}true{% else %}false{% endif %}">
+            <div class="media-frame">
+              <div class="media-preview-content">
+                {% if product.promo_video %}<video controls preload="metadata"{% if product.promo_video_poster %} poster="{{ product.promo_video_poster.url }}"{% endif %}><source src="{{ product.promo_video.url }}" /></video>{% else %}<div class="media-placeholder">Нет промо-видео</div>{% endif %}
+              </div>
+              <span class="media-kind">Видео</span>
+              <div class="media-actions">
+                <label class="media-action"><svg class="media-action-icon" aria-hidden="true"><use href="#media-icon-upload"></use></svg><span>{% if product.promo_video %}Заменить{% else %}Добавить{% endif %}</span><input type="file" name="promo_video" accept="video/*" data-media-upload="video" /></label>
+                {% if product.promo_video %}<a class="media-action" href="{{ product.promo_video.url }}" target="_blank" rel="noopener"><svg class="media-action-icon" aria-hidden="true"><use href="#media-icon-open"></use></svg><span>Открыть</span></a>{% endif %}
+                {% if product.promo_video %}<label class="media-action is-danger"><svg class="media-action-icon" aria-hidden="true"><use href="#media-icon-delete"></use></svg><span>Удалить</span><input type="checkbox" name="delete_promo_video" value="1" data-media-delete /></label>{% endif %}
+              </div>
+            </div>
+            <div class="media-caption"><strong>Промо-видео</strong><span>Видео в галерее товара</span></div>
+          </article>
+
+          <article class="media-tile{% if not product.promo_video_poster %} is-empty{% endif %}" data-existing="{% if product.promo_video_poster %}true{% else %}false{% endif %}">
+            <div class="media-frame">
+              <div class="media-preview-content">
+                {% if product.promo_video_poster %}<img src="{{ product.promo_video_poster.url }}" alt="Постер видео" />{% else %}<div class="media-placeholder">Нет постера</div>{% endif %}
+              </div>
+              <span class="media-kind">Постер</span>
+              <div class="media-actions">
+                <label class="media-action"><svg class="media-action-icon" aria-hidden="true"><use href="#media-icon-upload"></use></svg><span>{% if product.promo_video_poster %}Заменить{% else %}Добавить{% endif %}</span><input type="file" name="promo_video_poster" accept="image/*" data-media-upload="image" /></label>
+                {% if product.promo_video_poster %}<a class="media-action" href="{{ product.promo_video_poster.url }}" target="_blank" rel="noopener"><svg class="media-action-icon" aria-hidden="true"><use href="#media-icon-open"></use></svg><span>Открыть</span></a>{% endif %}
+                {% if product.promo_video_poster %}<label class="media-action is-danger"><svg class="media-action-icon" aria-hidden="true"><use href="#media-icon-delete"></use></svg><span>Удалить</span><input type="checkbox" name="delete_promo_video_poster" value="1" data-media-delete /></label>{% endif %}
+              </div>
+            </div>
+            <div class="media-caption"><strong>Постер видео</strong><span>Превью до воспроизведения</span></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="media-section">
+        <div class="media-section-head">
+          <div>
+            <h2>Дополнительные фотографии</h2>
+            <p>Изображения галереи в порядке показа на странице товара.</p>
           </div>
         </div>
-      </article>
 
-      <article class="wave-admin-media-tile">
-        <div class="wave-admin-media-tile-frame">
-        {% if product.promo_video_poster %}
-          <img src="{{ product.promo_video_poster.url }}" alt="">
-        {% else %}
-          <div class="wave-admin-media-placeholder">Нет постера</div>
-        {% endif %}
-          <span class="wave-admin-media-kind">Постер видео</span>
-          <div class="wave-admin-media-tile-actions">
-            <label class="wave-admin-media-action">
-              Заменить
-              <input type="file" name="promo_video_poster" accept="image/*">
-            </label>
-            {% if product.promo_video_poster %}
-              <a class="wave-admin-media-action" href="{{ product.promo_video_poster.url }}" target="_blank" rel="noopener">Открыть</a>
-            {% endif %}
-          </div>
+        <div class="media-grid media-grid--additional" data-media-sort-grid="additional">
+          {% for image in additional_images %}
+            <article class="media-tile" data-existing="true" data-media-sort-item draggable="false">
+              <div class="media-frame">
+                <div class="media-preview-content"><img src="{{ image.image.url }}" alt="{{ image.alt_text }}" /></div>
+                <span class="media-kind">Фото {{ forloop.counter }}</span>
+                <button class="media-drag-handle" type="button" data-drag-handle title="Изменить порядок" aria-label="Изменить порядок"><svg class="media-drag-icon" aria-hidden="true"><use href="#media-icon-drag"></use></svg></button>
+                <div class="media-actions">
+                  <label class="media-action"><svg class="media-action-icon" aria-hidden="true"><use href="#media-icon-upload"></use></svg><span>Заменить</span><input type="file" name="replace_image_{{ image.id }}" accept="image/*" data-media-upload="image" /></label>
+                  <a class="media-action" href="{{ image.image.url }}" target="_blank" rel="noopener"><svg class="media-action-icon" aria-hidden="true"><use href="#media-icon-open"></use></svg><span>Открыть</span></a>
+                  <button class="media-action" type="button" data-media-settings><svg class="media-action-icon" aria-hidden="true"><use href="#media-icon-settings"></use></svg><span>Настройки</span></button>
+                  <label class="media-action is-danger"><svg class="media-action-icon" aria-hidden="true"><use href="#media-icon-delete"></use></svg><span>Удалить</span><input type="checkbox" name="delete_image_{{ image.id }}" value="1" data-media-delete /></label>
+                </div>
+                <div class="media-settings">
+                  <div class="media-settings-head">
+                    <span>
+                      <svg class="media-settings-title-icon" aria-hidden="true"><use href="#media-icon-settings"></use></svg>
+                      Параметры фото
+                    </span>
+                    <button class="media-settings-close" type="button" data-media-settings-close aria-label="Закрыть">
+                      <svg aria-hidden="true"><use href="#media-icon-close"></use></svg>
+                    </button>
+                  </div>
+                  <label class="media-settings-alt"><span>Alt-текст</span><input type="text" name="alt_text_{{ image.id }}" value="{{ image.alt_text }}" placeholder="Описание изображения" /></label>
+                  <label class="media-settings-order"><span>Позиция</span><input type="number" name="order_{{ image.id }}" value="{{ image.order }}" min="0" data-media-order-input /></label>
+                </div>
+              </div>
+              <div class="media-caption"><strong>Дополнительное фото</strong><span data-order-label>Позиция: {{ forloop.counter }}</span></div>
+            </article>
+          {% endfor %}
+
+          <label class="media-tile media-add-tile">
+            <div class="media-frame">
+              <div class="media-add-content">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+                <strong>Добавить дополнительное фото</strong>
+                <span data-new-images-label>Можно выбрать несколько</span>
+              </div>
+              <input type="file" name="new_images" accept="image/*" multiple data-new-images />
+            </div>
+            <div class="media-caption"><strong>Новые изображения</strong><span>Будут добавлены в галерею</span></div>
+          </label>
         </div>
-      </article>
+      </section>
 
-      {% for image in additional_images %}
-        <article class="wave-admin-media-tile">
-          <div class="wave-admin-media-tile-frame">
-            {% if image.image %}
-              <img src="{{ image.image.url }}" alt="">
-            {% else %}
-              <div class="wave-admin-media-placeholder">Нет фото</div>
-            {% endif %}
-            <span class="wave-admin-media-kind">Фото</span>
-            <div class="wave-admin-media-tile-actions wave-admin-media-tile-actions--full">
-              {% if image.image %}
-                <a class="wave-admin-media-action" href="{{ image.image.url }}" target="_blank" rel="noopener">Открыть</a>
-              {% endif %}
-              <label class="wave-admin-media-action wave-admin-media-action--danger">
-                Удалить
-                <input type="checkbox" name="delete_image_{{ image.id }}" value="1">
-              </label>
-              <label class="wave-admin-media-field">
-                Alt
-                <input type="text" name="alt_text_{{ image.id }}" value="{{ image.alt_text }}">
-              </label>
-              <label class="wave-admin-media-field">
-                Order
-                <input type="number" name="order_{{ image.id }}" value="{{ image.order }}" min="0">
-              </label>
+      {% if variant_image_group %}
+        <section class="media-section media-variant-section">
+          <div class="media-section-head">
+            <div>
+              <h2>Медиа вариантов</h2>
+              <p>Группа «{{ variant_image_group.name }}». Для остальных групп изображения отключены.</p>
             </div>
           </div>
-        </article>
-      {% endfor %}
 
-      <label class="wave-admin-media-tile wave-admin-media-tile--add">
-        <div class="wave-admin-media-tile-frame">
-          <div class="wave-admin-media-placeholder">Добавить фото</div>
-          <input type="file" name="new_images" accept="image/*" multiple>
-        </div>
-      </label>
+          <div class="media-grid media-grid--variants" data-media-sort-grid="variants">
+            {% for product_variant in product_variants %}
+              <article class="media-tile media-variant-tile{% if not product_variant.image %} is-empty{% endif %}" data-existing="{% if product_variant.image %}true{% else %}false{% endif %}" data-media-sort-item draggable="false">
+                <div class="media-frame">
+                  <div class="media-preview-content">
+                    {% if product_variant.image %}<img src="{{ product_variant.image.url }}" alt="{{ product_variant.variant.name }}" />{% else %}<div class="media-placeholder">Добавьте изображение варианта</div>{% endif %}
+                  </div>
+                  <span class="media-kind">{{ variant_image_group.name }}</span>
+                  <button class="media-drag-handle" type="button" data-drag-handle title="Изменить порядок" aria-label="Изменить порядок"><svg class="media-drag-icon" aria-hidden="true"><use href="#media-icon-drag"></use></svg></button>
+                  <div class="media-actions">
+                    <label class="media-action"><svg class="media-action-icon" aria-hidden="true"><use href="#media-icon-upload"></use></svg><span>{% if product_variant.image %}Заменить{% else %}Добавить{% endif %}</span><input type="file" name="variant_image_{{ product_variant.id }}" accept="image/*" data-media-upload="image" /></label>
+                    {% if product_variant.image %}<a class="media-action" href="{{ product_variant.image.url }}" target="_blank" rel="noopener"><svg class="media-action-icon" aria-hidden="true"><use href="#media-icon-open"></use></svg><span>Открыть</span></a>{% endif %}
+                    {% if product_variant.image %}<label class="media-action is-danger"><svg class="media-action-icon" aria-hidden="true"><use href="#media-icon-delete"></use></svg><span>Удалить</span><input type="checkbox" name="delete_variant_image_{{ product_variant.id }}" value="1" data-media-delete /></label>{% endif %}
+                  </div>
+                </div>
+                <input type="hidden" name="image_order_{{ product_variant.id }}" value="{{ product_variant.image_order }}" data-media-order-input />
+                <div class="media-caption"><strong>{{ product_variant.variant.name }}</strong><span data-order-label>Позиция: {{ forloop.counter }}</span></div>
+              </article>
+            {% empty %}
+              <div class="media-row-empty">В выбранной группе пока нет вариантов.</div>
+            {% endfor %}
+          </div>
+        </section>
+      {% elif has_product_variants %}
+        <section class="media-section media-variant-section">
+          <div class="media-section-head">
+            <div>
+              <h2>Медиа вариантов</h2>
+              <p>В мастере товара не выбрана группа, которая использует изображения.</p>
+            </div>
+          </div>
+          <div class="media-row-empty">Выберите одну группу с переключателем «Фото» в шаге «Варианты».</div>
+        </section>
+      {% endif %}
     </div>
-  </section>
+  </form>
+{% endblock %}
 
-  <div class="submit-row wave-admin-media-submit">
-    <input type="submit" class="default" value="Сохранить медиа">
-  </div>
-</form>
+{% block extrahead %}
+  {{ block.super }}
+  <script src="{% static 'admin/js/admin_media.js' %}?v=media6" defer></script>
 {% endblock %}

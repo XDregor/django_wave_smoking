@@ -1,0 +1,581 @@
+/*
+  Shared responsive layer for WAVE Admin custom screens.
+  Keep this file layout-focused: colors and component identity stay in page CSS.
+*/
+
+body {
+  overflow-x: hidden;
+}
+
+#main,
+#content {
+  min-width: 0 !important;
+}
+
+#content {
+  box-sizing: border-box;
+}
+
+#header-inner,
+#header-inner > .flex,
+#header-inner h1 {
+  min-width: 0;
+}
+
+#header-inner h1 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wa-admin-home,
+.wave-admin-products-list,
+.wave-admin-product-sku,
+.wa-brands,
+.wa-categories,
+.wa-variant-groups,
+.wa-media,
+.wa-reviews,
+.wa-history {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.wa-admin-home .page-body,
+.wave-admin-products-list .page-body,
+.wave-admin-product-sku .page-body,
+.wa-brands .page-body,
+.wa-categories .page-body,
+.wa-variant-groups .page-body,
+.wa-media .page-body,
+.wa-reviews .page-body,
+.wa-history .page-body {
+  box-sizing: border-box;
+  max-width: min(1120px, 100%);
+}
+
+.wa-admin-home img,
+.wave-admin-products-list img,
+.wave-admin-product-sku img,
+.wa-brands img,
+.wa-categories img,
+.wa-variant-groups img,
+.wa-media img,
+.wa-reviews img,
+.wa-history img,
+.wa-admin-home video,
+.wave-admin-products-list video,
+.wave-admin-product-sku video,
+.wa-brands video,
+.wa-categories video,
+.wa-variant-groups video,
+.wa-media video,
+.wa-reviews video,
+.wa-history video {
+  max-width: 100%;
+}
+
+@media (max-width: 1180px) {
+  .wa-admin-home .page-body,
+  .wave-admin-products-list .page-body,
+  .wave-admin-product-sku .page-body,
+  .wa-brands .page-body,
+  .wa-categories .page-body,
+  .wa-variant-groups .page-body,
+  .wa-media .page-body,
+  .wa-reviews .page-body,
+  .wa-history .page-body {
+    padding-inline: 12px !important;
+  }
+
+  .wa-brands .brands-grid,
+  .wave-admin-products-list .products-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .wa-media .media-products-list,
+  .wa-categories .categories-list,
+  .wa-variant-groups .variant-groups-list {
+    width: 100%;
+  }
+}
+
+@media (max-width: 980px) {
+  .wa-admin-home .home-grid.four,
+  .wa-brands .brands-grid,
+  .wave-admin-products-list .products-grid,
+  .wa-media .media-grid,
+  .wa-media .additional-media-grid,
+  .wa-media .variant-media-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .wa-reviews .rating-overview,
+  .wa-history .history-hero,
+  .wa-history .history-stats {
+    grid-template-columns: 1fr !important;
+  }
+
+  .wa-brands .toolbar,
+  .wave-admin-products-list .toolbar,
+  .wa-categories .toolbar,
+  .wa-variant-groups .toolbar,
+  .wa-media .toolbar,
+  .wa-reviews .toolbar,
+  .wa-history .history-toolbar {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  .wa-brands .search-wrap,
+  .wave-admin-products-list .search-wrap,
+  .wa-categories .search-wrap,
+  .wa-variant-groups .search-wrap,
+  .wa-media .search-wrap,
+  .wa-reviews .search-wrap,
+  .wa-history .search-wrap {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0 !important;
+  }
+
+  .wa-brands .filter-tabs,
+  .wave-admin-products-list .filter-row,
+  .wave-admin-products-list .filter-tabs,
+  .wa-reviews .tab-bar,
+  .wa-history .filter-tabs {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .wa-brands .filter-tabs::-webkit-scrollbar,
+  .wave-admin-products-list .filter-row::-webkit-scrollbar,
+  .wave-admin-products-list .filter-tabs::-webkit-scrollbar,
+  .wa-reviews .tab-bar::-webkit-scrollbar,
+  .wa-history .filter-tabs::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .wa-admin-home a,
+  .wave-admin-products-list a,
+  .wave-admin-product-sku a,
+  .wa-brands a,
+  .wa-categories a,
+  .wa-variant-groups a,
+  .wa-media a,
+  .wa-reviews a,
+  .wa-history a,
+  .wa-admin-home button,
+  .wave-admin-products-list button,
+  .wave-admin-product-sku button,
+  .wa-brands button,
+  .wa-categories button,
+  .wa-variant-groups button,
+  .wa-media button,
+  .wa-reviews button,
+  .wa-history button,
+  .wa-admin-home input,
+  .wave-admin-products-list input,
+  .wave-admin-product-sku input,
+  .wa-brands input,
+  .wa-categories input,
+  .wa-variant-groups input,
+  .wa-media input,
+  .wa-reviews input,
+  .wa-history input,
+  .wave-admin-product-sku select {
+    touch-action: manipulation;
+  }
+
+  .wa-admin-home button,
+  .wave-admin-products-list button,
+  .wave-admin-product-sku button,
+  .wa-brands button,
+  .wa-categories button,
+  .wa-variant-groups button,
+  .wa-media button,
+  .wa-reviews button,
+  .wa-history button,
+  .wa-admin-home .home-card,
+  .wave-admin-products-list .product-card,
+  .wa-brands .brand-card,
+  .wa-categories .category-row,
+  .wa-variant-groups .variant-group-card,
+  .wa-media .media-product-row,
+  .wa-reviews .review-card-footer .btn,
+  .wa-history .history-item {
+    -webkit-tap-highlight-color: rgba(255, 138, 29, 0.14);
+  }
+
+  .wave-admin-products-list .btn,
+  .wave-admin-product-sku .btn,
+  .wave-admin-product-sku .step-pill,
+  .wave-admin-product-sku .rte-btn,
+  .wave-admin-product-sku .input-add-btn,
+  .wave-admin-product-sku .variant-workspace .drag-handle,
+  .wave-admin-product-sku .variant-workspace .variant-img-toggle,
+  .wave-admin-product-sku .variant-workspace .variant-group-del,
+  .wa-brands .btn,
+  .wa-categories .btn,
+  .wa-variant-groups .btn,
+  .wa-media .btn,
+  .wa-media .media-action-btn,
+  .wa-reviews .btn,
+  .wa-history .btn {
+    min-height: 42px !important;
+  }
+
+  .wave-admin-product-sku .thumb-icon-btn,
+  .wave-admin-product-sku .node-expand-btn,
+  .wa-media .media-settings-toggle,
+  .wa-media .media-action-btn,
+  .wa-categories .modal-close,
+  .wa-variant-groups .modal-close {
+    min-width: 42px !important;
+    min-height: 42px !important;
+  }
+
+  .wave-admin-product-sku input[type="text"],
+  .wave-admin-product-sku input[type="number"],
+  .wave-admin-product-sku textarea,
+  .wave-admin-product-sku select,
+  .wa-brands input,
+  .wa-categories input,
+  .wa-variant-groups input,
+  .wa-media input,
+  .wa-reviews input,
+  .wa-history input {
+    min-height: 42px !important;
+    font-size: 16px !important;
+  }
+
+  body:has(.wa-admin-home) .\@container.px-4.pb-4.grow,
+  body:has(.wave-admin-products-list) .\@container.px-4.pb-4.grow,
+  body:has(.wave-admin-product-sku) .\@container.px-4.pb-4.grow,
+  body:has(.wa-brands) .\@container.px-4.pb-4.grow,
+  body:has(.wa-categories) .\@container.px-4.pb-4.grow,
+  body:has(.wa-variant-groups) .\@container.px-4.pb-4.grow,
+  body:has(.wa-media) .\@container.px-4.pb-4.grow,
+  body:has(.wa-reviews) .\@container.px-4.pb-4.grow,
+  body:has(.wa-history) .\@container.px-4.pb-4.grow {
+    padding-inline: 10px !important;
+    padding-bottom: 18px !important;
+  }
+
+  .wa-admin-home .page-body,
+  .wave-admin-products-list .page-body,
+  .wave-admin-product-sku .page-body,
+  .wa-brands .page-body,
+  .wa-categories .page-body,
+  .wa-variant-groups .page-body,
+  .wa-media .page-body,
+  .wa-reviews .page-body,
+  .wa-history .page-body {
+    gap: 12px !important;
+    padding-inline: 0 !important;
+  }
+
+  .wa-admin-home .home-grid.two,
+  .wa-admin-home .home-grid.four,
+  .wa-brands .brands-grid,
+  .wave-admin-products-list .products-grid,
+  .wa-media .media-products-list,
+  .wa-media .media-grid,
+  .wa-media .additional-media-grid,
+  .wa-media .variant-media-grid,
+  .wa-history .history-stats {
+    grid-template-columns: 1fr !important;
+  }
+
+  .wa-admin-home .home-section,
+  .wa-brands .carousel-block,
+  .wa-brands .toolbar,
+  .wave-admin-products-list .toolbar,
+  .wa-categories .toolbar,
+  .wa-variant-groups .toolbar,
+  .wa-media .toolbar,
+  .wa-reviews .review-controls,
+  .wa-history .history-toolbar {
+    border-radius: 10px !important;
+  }
+
+  .wa-brands .topbar,
+  .wave-admin-products-list .topbar,
+  .wa-categories .topbar,
+  .wa-variant-groups .topbar,
+  .wa-media .topbar,
+  .wa-reviews .topbar {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .wa-brands .topbar-spacer,
+  .wave-admin-products-list .topbar-spacer,
+  .wa-categories .topbar-spacer,
+  .wa-variant-groups .topbar-spacer,
+  .wa-media .topbar-spacer,
+  .wa-reviews .topbar-spacer {
+    display: none;
+  }
+
+  .wa-brands .topbar .btn,
+  .wave-admin-products-list .topbar .btn,
+  .wa-categories .topbar .btn,
+  .wa-variant-groups .topbar .btn,
+  .wa-media .topbar .btn,
+  .wa-reviews .topbar .btn,
+  .wa-history .history-toolbar .btn {
+    width: 100%;
+  }
+
+  .wa-categories .category-row,
+  .wa-variant-groups .variant-group-card,
+  .wa-media .media-product-row {
+    grid-template-columns: 42px minmax(0, 1fr) auto !important;
+    gap: 10px !important;
+  }
+
+  .wa-categories .category-row > :last-child,
+  .wa-variant-groups .variant-group-card > :last-child,
+  .wa-media .media-product-row > :last-child {
+    justify-self: end;
+  }
+
+  .wa-reviews .review-card-header,
+  .wa-history .history-item {
+    grid-template-columns: 34px minmax(0, 1fr) !important;
+  }
+
+  .wa-reviews .review-card-header > div:last-child,
+  .wa-history .history-time {
+    grid-column: 2 !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+  }
+
+  .wa-reviews .review-card-footer {
+    grid-template-columns: 1fr !important;
+  }
+
+  .wa-reviews .review-card-footer .btn,
+  .wa-history .pagination .btn,
+  .wa-reviews .pagination .btn {
+    width: 100%;
+    max-width: none;
+  }
+
+  .wa-history .pagination,
+  .wa-reviews .pagination {
+    display: grid !important;
+    grid-template-columns: 1fr auto 1fr;
+    width: 100%;
+  }
+
+  .wa-brands .modal,
+  .wa-categories .modal,
+  .wa-variant-groups .modal,
+  .wa-reviews .modal,
+  .wave-admin-products-list .modal,
+  .wave-admin-product-sku .qa-popup {
+    width: min(100%, calc(100vw - 20px)) !important;
+    max-width: calc(100vw - 20px) !important;
+  }
+
+  .wave-admin-product-sku .sku-tree-widget {
+    margin-inline: -2px;
+  }
+
+  .wave-admin-product-sku .sku-tree-widget::before {
+    content: "Проведите пальцем влево/вправо, чтобы увидеть всё дерево SKU";
+    display: block;
+    margin: 0 0 8px;
+    padding: 8px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.035);
+    color: #9a9aa0;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .wave-admin-product-sku .sku-tree-widget .tree-outer {
+    min-height: 68vh !important;
+    max-height: 72vh;
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-x pan-y;
+    cursor: default !important;
+    scroll-snap-type: x proximity;
+    border-radius: 12px;
+  }
+
+  .wave-admin-product-sku .sku-tree-widget .tree-inner {
+    min-width: max-content !important;
+    padding-bottom: 12px;
+  }
+
+  .wave-admin-product-sku .sku-tree-widget .tree-col {
+    scroll-snap-align: start;
+  }
+
+  .wave-admin-product-sku .sku-tree-widget .node-card {
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+  }
+
+  .wave-admin-product-sku .sku-tree-widget .node-title-block,
+  .wave-admin-product-sku .sku-tree-widget .group-title-block,
+  .wave-admin-product-sku .sku-tree-widget .sku-header {
+    min-height: 42px;
+    padding: 9px 10px !important;
+  }
+
+  .wave-admin-product-sku .sku-tree-widget .group-body,
+  .wave-admin-product-sku .sku-tree-widget .sku-body {
+    gap: 8px;
+    padding: 9px 10px 10px !important;
+  }
+
+  .wave-admin-product-sku .sku-tree-widget .price-grid {
+    grid-template-columns: minmax(92px, 1fr) 86px !important;
+    gap: 6px 8px !important;
+  }
+
+  .wave-admin-product-sku .sku-tree-widget .price-grid input,
+  .wave-admin-product-sku .sku-tree-widget .price-grid select,
+  .wave-admin-product-sku .sku-tree-widget .sku-qty-input {
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    font-size: 13px !important;
+  }
+
+  .wave-admin-product-sku .sku-tree-widget input.tree-price-input,
+  .wave-admin-product-sku .sku-tree-widget input.tree-saleprice-input,
+  .wave-admin-product-sku .sku-tree-widget input.sku-qty-input,
+  .wave-admin-product-sku .sku-tree-widget select.tree-discount-select,
+  .wave-admin-product-sku .sku-tree-widget .sku-qty-stepper {
+    width: 86px !important;
+    min-width: 86px !important;
+    max-width: 86px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+  }
+
+  .wave-admin-product-sku .sku-tree-widget input.sku-qty-input {
+    padding-right: 31px !important;
+  }
+
+  .wave-admin-product-sku .sku-tree-widget .sku-qty-stepper-actions {
+    width: 26px !important;
+  }
+
+  .wave-admin-product-sku .sku-tree-widget .sku-qty-step {
+    width: 25px !important;
+    min-height: 16px !important;
+  }
+
+  .wave-admin-product-sku .sku-tree-widget .toggle-switch {
+    min-width: 46px;
+    min-height: 28px;
+  }
+}
+
+@media (max-width: 560px) {
+  #header-inner .material-symbols-outlined {
+    flex-shrink: 0;
+  }
+
+  #header-inner h1 {
+    font-size: 14px !important;
+  }
+
+  .wa-admin-home .home-card,
+  .wave-admin-products-list .product-card,
+  .wa-brands .brand-card,
+  .wa-categories .category-row,
+  .wa-variant-groups .variant-group-card,
+  .wa-media .media-product-row,
+  .wa-reviews .review-card,
+  .wa-history .history-item {
+    border-radius: 10px !important;
+  }
+
+  .wa-brands .brand_line_component {
+    height: 128px !important;
+  }
+
+  .wa-brands .brand_line_row {
+    gap: 34px !important;
+    padding-inline: 22px !important;
+  }
+
+  .wave-admin-products-list .product-card {
+    min-height: 0 !important;
+  }
+
+  .wa-categories .category-products,
+  .wa-variant-groups .group-count,
+  .wa-media .media-count,
+  .wa-history .history-pill {
+    font-size: 9.5px !important;
+  }
+
+  .wa-media .media-card {
+    min-height: 160px;
+  }
+
+  .wa-media .media-actions,
+  .wa-media .media-settings {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .wave-admin-product-sku .wizard-shell,
+  .wave-admin-product-sku .card-body,
+  .wave-admin-product-sku .variant-workspace,
+  .wave-admin-product-sku .sku-tree,
+  .wave-admin-product-sku .sku-tree-widget {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 420px) {
+  body:has(.wa-admin-home) .\@container.px-4.pb-4.grow,
+  body:has(.wave-admin-products-list) .\@container.px-4.pb-4.grow,
+  body:has(.wave-admin-product-sku) .\@container.px-4.pb-4.grow,
+  body:has(.wa-brands) .\@container.px-4.pb-4.grow,
+  body:has(.wa-categories) .\@container.px-4.pb-4.grow,
+  body:has(.wa-variant-groups) .\@container.px-4.pb-4.grow,
+  body:has(.wa-media) .\@container.px-4.pb-4.grow,
+  body:has(.wa-reviews) .\@container.px-4.pb-4.grow,
+  body:has(.wa-history) .\@container.px-4.pb-4.grow {
+    padding-inline: 8px !important;
+  }
+
+  .wa-admin-home .home-section,
+  .wa-admin-home .home-card,
+  .wa-brands .brand-card,
+  .wave-admin-products-list .product-card,
+  .wa-reviews .review-card,
+  .wa-history .history-item {
+    padding: 12px !important;
+  }
+
+  .wa-categories .category-row,
+  .wa-media .media-product-row {
+    grid-template-columns: 38px minmax(0, 1fr) !important;
+  }
+
+  .wa-categories .category-actions,
+  .wa-media .media-row-action {
+    grid-column: 2;
+    justify-self: start;
+  }
+}

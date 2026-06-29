@@ -835,7 +835,9 @@
         border-radius: 6px;
         background: #0d0d0d;
         color: #fff;
+        font-family: var(--font);
         font-size: 11px;
+        font-variant-numeric: tabular-nums;
       }
       .sku-tree-widget .price-grid input.manual {
         border-color: var(--accent);
@@ -857,6 +859,61 @@
         min-width: 74px;
         max-width: 74px;
         flex: 0 0 74px;
+        padding-right: 23px !important;
+      }
+      .wave-admin-product-sku .sku-tree-widget .sku-qty-stepper {
+        position: relative;
+        width: 74px;
+        height: 25px;
+        min-width: 74px;
+        flex: 0 0 74px;
+      }
+      .wave-admin-product-sku .sku-tree-widget .sku-qty-stepper-actions {
+        position: absolute;
+        top: 1px;
+        right: 1px;
+        bottom: 1px;
+        width: 18px;
+        display: grid;
+        grid-template-rows: 1fr 1fr;
+        overflow: hidden;
+        border-left: 1px solid #2e2e2e;
+        border-radius: 0 5px 5px 0;
+      }
+      .wave-admin-product-sku .sku-tree-widget .sku-qty-step {
+        width: 17px;
+        min-width: 0;
+        min-height: 0;
+        display: grid;
+        place-items: center;
+        padding: 0 !important;
+        border: 0;
+        border-radius: 0;
+        outline: 0;
+        background: #151515;
+        color: var(--text-3);
+        cursor: pointer;
+        transition: background 0.12s ease, color 0.12s ease;
+      }
+      .wave-admin-product-sku .sku-tree-widget .sku-qty-step:first-child {
+        border-bottom: 1px solid #2e2e2e;
+      }
+      .wave-admin-product-sku .sku-tree-widget .sku-qty-step:hover {
+        background: var(--accent-dim);
+        color: var(--accent);
+      }
+      .wave-admin-product-sku .sku-tree-widget .sku-qty-step:focus-visible {
+        box-shadow: inset 0 0 0 1px var(--accent);
+      }
+      .wave-admin-product-sku .sku-tree-widget .sku-qty-step svg {
+        width: 8px;
+        height: 5px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        pointer-events: none;
       }
       .wave-admin-product-sku .sku-tree-widget input.numeric-input-invalid {
         border-color: rgba(255, 91, 91, 0.85) !important;
@@ -2284,6 +2341,19 @@ body:has(.wave-admin-product-sku) .wave-admin-product-sku .page-body {
   font-size: 12px;
 }
 
+.wave-admin-product-sku .variant-workspace .variant-chip-item {
+  min-width: 118px;
+  max-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.wave-admin-product-sku .variant-workspace .variant-chip-item .variant-chip {
+  width: 100%;
+  justify-content: space-between;
+}
+
 .wave-admin-product-sku .variant-workspace .variant-chip::before {
   content: "";
   width: 5px;
@@ -2392,6 +2462,39 @@ body:has(.wave-admin-product-sku) .wave-admin-product-sku .page-body {
   text-overflow: ellipsis;
 }
 
+.wave-admin-product-sku input[type="text"].variant-photo-filter-name,
+.wave-admin-product-sku input[type="text"].variant-chip-filter-name {
+  width: 100%;
+  height: 24px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  outline: 0;
+  background: #0d0d0d;
+  box-shadow: none;
+  color: var(--text-2);
+  font-family: var(--font);
+  font-size: 9.5px;
+  text-align: center;
+  text-overflow: ellipsis;
+}
+
+.wave-admin-product-sku input[type="text"].variant-photo-filter-name {
+  margin-top: 5px;
+}
+
+.wave-admin-product-sku input[type="text"].variant-photo-filter-name::placeholder,
+.wave-admin-product-sku input[type="text"].variant-chip-filter-name::placeholder {
+  color: var(--text-3);
+}
+
+.wave-admin-product-sku input[type="text"].variant-photo-filter-name:focus,
+.wave-admin-product-sku input[type="text"].variant-chip-filter-name:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-dim);
+  color: var(--text-1);
+}
+
 .wave-admin-product-sku .variant-workspace .variant-photo-del {
   position: absolute;
   top: -7px;
@@ -2438,5 +2541,32 @@ body:has(.wave-admin-product-sku) .wave-admin-product-sku .page-body {
   .wave-admin-product-sku .variant-workspace .toggle-label {
     display: none;
   }
+}
+
+/* Brand admin palette alignment */
+body:has(.wave-admin-product-sku) #main,
+body:has(.wave-admin-product-sku) #content,
+body:has(.wave-admin-product-sku) #main > .bg-white,
+body:has(.wave-admin-product-sku) #main > .dark\:bg-base-900,
+body:has(.wave-admin-product-sku) .bg-white.border-b.border-base-200.mb-4.px-4.z-40,
+body:has(.wave-admin-product-sku) .\@container.px-4.pb-4.grow,
+body:has(.wave-admin-product-sku) .wave-admin-product-sku,
+body:has(.wave-admin-product-sku) .wave-admin-product-sku .page-body {
+  background: #08080a !important;
+}
+
+.wave-admin-product-sku,
+.qa-backdrop {
+  --bg: #08080a;
+  --card: #0f0f12;
+  --card-hi: #17171b;
+  --card-hover: #202025;
+  --border: rgba(255, 255, 255, 0.06);
+  --border-hi: rgba(255, 255, 255, 0.10);
+  --text-1: #f0f0f0;
+  --text-2: #9a9aa0;
+  --text-3: #5c5c64;
+  --accent-dim: rgba(255, 138, 29, 0.10);
+  --accent-glow: rgba(255, 138, 29, 0.18);
 }
 

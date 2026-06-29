@@ -1,45 +1,50 @@
 {% extends "admin/base_site.html" %}
-{% load i18n %}
+{% load static %}
 
-{% block title %}{{ title }} | {{ site_title|default:_("Django site admin") }}{% endblock %}
-
+{% block title %}{{ title }} | {{ site_title|default:"WAVE Admin" }}{% endblock %}
 {% block breadcrumbs %}{% endblock %}
 
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'admin/css/admin_media.css' %}?v=media7" />
+{% endblock %}
+
 {% block content %}
-<div class="wave-admin-media">
+  {{ media_products_payload|json_script:"admin-media-products-data" }}
 
-  <form class="wave-admin-media-search" method="get" role="search">
-    <input
-      type="search"
-      name="q"
-      value="{{ media_search_query }}"
-      placeholder="  Поиск по названию или коду товара"
-      autocomplete="off"
-    >
-    {% if media_search_query %}
-      <a href="{% url 'admin:main_product_media_list' %}">Сбросить</a>
-    {% endif %}
-  </form>
-
-  <div class="wave-admin-media-product-list">
-    {% for product in products %}
-      <a class="wave-admin-media-row" href="{% url 'admin:main_product_media_detail' product.id %}">
-        {% if product.image %}
-          <img class="wave-admin-media-thumb" src="{{ product.image.url }}" alt="">
-        {% else %}
-          <span class="wave-admin-media-thumb wave-admin-media-thumb-placeholder">Нет фото</span>
-        {% endif %}
-        <span class="wave-admin-media-name">{{ product.name }}</span>
-      </a>
-    {% empty %}
-      <div class="wave-admin-media-empty">
-        {% if media_search_query %}
-          Товары по запросу «{{ media_search_query }}» не найдены.
-        {% else %}
-          Товаров пока нет.
-        {% endif %}
+  <div class="wa-media wa-media-list">
+    <div class="page-body">
+      <div class="topbar">
+        <div class="topbar-summary">
+          <span class="topbar-summary-label">Медиатека товаров</span>
+          <span class="topbar-summary-count" id="mediaProductsCount">0 товаров</span>
+        </div>
       </div>
-    {% endfor %}
+
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+          </span>
+          <input class="search-input" id="mediaProductSearch" type="text" placeholder="Поиск по названию, коду, бренду или категории..." autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="media-product-list" id="mediaProductList"></div>
+      <div class="empty-state" id="mediaProductsEmpty" hidden>
+        <div class="empty-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="m21 15-5-5L5 21"></path></svg>
+        </div>
+        <div class="empty-title">Товары не найдены</div>
+        <div class="empty-sub">Измените поисковый запрос</div>
+      </div>
+    </div>
   </div>
-</div>
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script src="{% static 'admin/js/admin_media.js' %}?v=media1" defer></script>
 {% endblock %}

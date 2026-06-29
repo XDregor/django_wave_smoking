@@ -224,8 +224,13 @@
             <span class="product-sep"></span>
             <span class="product-cat">${escHtml(product.category || "Без категории")}</span>
           </div>
-          <div class="product-price">${priceHtml}</div>
-          <div class="product-skus">${skuCount || 1} SKU · ${stock} шт.</div>
+          <div class="product-card-summary">
+            <div class="product-price">${priceHtml}</div>
+            <div class="product-inventory">
+              <span class="product-stock">${stock} шт.</span>
+              <span class="product-skus">${skuCount || 1} SKU</span>
+            </div>
+          </div>
         </div>
       </article>`;
   }
@@ -340,7 +345,6 @@
         if (state.selectedIds.has(String(product.id))) product.status = "draft";
       });
       state.selectedIds.clear();
-      updateStats();
       renderGrid();
     } catch (error) {
       window.alert(error.message || "Не удалось отправить товары в черновик.");
@@ -359,7 +363,6 @@
         if (state.selectedIds.has(String(product.id))) product.status = "published";
       });
       state.selectedIds.clear();
-      updateStats();
       renderGrid();
     } catch (error) {
       window.alert(error.message || "Не удалось опубликовать товары.");
@@ -380,7 +383,6 @@
       const deleted = new Set(ids);
       products = products.filter((product) => !deleted.has(String(product.id)));
       state.selectedIds.clear();
-      updateStats();
       renderGrid();
     } catch (error) {
       window.alert(error.message || "Не удалось удалить товары.");
@@ -471,17 +473,6 @@
     const product = products.find((item) => String(item.id) === String(state.currentEditId));
     if (!product?.edit_url) return;
     window.location.href = product.edit_url;
-  }
-
-  function updateStats() {
-    const total = products.length;
-    const published = products.filter((product) => product.status === "published").length;
-    const draft = products.filter((product) => product.status === "draft").length;
-    const out = products.filter((product) => totalStock(product) === 0).length;
-    document.getElementById("statTotal").textContent = total;
-    document.getElementById("statPub").textContent = published;
-    document.getElementById("statDraft").textContent = draft;
-    document.getElementById("statOut").textContent = out;
   }
 
   root.addEventListener("click", (event) => {
@@ -583,6 +574,5 @@
   });
 
   applyListUiState();
-  updateStats();
   renderGrid();
 })();

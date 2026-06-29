@@ -1838,10 +1838,11 @@
 
     <!-- ==================== BRAND MARQUEE ==================== -->
     <div class="brand_line_section" style="padding: 0 var(--site-pad)">
+      {{ brand_carousel_items|json_script:"brand-line-data" }}
       <div class="brand_line_component" id="brandMarquee">
         <div class="brand_line_track" id="marqueeContainer">
           <div class="brand_line_row"></div>
-          <div class="brand_line_row"></div>
+          <div class="brand_line_row brand_line_row_clone" aria-hidden="true"></div>
         </div>
         <div class="brand_line_edge_overlay">
           <div class="brand_line_fade_left"></div>
@@ -1910,66 +1911,11 @@
           </div>
         </div>
 
+        {{ home_reviews|json_script:"home-reviews-data" }}
+
         <!-- > 1050px: 3 карточки в ряд; <= 1050px: карусель -->
         <div class="reviews_track_wrapper" id="reviewsTrackWrapper">
-          <div class="reviews_track" id="reviewsTrack">
-            <article class="reviews_card" data-review-index="0">
-              <div class="reviews_card_header">
-                <div class="reviews_avatar">АК</div>
-                <div class="reviews_meta">
-                  <span class="reviews_author">Андрей К.</span>
-                  <span class="reviews_date">12 мая 2025</span>
-                </div>
-                <div class="reviews_stars" aria-label="5 звёзд из 5">
-                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1l2.4 7.2H19l-5.7 4.1 2.2 6.9L10 15l-5.5 4.2 2.2-6.9L1 9.2h6.6z" /></svg>
-                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1l2.4 7.2H19l-5.7 4.1 2.2 6.9L10 15l-5.5 4.2 2.2-6.9L1 9.2h6.6z" /></svg>
-                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1l2.4 7.2H19l-5.7 4.1 2.2 6.9L10 15l-5.5 4.2 2.2-6.9L1 9.2h6.6z" /></svg>
-                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1l2.4 7.2H19l-5.7 4.1 2.2 6.9L10 15l-5.5 4.2 2.2-6.9L1 9.2h6.6z" /></svg>
-                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1l2.4 7.2H19l-5.7 4.1 2.2 6.9L10 15l-5.5 4.2 2.2-6.9L1 9.2h6.6z" /></svg>
-                </div>
-              </div>
-              <p class="reviews_text">Заказывал Vaporesso XROS 4 — пришёл на следующий день, упаковка целая, устройство оригинальное. Менеджер помог подобрать жидкость под мой вкус. Магазин однозначно рекомендую, это уже третий заказ подряд.</p>
-              <div class="reviews_product_tag">Vaporesso XROS 4 Mini</div>
-            </article>
-
-            <article class="reviews_card" data-review-index="1">
-              <div class="reviews_card_header">
-                <div class="reviews_avatar">МС</div>
-                <div class="reviews_meta">
-                  <span class="reviews_author">Марина С.</span>
-                  <span class="reviews_date">3 апр. 2025</span>
-                </div>
-                <div class="reviews_stars" aria-label="5 звёзд из 5">
-                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1l2.4 7.2H19l-5.7 4.1 2.2 6.9L10 15l-5.5 4.2 2.2-6.9L1 9.2h6.6z" /></svg>
-                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1l2.4 7.2H19l-5.7 4.1 2.2 6.9L10 15l-5.5 4.2 2.2-6.9L1 9.2h6.6z" /></svg>
-                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1l2.4 7.2H19l-5.7 4.1 2.2 6.9L10 15l-5.5 4.2 2.2-6.9L1 9.2h6.6z" /></svg>
-                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1l2.4 7.2H19l-5.7 4.1 2.2 6.9L10 15l-5.5 4.2 2.2-6.9L1 9.2h6.6z" /></svg>
-                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1l2.4 7.2H19l-5.7 4.1 2.2 6.9L10 15l-5.5 4.2 2.2-6.9L1 9.2h6.6z" /></svg>
-                </div>
-              </div>
-              <p class="reviews_text">Очень приятный магазин! Огромный выбор жидкостей, есть редкие позиции которых не найдёшь нигде. Цены адекватные, курьер приехал быстро. Отдельное спасибо за удобный фильтр по никотину — сразу видно всё что нужно.</p>
-              <div class="reviews_product_tag">Elfliq Watermelon 30 мл</div>
-            </article>
-
-            <article class="reviews_card" data-review-index="2">
-              <div class="reviews_card_header">
-                <div class="reviews_avatar">ДЛ</div>
-                <div class="reviews_meta">
-                  <span class="reviews_author">Дмитрий Л.</span>
-                  <span class="reviews_date">18 мар. 2025</span>
-                </div>
-                <div class="reviews_stars" aria-label="5 звёзд из 5">
-                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1l2.4 7.2H19l-5.7 4.1 2.2 6.9L10 15l-5.5 4.2 2.2-6.9L1 9.2h6.6z" /></svg>
-                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1l2.4 7.2H19l-5.7 4.1 2.2 6.9L10 15l-5.5 4.2 2.2-6.9L1 9.2h6.6z" /></svg>
-                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1l2.4 7.2H19l-5.7 4.1 2.2 6.9L10 15l-5.5 4.2 2.2-6.9L1 9.2h6.6z" /></svg>
-                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1l2.4 7.2H19l-5.7 4.1 2.2 6.9L10 15l-5.5 4.2 2.2-6.9L1 9.2h6.6z" /></svg>
-                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1l2.4 7.2H19l-5.7 4.1 2.2 6.9L10 15l-5.5 4.2 2.2-6.9L1 9.2h6.6z" /></svg>
-                </div>
-              </div>
-              <p class="reviews_text">Брал GeekVape Aegis Hero Q и аккумуляторы Sony VTC6. Всё оригинальное, проверил по QR. Сайт удобный, нашёл нужное за минуту. Магазин честный — предупредили заранее что одна позиция временно отсутствует, а не просто взяли деньги.</p>
-              <div class="reviews_product_tag">GeekVape Aegis Hero Q</div>
-            </article>
-          </div>
+          <div class="reviews_track" id="reviewsTrack"></div>
           <!-- /reviews_track -->
         </div>
         <!-- /reviews_track_wrapper -->
@@ -2046,11 +1992,16 @@
         gap: 16px;
         transition:
           border-color 0.25s,
+          opacity 0.24s ease,
           transform 0.25s;
       }
       .reviews_card:hover {
         border-color: rgba(255, 255, 255, 0.15);
         transform: translateY(-3px);
+      }
+      .reviews_card.is-review-swapping {
+        opacity: 0;
+        transform: translateY(8px);
       }
       .reviews_card_header {
         display: flex;
@@ -2791,16 +2742,9 @@
 
       // ===== BRAND MARQUEE =====
       (function () {
+        const brandLineDataElement = document.getElementById("brand-line-data");
         const config = {
-          brands: [
-            { name: "Chaser", logo: "{% static 'assets/img/brand_logo/chaser_logp.png' %}" },
-            { name: "Eleaf", logo: "{% static 'assets/img/brand_logo/eleaf_logo-removebg-preview.png' %}" },
-            { name: "Elf Bar", logo: "{% static 'assets/img/brand_logo/elfbar_logo.png' %}" },
-            { name: "Nova", logo: "{% static 'assets/img/brand_logo/nova_logo.png' %}" },
-            { name: "OXVA", logo: "{% static 'assets/img/brand_logo/oxva_logo.png' %}" },
-            { name: "SMOK", logo: "{% static 'assets/img/brand_logo/smoktech_logo-removebg-preview.png' %}" },
-            { name: "Vaporesso", logo: "{% static 'assets/img/brand_logo/vaporesso_logo.png' %}" },
-          ],
+          brands: brandLineDataElement ? JSON.parse(brandLineDataElement.textContent || "[]") : [],
           animationSpeed: 36,
         };
         let isDetailActive = false,
@@ -2814,11 +2758,12 @@
           const closeButton = document.getElementById("closeButton");
           const ctaButton = document.getElementById("ctaButton");
           const brandNameElement = document.getElementById("brandName");
-          if (!marqueeContainer) return;
+          if (!marqueeContainer || !config.brands.length) return;
           const tracks = marqueeContainer.querySelectorAll(".brand_line_row");
-          tracks.forEach((track) => {
+          tracks.forEach((track, trackIndex) => {
+            track.replaceChildren();
             config.brands.forEach((brand) => {
-              track.appendChild(createBrandElement(brand));
+              track.appendChild(createBrandElement(brand, trackIndex > 0));
             });
           });
           marqueeContainer.style.animationDuration = `${config.animationSpeed}s`;
@@ -2846,7 +2791,7 @@
           });
         }
 
-        function createBrandElement(brand) {
+        function createBrandElement(brand, isClone = false) {
           const container = document.createElement("div");
           container.className = "brand_line_item";
           container.dataset.brand = brand.name.toLowerCase();
@@ -2859,6 +2804,10 @@
             this.style.filter = "grayscale(1)";
           };
           container.appendChild(img);
+          if (isClone) {
+            container.tabIndex = -1;
+            return container;
+          }
           container.addEventListener("click", (e) => {
             e.stopPropagation();
             openBrandDetail(brand);
@@ -2900,6 +2849,162 @@
           document.addEventListener("DOMContentLoaded", initBrandMarquee);
         } else {
           initBrandMarquee();
+        }
+      })();
+
+      // ===== HOME REVIEWS DATA =====
+      (function () {
+        const REVIEWS_LIMIT = 3;
+        const REVIEW_SWAP_DELAY = 60000;
+        const REVIEW_FADE_DELAY = 240;
+        const starSvg = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1l2.4 7.2H19l-5.7 4.1 2.2 6.9L10 15l-5.5 4.2 2.2-6.9L1 9.2h6.6z" /></svg>';
+        let allReviews = [];
+        let visibleReviews = [];
+        let swapTimer = null;
+
+        function readReviewsData() {
+          const dataEl = document.getElementById("home-reviews-data");
+          if (!dataEl) return [];
+          try {
+            const parsed = JSON.parse(dataEl.textContent || "[]");
+            return Array.isArray(parsed) ? parsed.filter((review) => review && review.id) : [];
+          } catch (error) {
+            return [];
+          }
+        }
+
+        function getRandomItems(items, limit) {
+          const pool = items.slice();
+          const result = [];
+          while (pool.length && result.length < limit) {
+            const index = Math.floor(Math.random() * pool.length);
+            result.push(pool.splice(index, 1)[0]);
+          }
+          return result;
+        }
+
+        function renderStars(rating) {
+          const count = Math.max(0, Math.min(5, Number(rating) || 0));
+          return starSvg.repeat(count);
+        }
+
+        function createReviewCard(review, index) {
+          const card = document.createElement("article");
+          card.className = "reviews_card";
+          card.dataset.reviewIndex = String(index);
+          card.dataset.reviewId = String(review.id);
+
+          const header = document.createElement("div");
+          header.className = "reviews_card_header";
+
+          const avatar = document.createElement("div");
+          avatar.className = "reviews_avatar";
+          avatar.textContent = review.avatar || "?";
+
+          const meta = document.createElement("div");
+          meta.className = "reviews_meta";
+
+          const author = document.createElement("span");
+          author.className = "reviews_author";
+          author.textContent = review.name || "Покупатель";
+
+          const date = document.createElement("span");
+          date.className = "reviews_date";
+          date.textContent = review.date || "";
+
+          const stars = document.createElement("div");
+          stars.className = "reviews_stars";
+          stars.setAttribute("aria-label", `${review.rating || 0} звёзд из 5`);
+          stars.innerHTML = renderStars(review.rating);
+
+          const text = document.createElement("p");
+          text.className = "reviews_text";
+          text.textContent = review.text || "";
+
+          const product = document.createElement("div");
+          product.className = "reviews_product_tag";
+          product.textContent = review.product || "";
+
+          meta.append(author, date);
+          header.append(avatar, meta, stars);
+          card.append(header, text, product);
+          return card;
+        }
+
+        function syncReviewDots() {
+          const nav = document.getElementById("reviewsSliderNav");
+          if (!nav) return;
+          const activeDot = nav.querySelector(".reviews_slider_nav_dot.is-active");
+          const activeIndex = activeDot ? parseInt(activeDot.dataset.dot || "0", 10) : 0;
+          const safeActiveIndex = Math.min(Number.isNaN(activeIndex) ? 0 : activeIndex, Math.max(visibleReviews.length - 1, 0));
+          nav.replaceChildren();
+          visibleReviews.forEach((_, index) => {
+            const dot = document.createElement("button");
+            dot.className = `reviews_slider_nav_dot${index === safeActiveIndex ? " is-active" : ""}`;
+            dot.dataset.dot = String(index);
+            dot.type = "button";
+            dot.setAttribute("aria-label", `Перейти к отзыву ${index + 1}`);
+            nav.appendChild(dot);
+          });
+          nav.setAttribute("aria-hidden", visibleReviews.length <= 1 ? "true" : "false");
+        }
+
+        function renderReviews() {
+          const section = document.getElementById("reviewsSection");
+          const track = document.getElementById("reviewsTrack");
+          if (!section || !track) return;
+          if (!visibleReviews.length) {
+            section.hidden = true;
+            return;
+          }
+          section.hidden = false;
+          track.replaceChildren();
+          visibleReviews.forEach((review, index) => {
+            track.appendChild(createReviewCard(review, index));
+          });
+          syncReviewDots();
+        }
+
+        function replaceRandomReview() {
+          const track = document.getElementById("reviewsTrack");
+          if (!track || visibleReviews.length < 1 || allReviews.length <= visibleReviews.length) return;
+
+          const activeIds = new Set(visibleReviews.map((review) => review.id));
+          const candidates = allReviews.filter((review) => !activeIds.has(review.id));
+          if (!candidates.length) return;
+
+          const visibleIndex = Math.floor(Math.random() * visibleReviews.length);
+          const nextReview = candidates[Math.floor(Math.random() * candidates.length)];
+          const oldCard = track.children[visibleIndex];
+          if (!oldCard) return;
+
+          oldCard.classList.add("is-review-swapping");
+          window.setTimeout(() => {
+            visibleReviews[visibleIndex] = nextReview;
+            const nextCard = createReviewCard(nextReview, visibleIndex);
+            nextCard.classList.add("is-review-swapping");
+            oldCard.replaceWith(nextCard);
+            syncReviewDots();
+            requestAnimationFrame(() => {
+              nextCard.classList.remove("is-review-swapping");
+            });
+          }, REVIEW_FADE_DELAY);
+        }
+
+        function initHomeReviews() {
+          allReviews = readReviewsData();
+          visibleReviews = getRandomItems(allReviews, Math.min(REVIEWS_LIMIT, allReviews.length));
+          renderReviews();
+          if (swapTimer) clearInterval(swapTimer);
+          if (allReviews.length > visibleReviews.length) {
+            swapTimer = window.setInterval(replaceRandomReview, REVIEW_SWAP_DELAY);
+          }
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", initHomeReviews);
+        } else {
+          initHomeReviews();
         }
       })();
 

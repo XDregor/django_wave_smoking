@@ -1,0 +1,386 @@
+.wa-admin-home,
+.wa-admin-home *,
+.wa-admin-home *::before,
+.wa-admin-home *::after {
+    box-sizing: border-box;
+}
+
+.wa-admin-home {
+    --bg: #08080a;
+    --surface: #0f0f12;
+    --surface-2: #17171b;
+    --surface-3: #202025;
+    --border: rgba(255, 255, 255, 0.06);
+    --border-hi: rgba(255, 255, 255, 0.10);
+    --text-1: #f0f0f0;
+    --text-2: #9a9aa0;
+    --text-3: #5c5c64;
+    --accent: #ff8a1d;
+    --accent-dim: rgba(255, 138, 29, 0.10);
+    --accent-glow: rgba(255, 138, 29, 0.18);
+    --radius: 10px;
+    --radius-sm: 6px;
+    --font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+
+    min-height: calc(100vh - 96px);
+    background: var(--bg);
+    color: var(--text-1);
+    font-family: var(--font);
+    font-size: 13px;
+}
+
+body:has(.wa-admin-home) #main,
+body:has(.wa-admin-home) #content,
+body:has(.wa-admin-home) #main > .bg-white,
+body:has(.wa-admin-home) #main > .dark\:bg-base-900,
+body:has(.wa-admin-home) .bg-white.border-b.border-base-200.mb-4.px-4.z-40,
+body:has(.wa-admin-home) .\@container.px-4.pb-4.grow {
+    background: #08080a !important;
+}
+
+body:has(.wa-admin-home) #content {
+    width: 100%;
+    max-width: none;
+}
+
+.wa-admin-home .page-body {
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.wa-admin-home .home-hero,
+.wa-admin-home .home-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+}
+
+.wa-admin-home .home-hero {
+    padding: 20px 22px;
+}
+
+.wa-admin-home .home-kicker {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-3);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.wa-admin-home h1,
+.wa-admin-home h2 {
+    margin: 0;
+    color: var(--text-1);
+}
+
+.wa-admin-home h1 {
+    font-size: 25px;
+    font-weight: 780;
+    letter-spacing: -0.035em;
+}
+
+.wa-admin-home .home-hero p {
+    max-width: 620px;
+    margin: 8px 0 0;
+    color: var(--text-2);
+    font-size: 12.5px;
+    line-height: 1.55;
+}
+
+.wa-admin-home .home-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.wa-admin-home .section-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 28px;
+}
+
+.wa-admin-home .section-head h2 {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.wa-admin-home .section-head::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.wa-admin-home .home-grid {
+    display: grid;
+    gap: 10px;
+}
+
+.wa-admin-home .home-grid.two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.wa-admin-home .home-grid.four {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.wa-admin-home .home-card {
+    min-height: 132px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 15px;
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.wa-admin-home .home-card:hover {
+    border-color: var(--border-hi);
+    background: #131317;
+    transform: translateY(-1px);
+}
+
+.wa-admin-home .home-icon {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 14px;
+    border: 1px solid var(--border-hi);
+    border-radius: 9px;
+    background: var(--surface-2);
+    color: var(--text-2);
+    font-size: 19px;
+}
+
+.wa-admin-home .home-card:hover .home-icon {
+    color: var(--accent);
+    border-color: var(--accent-glow);
+    background: var(--accent-dim);
+}
+
+.wa-admin-home .home-card-title {
+    color: var(--text-1);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.wa-admin-home .home-card-sub {
+    margin-top: 6px;
+    color: var(--text-3);
+    font-size: 11.5px;
+    line-height: 1.45;
+}
+
+@media (max-width: 980px) {
+    .wa-admin-home .home-grid.four {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .wa-admin-home .home-grid.two,
+    .wa-admin-home .home-grid.four {
+        grid-template-columns: 1fr;
+    }
+
+    .wa-admin-home .home-card {
+        min-height: 118px;
+    }
+}
+
+/* Polished admin landing */
+body:has(.wa-admin-home) .bg-white.border-b.border-base-200.mb-4.px-4.z-40 {
+    border-color: rgba(255, 255, 255, 0.06) !important;
+    background:
+        radial-gradient(circle at 16% 0%, rgba(255, 138, 29, 0.08), transparent 34%),
+        #08080a !important;
+}
+
+body:has(.wa-admin-home) h1.text-important,
+body:has(.wa-admin-home) h1 .text-important {
+    color: #f4f4f4 !important;
+}
+
+.wa-admin-home {
+    position: relative;
+    overflow: hidden;
+}
+
+.wa-admin-home .page-body {
+    position: relative;
+    z-index: 1;
+    gap: 22px;
+}
+
+.wa-admin-home .home-section {
+    position: relative;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.055);
+    border-radius: 16px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.01)),
+        rgba(15, 15, 18, 0.76);
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.wa-admin-home .home-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(90deg, rgba(255, 138, 29, 0.08), transparent 34%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.wa-admin-home .home-section:hover::before {
+    opacity: 1;
+}
+
+.wa-admin-home .section-head {
+    position: relative;
+    z-index: 1;
+    min-height: 32px;
+}
+
+.wa-admin-home .section-head h2 {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.wa-admin-home .section-head h2::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 18px rgba(255, 138, 29, 0.34);
+}
+
+.wa-admin-home .section-head::after {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.wa-admin-home .home-grid {
+    position: relative;
+    z-index: 1;
+}
+
+.wa-admin-home .home-card {
+    position: relative;
+    min-height: 148px;
+    padding: 17px;
+    border-color: rgba(255, 255, 255, 0.07);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012)),
+        #111115;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+    overflow: hidden;
+}
+
+.wa-admin-home .home-card::after {
+    content: "";
+    position: absolute;
+    right: -38px;
+    top: -38px;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 138, 29, 0.16), transparent 68%);
+    opacity: 0;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.wa-admin-home .home-card:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.018)),
+        #151519;
+    transform: translateY(-2px);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.25);
+}
+
+.wa-admin-home .home-card:hover::after {
+    opacity: 1;
+    transform: scale(1.08);
+}
+
+.wa-admin-home .home-icon {
+    position: relative;
+    z-index: 1;
+    width: 38px;
+    height: 38px;
+    margin-bottom: 16px;
+    border-radius: 11px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)),
+        var(--surface-2);
+    color: #cfcfd3;
+}
+
+.wa-admin-home .home-card-title,
+.wa-admin-home .home-card-sub {
+    position: relative;
+    z-index: 1;
+}
+
+.wa-admin-home .home-card-title {
+    font-size: 13.5px;
+}
+
+.wa-admin-home .home-card-sub {
+    max-width: 260px;
+    color: #77777f;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .wa-admin-home .home-section,
+    .wa-admin-home .home-card {
+        animation: wave-admin-home-enter 0.34s ease both;
+    }
+
+    .wa-admin-home .home-section:nth-of-type(2) {
+        animation-delay: 0.04s;
+    }
+
+    .wa-admin-home .home-section:nth-of-type(3) {
+        animation-delay: 0.08s;
+    }
+
+    @keyframes wave-admin-home-enter {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
+@media (max-width: 640px) {
+    .wa-admin-home .home-section {
+        padding: 12px;
+        border-radius: 12px;
+    }
+
+    .wa-admin-home .home-card {
+        min-height: 132px;
+    }
+}

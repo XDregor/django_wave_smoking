@@ -1,0 +1,451 @@
+.wa-history,
+.wa-history *,
+.wa-history *::before,
+.wa-history *::after {
+    box-sizing: border-box;
+}
+
+.wa-history {
+    --bg: #08080a;
+    --surface: #0f0f12;
+    --surface-2: #17171b;
+    --surface-3: #202025;
+    --border: rgba(255, 255, 255, 0.06);
+    --border-hi: rgba(255, 255, 255, 0.10);
+    --text-1: #f0f0f0;
+    --text-2: #9a9aa0;
+    --text-3: #5c5c64;
+    --accent: #ff8a1d;
+    --accent-dim: rgba(255, 138, 29, 0.10);
+    --accent-glow: rgba(255, 138, 29, 0.18);
+    --danger: #f87171;
+    --danger-dim: rgba(248, 113, 113, 0.08);
+    --success: #4ade80;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --radius-xs: 4px;
+    --font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: "JetBrains Mono", monospace;
+
+    min-height: calc(100vh - 96px);
+    background: var(--bg);
+    color: var(--text-1);
+    font-family: var(--font);
+    font-size: 13px;
+}
+
+body:has(.wa-history) #main,
+body:has(.wa-history) #content,
+body:has(.wa-history) #main > .bg-white,
+body:has(.wa-history) #main > .dark\:bg-base-900,
+body:has(.wa-history) .bg-white.border-b.border-base-200.mb-4.px-4.z-40,
+body:has(.wa-history) .\@container.px-4.pb-4.grow {
+    background: #08080a !important;
+}
+
+body:has(.wa-history) #content {
+    width: 100%;
+    max-width: none;
+}
+
+.wa-history button,
+.wa-history input {
+    font: inherit;
+}
+
+.wa-history [hidden] {
+    display: none !important;
+}
+
+.wa-history .page-body {
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.wa-history .history-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 180px;
+    gap: 16px;
+    align-items: stretch;
+}
+
+.wa-history .history-hero-main,
+.wa-history .history-retention,
+.wa-history .stat-card,
+.wa-history .history-toolbar,
+.wa-history .history-item,
+.wa-history .empty-state {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+}
+
+.wa-history .history-hero-main {
+    padding: 18px 20px;
+}
+
+.wa-history .history-kicker {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--text-3);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.wa-history h1 {
+    margin: 0;
+    color: var(--text-1);
+    font-size: 24px;
+    font-weight: 760;
+    letter-spacing: -0.03em;
+}
+
+.wa-history .history-hero-main p {
+    max-width: 680px;
+    margin: 8px 0 0;
+    color: var(--text-2);
+    font-size: 12.5px;
+    line-height: 1.55;
+}
+
+.wa-history .history-retention {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 16px;
+}
+
+.wa-history .history-retention span,
+.wa-history .stat-card span {
+    color: var(--text-3);
+    font-size: 10px;
+    font-weight: 650;
+}
+
+.wa-history .history-retention strong,
+.wa-history .stat-card strong {
+    margin-top: 5px;
+    color: var(--text-1);
+    font-family: var(--mono);
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.wa-history .history-retention small {
+    margin-top: 8px;
+    color: var(--text-3);
+    font-size: 10px;
+}
+
+.wa-history .history-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.wa-history .stat-card {
+    padding: 12px 14px;
+}
+
+.wa-history .history-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+}
+
+.wa-history .search-wrap {
+    position: relative;
+    flex: 1 1 320px;
+    min-width: 240px;
+}
+
+.wa-history .search-icon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    display: flex;
+    color: var(--text-3);
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.wa-history .search-input {
+    width: 100%;
+    height: 40px;
+    padding: 10px 14px 10px 42px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: var(--text-1);
+    outline: none;
+}
+
+.wa-history .search-input:focus {
+    border-color: var(--border-hi);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.035);
+}
+
+.wa-history .filter-tabs {
+    display: flex;
+    gap: 3px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+}
+
+.wa-history .filter-tab {
+    min-height: 30px;
+    padding: 6px 10px;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--text-3);
+    cursor: pointer;
+    font-size: 10.5px;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.wa-history .filter-tab:hover,
+.wa-history .filter-tab.active {
+    background: rgba(255, 255, 255, 0.055);
+    color: var(--text-1);
+}
+
+.wa-history .btn {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border: 1px solid var(--border-hi);
+    border-radius: var(--radius-sm);
+    background: var(--surface-3);
+    color: var(--text-2);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.wa-history .btn:hover {
+    border-color: rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-1);
+}
+
+.wa-history .btn-ghost {
+    background: transparent;
+    border-color: var(--border);
+}
+
+.wa-history .btn-sm {
+    min-height: 32px;
+    padding: 6px 11px;
+    font-size: 11px;
+}
+
+.wa-history .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.wa-history .history-item {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    gap: 13px;
+    align-items: start;
+    padding: 13px 15px;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.wa-history .history-item:hover {
+    border-color: var(--border-hi);
+    background: #131317;
+}
+
+.wa-history .history-icon {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--border-hi);
+    border-radius: 10px;
+    background: var(--surface-2);
+    color: var(--text-2);
+}
+
+.wa-history .history-item.is-create .history-icon {
+    color: var(--success);
+}
+
+.wa-history .history-item.is-delete .history-icon {
+    color: var(--danger);
+}
+
+.wa-history .history-title-row,
+.wa-history .history-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.wa-history .history-title {
+    min-width: 0;
+    color: var(--text-1);
+    font-size: 13px;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wa-history .history-message {
+    margin-top: 6px;
+    color: var(--text-2);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.wa-history .history-meta-row {
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.wa-history .history-pill {
+    min-height: 22px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--text-3);
+    font-size: 10px;
+    font-weight: 650;
+}
+
+.wa-history .history-time {
+    color: var(--text-3);
+    font-family: var(--mono);
+    font-size: 10px;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.wa-history .history-relative {
+    display: block;
+    margin-top: 4px;
+    color: var(--text-2);
+}
+
+.wa-history .empty-state {
+    padding: 34px 18px;
+    text-align: center;
+}
+
+.wa-history .empty-icon {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-3);
+    background: var(--surface-2);
+}
+
+.wa-history .empty-title {
+    color: var(--text-1);
+    font-weight: 700;
+}
+
+.wa-history .empty-sub {
+    margin-top: 5px;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.wa-history .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding-bottom: 6px;
+}
+
+.wa-history .page-info {
+    color: var(--text-3);
+    font-family: var(--mono);
+    font-size: 11px;
+}
+
+.wa-history .toast-container {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wa-history .toast {
+    min-width: 220px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-hi);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: var(--text-1);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 860px) {
+    .wa-history .history-hero,
+    .wa-history .history-stats {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .wa-history .history-hero-main {
+        grid-column: 1 / -1;
+    }
+
+    .wa-history .history-toolbar {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 560px) {
+    .wa-history .history-hero,
+    .wa-history .history-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .wa-history .history-item {
+        grid-template-columns: 34px minmax(0, 1fr);
+    }
+
+    .wa-history .history-time {
+        grid-column: 2;
+        text-align: left;
+    }
+
+    .wa-history .filter-tabs,
+    .wa-history .search-wrap,
+    .wa-history #cleanupHistoryBtn {
+        width: 100%;
+    }
+}

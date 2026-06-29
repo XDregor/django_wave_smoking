@@ -8,7 +8,7 @@
   {{ block.super }}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{% static 'admin/css/admin_reviews_list.css' %}?v=reviews1" />
+  <link rel="stylesheet" href="{% static 'admin/css/admin_reviews_list.css' %}?v=reviews8" />
 {% endblock %}
 
 {% block content %}
@@ -24,9 +24,8 @@
       <main class="main">
         <div class="page-body">
           <div class="topbar">
-            <div class="topbar-title">Отзывы</div>
             <div class="topbar-spacer"></div>
-            <button class="btn btn-primary btn-sm" id="refreshReviewsBtn" type="button">
+            <button class="btn btn-ghost" id="refreshReviewsBtn" type="button">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" aria-hidden="true">
                 <path d="M23 4v6h-6"></path>
                 <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
@@ -35,20 +34,23 @@
             </button>
           </div>
 
-          <section class="summary-grid" aria-label="Статистика отзывов">
-            <div class="summary-card">
-              <div class="summary-label">Общий рейтинг</div>
-              <div class="summary-score-row">
-                <span class="summary-big" id="avgRating">0.0</span>
-                <div class="summary-right">
-                  <div class="summary-stars" id="summaryStars"></div>
-                  <span class="summary-sub" id="totalCountLabel">0 отзывов</span>
+          <section class="rating-overview" aria-label="Общая оценка и распределение отзывов">
+            <div class="rating-primary">
+              <div class="rating-primary-content">
+                <span class="summary-label">Общая оценка</span>
+                <div class="rating-value-row">
+                  <strong class="summary-big" id="avgRating">0.0</strong>
+                  <span class="rating-scale">из 5</span>
                 </div>
+                <div class="summary-stars" id="summaryStars"></div>
               </div>
             </div>
 
-            <div class="summary-card">
-              <div class="summary-label">Распределение оценок</div>
+            <div class="rating-breakdown">
+              <div class="rating-breakdown-head">
+                <span class="summary-label">Распределение оценок</span>
+                <span>Нажмите на строку для фильтрации</span>
+              </div>
               <div class="bars" id="ratingBars"></div>
             </div>
           </section>
@@ -72,42 +74,44 @@
             </div>
           </section>
 
-          <div class="toolbar">
-            <div class="search-wrap">
-              <span class="search-icon" aria-hidden="true">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <path d="m21 21-4.35-4.35"></path>
-                </svg>
-              </span>
-              <input class="search-input" id="searchInput" type="text" placeholder="Поиск по тексту, автору, товару..." autocomplete="off" />
-            </div>
+          <section class="review-controls">
+            <div class="toolbar">
+              <div class="search-wrap">
+                <span class="search-icon" aria-hidden="true">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                  </svg>
+                </span>
+                <input class="search-input" id="searchInput" type="text" placeholder="Поиск по тексту, автору или товару..." autocomplete="off" />
+              </div>
 
-            <div class="sort-menu-wrap">
-              <button class="btn" id="sortToggleBtn" type="button" aria-expanded="false">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
-                  <path d="M3 6h18M7 12h10M11 18h2"></path>
-                </svg>
-                <span id="sortLabel">По дате ↓</span>
-              </button>
-              <div class="sort-menu" id="sortMenu">
-                <button class="sort-opt active" type="button" data-sort="date_desc" data-label="По дате ↓">По дате ↓</button>
-                <button class="sort-opt" type="button" data-sort="date_asc" data-label="По дате ↑">По дате ↑</button>
-                <button class="sort-opt" type="button" data-sort="rating_desc" data-label="По оценке ↓">По оценке ↓</button>
-                <button class="sort-opt" type="button" data-sort="rating_asc" data-label="По оценке ↑">По оценке ↑</button>
-                <button class="sort-opt" type="button" data-sort="product" data-label="По товару">По товару A-Z</button>
-                <button class="sort-opt" type="button" data-sort="verified" data-label="По проверке">По проверке</button>
+              <div class="sort-menu-wrap">
+                <button class="btn" id="sortToggleBtn" type="button" aria-expanded="false">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M3 6h18M7 12h10M11 18h2"></path>
+                  </svg>
+                  <span id="sortLabel">По дате ↓</span>
+                </button>
+                <div class="sort-menu" id="sortMenu">
+                  <button class="sort-opt active" type="button" data-sort="date_desc" data-label="По дате ↓">По дате ↓</button>
+                  <button class="sort-opt" type="button" data-sort="date_asc" data-label="По дате ↑">По дате ↑</button>
+                  <button class="sort-opt" type="button" data-sort="rating_desc" data-label="По оценке ↓">По оценке ↓</button>
+                  <button class="sort-opt" type="button" data-sort="rating_asc" data-label="По оценке ↑">По оценке ↑</button>
+                  <button class="sort-opt" type="button" data-sort="product" data-label="По товару">По товару A-Z</button>
+                  <button class="sort-opt" type="button" data-sort="verified" data-label="По проверке">По проверке</button>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="tab-bar" aria-label="Фильтры отзывов">
-            <button class="tab active" type="button" data-filter="all">Все</button>
-            <button class="tab" type="button" data-filter="published">Опубликованные</button>
-            <button class="tab" type="button" data-filter="hidden">Скрытые</button>
-            <button class="tab" type="button" data-filter="verified">Проверенные</button>
-            <button class="tab" type="button" data-filter="unverified">Непроверенные</button>
-          </div>
+            <div class="tab-bar" aria-label="Фильтры отзывов">
+              <button class="tab active" type="button" data-filter="all">Все</button>
+              <button class="tab" type="button" data-filter="published">Опубликованные</button>
+              <button class="tab" type="button" data-filter="hidden">Скрытые</button>
+              <button class="tab" type="button" data-filter="verified">Проверенные</button>
+              <button class="tab" type="button" data-filter="unverified">Непроверенные</button>
+            </div>
+          </section>
 
           <div class="reviews-list" id="reviewsList"></div>
 
@@ -166,5 +170,5 @@
 
 {% block extrahead %}
   {{ block.super }}
-  <script src="{% static 'admin/js/admin_reviews_list.js' %}?v=reviews1" defer></script>
+  <script src="{% static 'admin/js/admin_reviews_list.js' %}?v=reviews8" defer></script>
 {% endblock %}

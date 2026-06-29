@@ -1774,7 +1774,7 @@
               const productByGroup = productVariants.reduce((acc, variant) => {
                 const group = variant.group || "default";
                 if (!acc[group]) acc[group] = new Set();
-                acc[group].add(String(variant.slug));
+                acc[group].add(String(variant.filter_slug || variant.filter_name || variant.name || ""));
                 return acc;
               }, {});
               for (const [group, selected] of activeGroups) {
@@ -2204,12 +2204,20 @@
           const groups = new Map();
           getProductsForCategory().forEach((product) => {
             const variants = Array.isArray(product.variant_options) ? product.variant_options : [];
+            const countedFilters = new Set();
             variants.forEach((variant) => {
               const group = variant.group || "default";
               if (!groups.has(group)) groups.set(group, new Map());
               const bySlug = groups.get(group);
-              const slug = String(variant.slug);
-              const item = bySlug.get(slug) || { ...variant, count: 0 };
+              const slug = String(variant.filter_slug || variant.filter_name || variant.name || "");
+              if (!slug || countedFilters.has(`${group}\u0000${slug}`)) return;
+              countedFilters.add(`${group}\u0000${slug}`);
+              const item = bySlug.get(slug) || {
+                ...variant,
+                name: variant.filter_name || variant.name,
+                slug,
+                count: 0,
+              };
               item.count += 1;
               bySlug.set(slug, item);
             });
