@@ -1,0 +1,157 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ site_title|default:"WAVE Admin" }}{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'admin_panel/brands/css/list.css' %}?v=brands5" />
+{% endblock %}
+
+{% block content %}
+  {{ brands_payload|json_script:"admin-brands-data" }}
+
+  <div
+    class="wa-brands"
+    data-save-url="{{ save_url }}"
+    data-delete-url="{{ delete_url }}"
+    data-toggle-carousel-url="{{ toggle_carousel_url }}"
+  >
+    <div class="page-body">
+      <div class="carousel-block">
+        <div class="carousel-header">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" aria-hidden="true">
+            <rect x="2" y="7" width="20" height="14" rx="2"></rect>
+            <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"></path>
+            <line x1="12" y1="12" x2="12" y2="16"></line>
+            <line x1="10" y1="14" x2="14" y2="14"></line>
+          </svg>
+          <div class="carousel-title">Карусель брендов</div>
+          <span class="carousel-count" id="carouselCount">0</span>
+          <div class="carousel-spacer"></div>
+          <button class="btn btn-ghost" id="createBrandBtn" type="button">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span data-primary-text>Добавить бренд</span>
+          </button>
+        </div>
+
+        <div class="brand_line_component">
+          <div class="brand_line_track" id="carouselTrack">
+            <div class="brand_line_row" data-carousel-row="primary">
+              <span class="carousel-empty-msg">Ни один бренд не добавлен в карусель</span>
+            </div>
+            <div class="brand_line_row brand_line_row_clone" data-carousel-row="clone" aria-hidden="true"></div>
+          </div>
+          <div class="brand_line_edge_overlay" aria-hidden="true">
+            <div class="brand_line_fade_left"></div>
+            <div class="brand_line_fade_right"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+          </span>
+          <input class="search-input" id="brandSearchInput" type="text" placeholder="Поиск по названию или slug…" autocomplete="off" />
+        </div>
+        <div class="filter-tabs">
+          <button class="filter-tab active" type="button" data-filter="all">Все</button>
+          <button class="filter-tab" type="button" data-filter="carousel">В карусели</button>
+          <button class="filter-tab" type="button" data-filter="noimg">Без фото</button>
+        </div>
+      </div>
+
+      <div class="brands-grid" id="brandsGrid"></div>
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+          </svg>
+        </div>
+        <div class="empty-title">Брендов не найдено</div>
+        <div class="empty-sub">Попробуйте изменить поисковый запрос или фильтр</div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="brandModalBackdrop" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="brandModalTitle">
+        <div class="modal-title" id="brandModalTitle">Бренд</div>
+
+        <div class="modal-img-wrap" id="modalImgWrap">
+          <div id="modalImgContent">
+            <div class="modal-no-img">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <path d="m21 15-5-5L5 21"></path>
+              </svg>
+              <span>Нет изображения</span>
+            </div>
+          </div>
+          <div class="modal-img-overlay">
+            <span class="btn btn-sm">Заменить фото</span>
+          </div>
+          <input type="file" id="modalImageInput" accept="image/*" hidden />
+        </div>
+
+        <div class="modal-field">
+          <label for="modalNameInput">Название</label>
+          <input type="text" id="modalNameInput" placeholder="Например: Vaporesso" autocomplete="off" />
+        </div>
+
+        <div class="modal-field">
+          <label>Slug</label>
+          <div class="slug-preview">
+            <span class="lock-icon" aria-hidden="true">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </span>
+            <span class="slug-text" id="modalSlugPreview">—</span>
+          </div>
+          <input type="hidden" id="modalSlugHidden" />
+        </div>
+
+        <div class="toggle-row" id="modalToggleRow">
+          <div>
+            <div class="toggle-label">Показывать в карусели</div>
+            <div class="toggle-sub">Бренд появится на главной странице</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="modalToggleCheck" />
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+
+        <div class="modal-actions" id="modalActions">
+          <button class="btn btn-primary" id="modalSaveBtn" type="button">Сохранить</button>
+          <button class="btn btn-danger" id="modalDeleteBtn" type="button" style="display:none">Удалить</button>
+          <button class="btn btn-secondary" id="modalCancelBtn" type="button">Отмена</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+  </div>
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script src="{% static 'admin_panel/brands/js/list.js' %}?v=brands3" defer></script>
+{% endblock %}

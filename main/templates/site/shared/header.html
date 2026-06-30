@@ -1,0 +1,474 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'site/shared/css/header.css' %}?v=structure1" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap" />
+
+    
+    
+    <div class="page_header_module" data-header-module>
+      <div class="container">
+        <header class="page_header" data-header>
+          <a class="page_header_logo" href="{% url 'main:home' %}" aria-label="WAVE, главная страница">
+            <picture>
+              <source media="(max-width: 900px)" srcset="{% static 'site/shared/img/mobil_logo_wave_smoking.png' %}" />
+              <img src="{% static 'site/shared/img/long_logo_wave_smoking.png' %}" alt="Wave logo" />
+            </picture>
+          </a>
+
+          <!-- Mobile right actions (search + favorites + cart + burger, mobile only) -->
+          <div class="mobile_header_actions">
+            <button class="mobile_header_icon_button" id="mobileSearchBtn" aria-label="Поиск">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+            <button class="mobile_header_icon_button" id="mobileFavBtn" data-shop-trigger="favorites_widget" aria-label="Избранное">
+              <i class="fa-solid fa-heart"></i>
+              <span class="mobile_header_badge" id="mobileFavBadge">0</span>
+            </button>
+            <button class="mobile_header_icon_button" id="mobileBasketBtn" data-shop-trigger="cart_widget" aria-label="Корзина">
+              <i class="fa-solid fa-bag-shopping"></i>
+              <span class="mobile_header_badge" id="mobileBasketBadge">0</span>
+            </button>
+            <button class="mobile_burger_button" id="burgerBtn" aria-label="Открыть меню" aria-expanded="false">
+              <span class="mobile_burger_line"></span>
+              <span class="mobile_burger_line"></span>
+              <span class="mobile_burger_line"></span>
+            </button>
+          </div>
+
+          <nav class="header_navigation" aria-label="Главная навигация">
+            <ul class="navigation_primary_list">
+              <li class="navigation_item navigation_item_label_new navigation_item_dropdown navigation_item_catalog navigation_item_accent" data-mega-menu-trigger data-mega-menu-section="collections">
+                <a href="/catalog/" aria-haspopup="true" aria-expanded="false">Каталог</a>
+                <span class="notification_badge notification_badge_new">new</span>
+              </li>
+
+              <li class="navigation_item">
+                <a href="#" data-contacts-open>Контакты</a>
+              </li>
+
+              <li class="navigation_item navigation_item_sale navigation_item_dropdown" data-mega-menu-trigger data-mega-menu-section="navigation_item_sale">
+                <a href="/catalog/" aria-haspopup="true" aria-expanded="false">Скидки</a>
+                <span class="notification_badge notification_badge_percent">%</span>
+              </li>
+
+              <li class="navigation_item">
+                <a href="#" data-delivery-open>Доставка</a>
+              </li>
+
+              <li class="navigation_item">
+                <a href="{% url 'main:reviews' %}">Отзывы</a>
+              </li>
+            </ul>
+
+            <div class="header_actions_wrapper">
+              <ul class="navigation_secondary_list">
+                <li class="search_widget_container" data-header-search>
+                  <div class="search_widget" data-search-shell>
+                    <button class="search_widget_toggle" type="button" aria-label="Открыть поиск" data-search-open>
+                      <svg class="search_widget_icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" height="25" width="25">
+                        <path stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" stroke="currentColor" d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"></path>
+                        <path stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" stroke="currentColor" d="M22 22L20 20"></path>
+                      </svg>
+                    </button>
+
+                    <div class="search_widget_panel">
+                      <div class="search_input_container">
+                        <input type="text" placeholder="Поиск..." class="search_input_field" data-search-input />
+                        <div class="search_input_underline"></div>
+                      </div>
+
+                      <button class="search_panel_close" type="button" aria-label="Закрыть поиск" data-search-close>
+                        <i class="fa-solid fa-times"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="search_results_dropdown" data-search-results aria-live="polite"></div>
+                </li>
+
+                <li class="account_button" data-account-button>
+                  <div class="account_button_content">
+                    <div class="account_button_text_wrapper">
+                      <div class="account_button_text_line account_button_text_original">
+                        <span>Карта</span>
+                        <span>клиента</span>
+                      </div>
+                      <div class="account_button_text_line account_button_text_hover">
+                        <span>Вход</span>
+                        <span>/</span>
+                        <span>Регистрация</span>
+                      </div>
+                    </div>
+
+                    <div class="account_button_icon_circle">
+                      <svg class="account_button_arrow_icon" stroke-width="2.5" stroke="currentColor" viewBox="0 0 24 24" fill="none">
+                        <path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linejoin="round" stroke-linecap="round"></path>
+                      </svg>
+                      <svg class="account_button_profile_icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                    </div>
+                  </div>
+                </li>
+
+                <li class="favorites_widget" id="favoritesBtn" data-shop-trigger="favorites_widget">
+                  <a href="#" aria-label="Избранное">
+                    <i class="fa-solid fa-heart"></i>
+                  </a>
+                  <div class="favorites_widget_counter" id="favoritesCounter" style="display: none">0</div>
+                </li>
+
+                <li class="cart_widget_container">
+                  <div class="cart_widget" id="basketBtn" data-shop-trigger="cart_widget">
+                    <button class="cart_widget_toggle" type="button" aria-label="Корзина">
+                      <svg viewBox="0 0 25 24" class="cart_widget_icon">
+                        <path d="M3.546 17.992 1.77 8.224l2.46-.448 1.776 9.769a.25.25 0 0 0 .246.205h11.496a.25.25 0 0 0 .246-.205l1.776-9.769 2.46.448-1.776 9.768a2.75 2.75 0 0 1-2.706 2.258H6.252a2.75 2.75 0 0 1-2.706-2.258Z"></path>
+                        <path d="M0 8c0-.69.56-1.25 1.25-1.25h21.5a1.25 1.25 0 1 1 0 2.5H1.25C.56 9.25 0 8.69 0 8Z"></path>
+                        <path d="M14.265.989a1.25 1.25 0 0 1 1.746.276l3.785 5.21a1.25 1.25 0 0 1-2.023 1.469l-3.784-5.21A1.25 1.25 0 0 1 14.265.99ZM9.451.98a1.25 1.25 0 0 0-1.743.296l-3.727 5.25a1.25 1.25 0 0 0 2.038 1.448l3.728-5.25A1.25 1.25 0 0 0 9.45.98Z"></path>
+                      </svg>
+                    </button>
+                    <div class="cart_widget_counter" id="basketCounter">0</div>
+                  </div>
+                </li>
+
+                <li class="shop_panel_trigger_item">
+                  <div class="shop_panel" id="universalDropdown" data-shop-panel>
+                    <div class="navigation_dropdown_arrow"></div>
+                    <div class="shop_panel_header">
+                      <h4 class="shop_panel_title" id="dropdownTitle">Избранные товары</h4>
+                    </div>
+                    <div class="shop_panel_content">
+                      <div class="shop_panel_list" id="dropdownList"></div>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </nav>
+        </header>
+      </div>
+
+      <!-- ===== MOBILE MENU DRAWER ===== -->
+      <div class="mobile_menu_overlay" id="mobileMenu" role="dialog" aria-modal="true" aria-label="Навигационное меню">
+        <div class="mobile_menu_overlay_bg" id="mobileMenuOverlay"></div>
+        <div class="mobile_menu_drawer">
+          <!-- Drawer nav -->
+          <nav class="mobile_menu_navigation">
+            <!-- Категории (accordion) -->
+            <div class="mobile_menu_item" id="mobileAccCategories">
+              <div class="mobile_menu_link mobile_menu_link_accent" data-accordion="categories">
+                <span>Категории</span>
+                <span class="mobile_menu_link_arrow">
+                  <svg viewBox="0 0 15 15" width="14px" height="14px"><path fill-rule="evenodd" clip-rule="evenodd" d="m4.842 14.7 6.868-6.526a.929.929 0 0 0 0-1.349L4.842.3C4.42-.1 3.755-.1 3.334.3a1.07 1.07 0 0 0 0 1.554L9.087 7.32a.247.247 0 0 1 0 .361l-5.753 5.466a1.07 1.07 0 0 0 0 1.554 1.096 1.096 0 0 0 1.508 0Z" fill="currentColor" /></svg>
+                </span>
+              </div>
+              <div class="mobile_menu_submenu">
+                <a class="mobile_menu_submenu_link" href="/catalog/"><i class="fa-solid fa-microchip"></i> POD-системы</a>
+                <a class="mobile_menu_submenu_link" href="/catalog/"><i class="fa-solid fa-wind"></i> Одноразовые</a>
+                <a class="mobile_menu_submenu_link" href="/catalog/"><i class="fa-solid fa-flask"></i> Жидкости</a>
+                <a class="mobile_menu_submenu_link" href="/catalog/"><i class="fa-solid fa-gear"></i> Комплектующие</a>
+                <a class="mobile_menu_submenu_link" href="/catalog/"><i class="fa-solid fa-layer-group"></i> Бренды</a>
+              </div>
+            </div>
+
+            <!-- Скидки (accordion) -->
+            <div class="mobile_menu_item" id="mobileAccSale">
+              <div class="mobile_menu_link mobile_menu_link_danger" data-accordion="navigation_item_sale">
+                <span>Скидки</span>
+                <span class="mobile_menu_link_arrow">
+                  <svg viewBox="0 0 15 15" width="14px" height="14px"><path fill-rule="evenodd" clip-rule="evenodd" d="m4.842 14.7 6.868-6.526a.929.929 0 0 0 0-1.349L4.842.3C4.42-.1 3.755-.1 3.334.3a1.07 1.07 0 0 0 0 1.554L9.087 7.32a.247.247 0 0 1 0 .361l-5.753 5.466a1.07 1.07 0 0 0 0 1.554 1.096 1.096 0 0 0 1.508 0Z" fill="currentColor" /></svg>
+                </span>
+              </div>
+              <div class="mobile_menu_submenu">
+                <a class="mobile_menu_submenu_link" href="/catalog/"><i class="fa-solid fa-fire"></i> Горячие предложения</a>
+                <a class="mobile_menu_submenu_link" href="/catalog/"><i class="fa-solid fa-tag"></i> До -50%</a>
+                <a class="mobile_menu_submenu_link" href="/catalog/"><i class="fa-solid fa-star"></i> Хиты продаж</a>
+              </div>
+            </div>
+
+            <!-- Простые ссылки -->
+            <div class="mobile_menu_item">
+              <a class="mobile_menu_link" href="#" data-contacts-open><span>Контакты</span></a>
+            </div>
+            <div class="mobile_menu_item">
+              <a class="mobile_menu_link" href="#" data-delivery-open><span>Доставка</span></a>
+            </div>
+            <div class="mobile_menu_item">
+              <a class="mobile_menu_link" href="{% url 'main:reviews' %}"><span>Отзывы</span></a>
+            </div>
+          </nav>
+
+          <!-- Drawer footer actions -->
+          <div class="mobile_menu_drawer_footer">
+            <!-- Карта клиента -->
+            <a class="mobile_menu_account_button" href="/account">
+              <!-- Иконка в таблетке -->
+              <div class="mmab_icon">
+                <svg viewBox="0 0 24 24" width="20px" height="20px">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M2 5.935C2 4.867 2.867 4 3.935 4H19.42c1.07 0 1.936.867 1.936 1.935v3.871a.645.645 0 1 1-1.29 0v-3.87a.645.645 0 0 0-.646-.646H3.935a.645.645 0 0 0-.645.645v10.323c0 .356.29.645.645.645h7.097a.645.645 0 0 1 0 1.29H3.935A1.935 1.935 0 0 1 2 16.259V5.935Z" fill="currentColor" />
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M20.068 7.871H2.648v-1.29h17.42v1.29Zm0 1.935H2.648v-1.29h17.42v1.29Zm-2.583 2.581a3.226 3.226 0 1 0 0 6.452 3.226 3.226 0 0 0 0-6.452Zm-4.516 3.226a4.516 4.516 0 1 1 9.032 0 4.516 4.516 0 0 1-9.032 0Z" fill="currentColor" />
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M19.761 14.058a.645.645 0 0 1 .06.91l-1.875 2.416a.774.774 0 0 1-1.13.038l-1.37-1.303a.645.645 0 1 1 .913-.912l.979.912 1.513-2a.645.645 0 0 1 .91-.061Z" fill="currentColor" />
+                </svg>
+              </div>
+              <!-- Текст -->
+              <div class="mmab_text">
+                <span class="mmab_label">Карта клиента</span>
+                <span class="mmab_action">Активировать</span>
+              </div>
+              <!-- Штрихкод на фоне -->
+              <svg class="mmab_barcode" viewBox="0 0 33 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M19.286 0v13.333H18V0h1.286zm-2.572 0v13.333H15.43V0h1.285zm-2.571 0v13.333h-1.286V0h1.286zM9.857 0v13.333H8.571V0h1.286zM7.286 0v13.333H5.829V0h1.457zM4.714 0v13.333H3.257V0h1.457zm-3 0v16H0V0h1.714zm27 0v13.333h-.857V0h.857zm-2.571 0v13.333h-.857V0h.857zm-2.572 0v13.333h-1.285V0h1.285zm9 0v16h-1.285V0h1.285z" fill="#000000" />
+              </svg>
+            </a>
+            <div class="mobile_menu_secondary_row">
+              <button class="mobile_menu_icon_button" id="mobileMenuFavBtn" data-shop-trigger="favorites_widget">
+                <svg viewBox="0 0 24 24" width="20px" height="20px" style="flex-shrink: 0">
+                  <path d="M16.43 4c-2.148 0-3.568 1.173-4.273 1.95C11.453 5.172 10.032 4 7.884 4 4.952 4 3 6.726 3 9.78c0 2.285 1.152 6.736 8.869 10.877a.61.61 0 0 0 .577 0c7.717-4.14 8.869-8.592 8.869-10.877 0-3.125-2.01-5.78-4.884-5.78Zm-4.273 15.424C8.451 17.386 4.221 13.99 4.221 9.78c0-2.342 1.406-4.559 3.663-4.559 1.712 0 3.128 1.05 3.755 2.038a.61.61 0 0 0 1.038-.002c.013-.02 1.285-2.036 3.754-2.036 2.273 0 3.663 2.239 3.663 4.559 0 4.21-4.23 7.606-7.937 9.644Z" fill="currentColor" />
+                </svg>
+                Избранное
+              </button>
+              <button class="mobile_menu_icon_button" id="mobileMenuBasketBtn" data-shop-trigger="cart_widget">
+                <svg viewBox="0 0 24 24" width="20px" height="20px" style="flex-shrink: 0">
+                  <path d="M19.74 9.477v-2.61l-2.625-1.314L14.563 3 12 3.641 9.437 3 6.885 5.553 4.261 6.866v2.61L3 12l1.26 2.523v2.61l2.625 1.314L9.437 21 12 20.359l2.563.641 2.552-2.553 2.624-1.313v-2.61L21 12l-1.26-2.523Zm-1.191 4.765v2.155l-2.053 1.027-2.297 2.256L12 19.13l-2.2.55-2.142-2.145-2.208-1.139v-2.154L4.331 12l1.12-2.242V7.602l2.053-1.027L9.802 4.32l2.2.55 2.198-.55 2.143 2.144 2.208 1.14v2.155L19.669 12l-1.12 2.242Z" fill="currentColor" />
+                  <path d="m8.167 15.024 6.857-6.857.808.809-6.857 6.857-.808-.809Zm1.547-3.595c.945 0 1.715-.77 1.715-1.715 0-.945-.77-1.714-1.715-1.714C8.77 8 8 8.77 8 9.714c0 .945.77 1.715 1.714 1.715Zm0-2.286a.571.571 0 1 1 0 1.142.571.571 0 0 1 0-1.142Zm4.572 3.428c-.945 0-1.715.77-1.715 1.715 0 .945.77 1.714 1.715 1.714.945 0 1.714-.77 1.714-1.714 0-.945-.77-1.715-1.714-1.715Zm0 2.286a.571.571 0 1 1 0-1.143.571.571 0 0 1 0 1.143Z" fill="currentColor" />
+                </svg>
+                Корзина
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== MOBILE SEARCH OVERLAY ===== -->
+      <div class="mobile_search_overlay" id="mobileSearchOverlay">
+        <div class="mobile_search_box">
+          <div class="mobile_search_inner">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" class="mobile_search_input_field" placeholder="Поиск товаров..." id="mobileSearchInput" />
+            <button class="mobile_search_close_button" id="mobileSearchClose">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <div class="search_results_dropdown mobile_search_results_dropdown" id="mobileSearchResults" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="promo_banner" data-info-line>
+        <div class="promo_banner_track">
+          <div class="promo_banner_item promo_banner_item_help">
+            <div class="promo_banner_icon_container">
+              <svg class="promo_banner_icon promo_banner_icon_question" width="16" height="16" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M8.8871 5.35651C8.56718 5.59613 8.25468 5.99908 7.88249 6.69671C7.62252 7.18398 7.01677 7.36825 6.52949 7.10829C6.04222 6.84833 5.85794 6.24257 6.11791 5.75529C6.53797 4.96792 7.01772 4.25787 7.68812 3.75574C8.38899 3.23079 9.20559 3 10.1692 3C12.7143 3 14.3382 4.94987 14.3382 6.967C14.3382 7.42251 14.2783 7.86493 14.083 8.28212C13.8843 8.70656 13.5873 9.01601 13.2612 9.27111C12.9512 9.51359 12.5702 9.74001 12.1704 9.97292C12.1026 10.0124 12.0332 10.0527 11.962 10.0941C11.7205 10.2341 11.4584 10.3862 11.1692 10.5602V11.5C11.1692 12.0523 10.7215 12.5 10.1692 12.5C9.61693 12.5 9.16921 12.0523 9.16921 11.5V9.44536L9.63972 9.15169C10.153 8.83129 10.597 8.5737 10.9636 8.36104C11.0331 8.32072 11.0998 8.28201 11.1637 8.24479C11.5809 8.00174 11.8436 7.84078 12.0288 7.69589C12.1979 7.56362 12.2475 7.48568 12.2716 7.43416C12.2991 7.37538 12.3382 7.25324 12.3382 6.967C12.3382 6.01713 11.5728 5 10.1692 5C9.54832 5 9.17654 5.13971 8.8871 5.35651ZM10.1692 14C10.7215 14 11.1692 14.4477 11.1692 15V15.25C11.1692 15.8023 10.7215 16.25 10.1692 16.25C9.61693 16.25 9.16921 15.8023 9.16921 15.25V15C9.16921 14.4477 9.61693 14 10.1692 14Z"
+                ></path>
+              </svg>
+              <svg class="promo_banner_icon promo_banner_icon_phone" width="16" height="16" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M10.205 4.957c.045.003.09.007.126.012 2.55.406 3.725 1.653 4.05 4.309.006.045.006.1.007.159.004.207.01.638.46.647h.013a.434.434 0 0 0 .333-.13c.140-.151.13-.375.123-.556-.002-.043-.005-.085-.003-.121.031-2.716-2.245-5.178-4.873-5.27l-.032.002a.213.213 0 0 1-.03.002c-.027 0-.06-.002-.094-.004A1.655 1.655 0 0 0 10.15 4c-.418 0-.498.306-.508.49-.022.423.373.453.564.467Zm4.053 7.752a8.104 8.104 0 0 1-.162-.13c-.279-.232-.576-.445-.862-.652l-.179-.129c-.367-.265-.697-.396-1.009-.396-.42 0-.786.24-1.088.714-.134.208-.297.31-.497.31a.962.962 0 0 1-.4-.103c-1.185-.555-2.032-1.406-2.516-2.528-.234-.544-.159-.898.254-1.187.233-.164.669-.469.638-1.052-.034-.664-1.452-2.66-2.05-2.886a1.13 1.13 0 0 0-.791-.002c-.686.238-1.18.657-1.425 1.21-.238.535-.227 1.162.031 1.815.745 1.889 1.792 3.535 3.114 4.893 1.292 1.33 2.882 2.418 4.723 3.237.166.074.34.114.467.143l.108.027c.015.004.03.007.045.007h.015c.866 0 1.906-.816 2.226-1.748.28-.817-.232-1.22-.642-1.542v-.001Zm-3.67-5.594c-.147.003-.457.01-.566.335-.05.152-.044.284.018.391.092.159.269.208.429.234.58.096.88.428.939 1.043.028.288.215.487.455.487.019 0 .037 0 .055-.002.289-.036.428-.255.416-.652.005-.415-.205-.884-.562-1.258-.359-.377-.790-.589-1.184-.578Z"
+                ></path>
+              </svg>
+              <svg class="promo_banner_icon promo_banner_icon_telegram" width="16" height="16" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16.173 4.106s1.332-.52 1.22.742c-.036.52-.37 2.337-.628 4.304l-.888 5.825s-.074.853-.74 1.002c-.666.148-1.665-.52-1.85-.668-.149-.112-2.776-1.781-3.7-2.597-.26-.223-.556-.668.036-1.188l3.885-3.71c.444-.445.888-1.484-.962-.223l-5.18 3.525s-.592.371-1.702.037l-2.406-.742s-.888-.556.63-1.113c3.7-1.744 8.251-3.524 12.284-5.194h.001Z"></path>
+              </svg>
+            </div>
+            <span>Появились вопросы? Напиши нам!</span>
+          </div>
+
+          <div class="promo_banner_item promo_banner_item_card">Будь на волне - стань частью клуба!</div>
+          <div class="promo_banner_item promo_banner_item_bonus">Получай бонусы "Для своих"<i class="fa-solid fa-gift"></i></div>
+
+          <div class="promo_banner_item promo_banner_item_help">
+            <div class="promo_banner_icon_container">
+              <svg class="promo_banner_icon promo_banner_icon_question" width="16" height="16" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M8.8871 5.35651C8.56718 5.59613 8.25468 5.99908 7.88249 6.69671C7.62252 7.18398 7.01677 7.36825 6.52949 7.10829C6.04222 6.84833 5.85794 6.24257 6.11791 5.75529C6.53797 4.96792 7.01772 4.25787 7.68812 3.75574C8.38899 3.23079 9.20559 3 10.1692 3C12.7143 3 14.3382 4.94987 14.3382 6.967C14.3382 7.42251 14.2783 7.86493 14.083 8.28212C13.8843 8.70656 13.5873 9.01601 13.2612 9.27111C12.9512 9.51359 12.5702 9.74001 12.1704 9.97292C12.1026 10.0124 12.0332 10.0527 11.962 10.0941C11.7205 10.2341 11.4584 10.3862 11.1692 10.5602V11.5C11.1692 12.0523 10.7215 12.5 10.1692 12.5C9.61693 12.5 9.16921 12.0523 9.16921 11.5V9.44536L9.63972 9.15169C10.153 8.83129 10.597 8.5737 10.9636 8.36104C11.0331 8.32072 11.0998 8.28201 11.1637 8.24479C11.5809 8.00174 11.8436 7.84078 12.0288 7.69589C12.1979 7.56362 12.2475 7.48568 12.2716 7.43416C12.2991 7.37538 12.3382 7.25324 12.3382 6.967C12.3382 6.01713 11.5728 5 10.1692 5C9.54832 5 9.17654 5.13971 8.8871 5.35651ZM10.1692 14C10.7215 14 11.1692 14.4477 11.1692 15V15.25C11.1692 15.8023 10.7215 16.25 10.1692 16.25C9.61693 16.25 9.16921 15.8023 9.16921 15.25V15C9.16921 14.4477 9.61693 14 10.1692 14Z"
+                ></path>
+              </svg>
+              <svg class="promo_banner_icon promo_banner_icon_phone" width="16" height="16" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M10.205 4.957c.045.003.09.007.126.012 2.55.406 3.725 1.653 4.05 4.309.006.045.006.1.007.159.004.207.01.638.46.647h.013a.434.434 0 0 0 .333-.13c.140-.151.13-.375.123-.556-.002-.043-.005-.085-.003-.121.031-2.716-2.245-5.178-4.873-5.27l-.032.002a.213.213 0 0 1-.03.002c-.027 0-.06-.002-.094-.004A1.655 1.655 0 0 0 10.15 4c-.418 0-.498.306-.508.49-.022.423.373.453.564.467Zm4.053 7.752a8.104 8.104 0 0 1-.162-.13c-.279-.232-.576-.445-.862-.652l-.179-.129c-.367-.265-.697-.396-1.009-.396-.42 0-.786.24-1.088.714-.134.208-.297.31-.497.31a.962.962 0 0 1-.4-.103c-1.185-.555-2.032-1.406-2.516-2.528-.234-.544-.159-.898.254-1.187.233-.164.669-.469.638-1.052-.034-.664-1.452-2.66-2.05-2.886a1.13 1.13 0 0 0-.791-.002c-.686.238-1.18.657-1.425 1.21-.238.535-.227 1.162.031 1.815.745 1.889 1.792 3.535 3.114 4.893 1.292 1.33 2.882 2.418 4.723 3.237.166.074.34.114.467.143l.108.027c.015.004.03.007.045.007h.015c.866 0 1.906-.816 2.226-1.748.28-.817-.232-1.22-.642-1.542v-.001Zm-3.67-5.594c-.147.003-.457.01-.566.335-.05.152-.044.284.018.391.092.159.269.208.429.234.58.096.88.428.939 1.043.028.288.215.487.455.487.019 0 .037 0 .055-.002.289-.036.428-.255.416-.652.005-.415-.205-.884-.562-1.258-.359-.377-.790-.589-1.184-.578Z"
+                ></path>
+              </svg>
+              <svg class="promo_banner_icon promo_banner_icon_telegram" width="16" height="16" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16.173 4.106s1.332-.52 1.22.742c-.036.52-.37 2.337-.628 4.304l-.888 5.825s-.074.853-.74 1.002c-.666.148-1.665-.52-1.85-.668-.149-.112-2.776-1.781-3.7-2.597-.26-.223-.556-.668.036-1.188l3.885-3.71c.444-.445.888-1.484-.962-.223l-5.18 3.525s-.592.371-1.702.037l-2.406-.742s-.888-.556.63-1.113c3.7-1.744 8.251-3.524 12.284-5.194h.001Z"></path>
+              </svg>
+            </div>
+            <span>Появились вопросы? Напиши нам!</span>
+          </div>
+        </div>
+        <div class="sticky_product_bar" data-sticky-product-bar hidden>
+          <div class="sticky_product_bar__inner">
+            <div class="sticky_product_bar__left">
+              <img class="sticky_product_bar__image" data-sticky-product-image alt="" />
+              <div class="sticky_product_bar__text">
+                <div class="sticky_product_bar__title" data-sticky-product-title></div>
+                <button class="sticky_product_bar__rating" data-sticky-product-rating-wrap type="button">
+                  <span class="sticky_product_bar__stars" aria-hidden="true">★</span>
+                  <span data-sticky-product-rating></span>
+                </button>
+              </div>
+            </div>
+            <div class="sticky_product_bar__right">
+              <div class="sticky_product_bar__price">
+                <span class="sticky_product_bar__price-current" data-sticky-product-price-current></span>
+                <span class="sticky_product_bar__price-old" data-sticky-product-price-old hidden></span>
+              </div>
+              <button class="sticky_product_bar__cart" data-sticky-product-cart type="button"></button>
+              <button class="sticky_product_bar__favorite" data-sticky-product-favorite type="button" aria-label="Добавить в избранное">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 0 0 1.06-8.84z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mega_menu_panel" id="headerDropdown" data-mega-menu-panel>
+        <div class="mega_menu_container" data-mega-menu-container>
+          <div class="mega_menu_grid">
+            <div class="mega_menu_category_column mega_menu_column_left"></div>
+            <div class="mega_menu_category_column mega_menu_column_right"></div>
+            <div class="mega_menu_promo_banner"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="page_header_spacer" aria-hidden="true"></div>
+    <div id="megaMenuOverlay" class="mega_menu_overlay" aria-hidden="true"></div>
+    <!-- DELIVERY MODAL -->
+    <div id="deliveryBackdrop" class="delivery_backdrop"></div>
+    <div id="deliveryModal" class="delivery_overlay" role="dialog" aria-modal="true" aria-label="Доставка">
+      <div class="delivery_modal_window">
+        <button class="delivery_close_button" id="delivery_close_button" aria-label="Закрыть" type="button">
+          <svg viewBox="0 0 16 16" fill="currentColor">
+            <path d="m8.94 8 2.867-2.86a.67.67 0 1 0-.947-.947L8 7.06 5.14 4.193a.67.67 0 0 0-.947.947L7.06 8l-2.867 2.86a.667.667 0 0 0 .217 1.093.667.667 0 0 0 .73-.146L8 8.94l2.86 2.867a.667.667 0 0 0 1.093-.217.667.667 0 0 0-.146-.73L8.94 8Z" />
+          </svg>
+        </button>
+
+        <div class="delivery_progress_list" id="delivery_progress_list">
+          <button class="delivery_progress_line delivery_progress_line_active" type="button" aria-label="Панель 1"></button>
+          <button class="delivery_progress_line" type="button" aria-label="Панель 2"></button>
+          <button class="delivery_progress_line" type="button" aria-label="Панель 3"></button>
+        </div>
+
+        <div class="delivery_header_section">
+          <div class="delivery_header_icon_slot" id="delivery_header_icon_slot"></div>
+          <div class="delivery_header_text">
+            <h3 id="delivery_header_title">ДОСТАВКА</h3>
+            <p id="delivery_header_subtitle">Надёжная упаковка и быстрая отправка</p>
+          </div>
+        </div>
+
+        <div class="delivery_panels_viewport" id="delivery_panels_viewport">
+          <div class="delivery_panel_item delivery_panel_item_active">
+            <div class="delivery_info_item">
+              <span>Отправка только <span class="delivery_info_highlight">Новой почтой</span> в отделения и почтоматы. Цена согласно тарифам перевозчика.</span>
+            </div>
+            <div class="delivery_info_item">
+              <span>Комплектация заказа занимает <span class="delivery_info_highlight">1-2 рабочих дня</span> после оплаты.</span>
+            </div>
+            <div class="delivery_info_item">
+              <span>Доставка в течение <span class="delivery_info_highlight">1-3 рабочих дней</span> после отправки.</span>
+            </div>
+            <div class="delivery_info_item">
+              <span>После отправки вы получите <span class="delivery_info_highlight">ТТН для отслеживания</span> посылки.</span>
+            </div>
+            <div class="delivery_info_item">
+              <span>Стоимость доставки рассчитывается <span class="delivery_info_highlight">индивидуально</span> в зависимости от веса и габаритов.</span>
+            </div>
+          </div>
+
+          <div class="delivery_panel_item">
+            <div class="delivery_info_item">
+              <span><span class="delivery_info_highlight">Наложенный платёж</span> доступен при получении в отделении или у курьера Новой почты.</span>
+            </div>
+            <div class="delivery_info_item">
+              <span><span class="delivery_info_highlight">Предоплата на банковскую карту</span> выполняется после оформления заказа. Комиссия зависит от тарифа вашего банка.</span>
+            </div>
+          </div>
+
+          <div class="delivery_panel_item">
+            <div class="delivery_info_item">
+              <span><span class="delivery_info_highlight">Проверка товара:</span> обязательно осмотрите заказ при получении в присутствии сотрудника Новой почты. Претензии без проверки не принимаются.</span>
+            </div>
+            <div class="delivery_info_item">
+              <span>Одновременно допускается не более <span class="delivery_info_highlight">2 заказов с наложенным платежом</span>. Новые заказы оформляются после получения предыдущих.</span>
+            </div>
+            <div class="delivery_info_item">
+              <span>Хранение в отделении составляет <span class="delivery_info_highlight">7 рабочих дней</span>, после чего заказ возвращается.</span>
+            </div>
+            <div class="delivery_info_item">
+              <span>Доставка возможна только по <span class="delivery_info_highlight">безопасной территории</span>. Отправка в зоны активных боевых действий не гарантируется.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="delivery_footer_navigation">
+          <button class="delivery_navigation_button delivery_navigation_button_prev" id="delivery_previous_button" aria-label="Назад" type="button">
+            <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
+          </button>
+          <span class="delivery_panel_counter" id="delivery_panel_counter">1 / 3</span>
+          <button class="delivery_navigation_button delivery_navigation_button_next" id="delivery_next_button" aria-label="Вперёд" type="button">
+            <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACTS MODAL -->
+    <div id="contactsBackdrop" class="contacts_backdrop"></div>
+    <div id="contactsModal" class="contacts_overlay" role="dialog" aria-modal="true" aria-label="Контакты">
+      <div class="contacts_modal">
+        <button class="contacts_close" type="button" data-contacts-close aria-label="Закрыть">
+          <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor">
+            <path d="m8.94 8 2.867-2.86a.67.67 0 1 0-.947-.947L8 7.06 5.14 4.193a.67.67 0 0 0-.947.947L7.06 8l-2.867 2.86a.667.667 0 0 0 .217 1.093.667.667 0 0 0 .73-.146L8 8.94l2.86 2.867a.667.667 0 0 0 1.093-.217.667.667 0 0 0-.146-.73L8.94 8Z" />
+          </svg>
+        </button>
+
+        <div class="contacts_header">
+          <div class="contacts_header_icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.9 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92Z" />
+            </svg>
+          </div>
+          <div class="contacts_header_text">
+            <h3>Контакт-центр</h3>
+            <p>Всегда рады помочь вам</p>
+          </div>
+        </div>
+
+        <div class="contacts_schedule">
+          <div class="contacts_schedule_item">
+            <span class="contacts_schedule_label">Будние дни</span>
+            <span class="contacts_schedule_time">9:00 – 19:00</span>
+          </div>
+          <div class="contacts_schedule_item">
+            <span class="contacts_schedule_label">Выходные дни</span>
+            <span class="contacts_schedule_time">9:00 – 18:00</span>
+          </div>
+        </div>
+
+        <div class="contacts_divider"></div>
+
+        <p class="contacts_section_title">Написать нам</p>
+        <div class="contacts_messengers">
+          <a href="https://t.me/MEGASPORTUA_BOT" target="_blank" rel="noopener noreferrer" class="contacts_messenger_link">
+            <svg viewBox="0 0 24 24" width="20" height="20">
+              <circle cx="12" cy="12" r="12" fill="#54A2DC" />
+              <path d="M16.403 6.775 5.075 11.143c-.773.31-.768.741-.142.934l2.909.907 6.728-4.245c.319-.194.61-.09.37.122l-5.451 4.92h-.002l.002.001-.201 2.998c.294 0 .424-.135.588-.294l1.413-1.374 2.938 2.17c.542.299.931.145 1.066-.501l1.929-9.09c.197-.792-.303-1.15-.82-.916Z" fill="#fff" />
+            </svg>
+            Telegram
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <script src="{% static 'site/shared/js/header.js' %}?v=structure1"></script>
+    {% include 'site/shared/includes/cookie_banner.html' %}
+    {% if not disable_header_cursor %}
+      {% include 'site/shared/includes/cursor.html' %}
+    {% endif %}

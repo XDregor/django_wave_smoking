@@ -1,0 +1,385 @@
+<!doctype html>
+{% load static %}
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ product.name }} | WAVE</title>
+    <link rel="stylesheet" href="{% static 'site/shared/css/theme.css' %}" />
+    <link rel="icon" type="image/png" href="{% static 'site/shared/img/mini_logo.png' %}" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/product_card.css' %}?v=unavailable-clickable-1" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/review_card.css' %}" />
+    
+      <link rel="stylesheet" href="{% static 'site/product_detail/css/page.css' %}?v=structure1" />
+  </head>
+  <body>
+    {% include 'site/shared/header.html' %}
+    {% include 'site/shared/includes/cursor.html' %}
+
+    <main class="product-detail" data_product_detail_id="{{ product.id }}">
+      <section class="product-detail__hero">
+        <div class="product-detail__grid">
+        <aside class="product-gallery-track">
+        <div class="product-gallery">
+          <nav class="product-detail__breadcrumbs product-gallery__breadcrumbs" aria-label="Хлебные крошки">
+            <a href="{% url 'main:home' %}">Главная</a>
+            <span>/</span>
+            <a href="{% url 'main:catalog' %}">Каталог</a>
+            <span>/</span>
+            <span>{{ product.name }}</span>
+          </nav>
+
+          {% if product.promo_video or gallery_start_image_url %}
+            <div class="product-gallery__thumbs" id="js_gallery_thumbnails" aria-label="Изображения товара">
+              {% if product.promo_video %}
+                <button
+                  class="product-gallery__thumb product-gallery__thumb--video gallery_thumbnail_button{% if not gallery_start_image_url %} active{% endif %}"
+                  type="button"
+                  data_gallery_type="video"
+                  data_gallery_video_src="{{ product.promo_video.url }}"
+                  data_gallery_poster_src="{% if product.promo_video_poster %}{{ product.promo_video_poster.url }}{% elif product.image %}{{ product.image.url }}{% endif %}"
+                  data_gallery_alt="{{ product.name }} — видео"
+                  aria-label="Видео товара"
+                >
+                  <span class="product-gallery__thumb-video-icon">▶</span>
+                  {% if product.promo_video_poster %}
+                    <img src="{{ product.promo_video_poster.url }}" alt="{{ product.name }} — видео" loading="lazy" />
+                  {% elif product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }} — видео" loading="lazy" />
+                  {% endif %}
+                </button>
+              {% endif %}
+
+              {% if initial_gallery_variant %}
+                <button
+                  class="product-gallery__thumb gallery_thumbnail_button active"
+                  id="js_gallery_variant_thumb"
+                  type="button"
+                  data_gallery_role="variant"
+                  data_gallery_variant_id="{{ initial_gallery_variant.id }}"
+                  data_gallery_src="{{ initial_gallery_variant.image.url }}"
+                  data_gallery_alt="{{ initial_gallery_variant.variant.name }}"
+                  aria-label="Изображение выбранного варианта"
+                >
+                  <img src="{{ initial_gallery_variant.thumbnail_url|default:initial_gallery_variant.image.url }}" alt="{{ initial_gallery_variant.variant.name }}" loading="lazy" />
+                </button>
+              {% endif %}
+
+              {% for image in additional_images %}
+                <button class="product-gallery__thumb gallery_thumbnail_button{% if not initial_gallery_variant and forloop.first %} active{% endif %}" type="button" data_gallery_src="{{ image.image.url }}" data_gallery_alt="{{ image.alt_text|default:product.name }}" aria-label="Изображение {{ forloop.counter }}">
+                  <img src="{{ image.thumbnail_url|default:image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy" />
+                </button>
+              {% endfor %}
+
+              {% if product.image and not initial_gallery_variant and not additional_images %}
+                <button class="product-gallery__thumb gallery_thumbnail_button active" type="button" data_gallery_src="{{ product.image.url }}" data_gallery_alt="{{ product.name }}" aria-label="Основное изображение">
+                  <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" />
+                </button>
+              {% endif %}
+            </div>
+          {% endif %}
+
+          <div class="product-gallery__frame" id="js_gallery_frame">
+            {% if badge %}
+              <span class="product-gallery__badge product-gallery__badge--{{ badge.type }}">{{ badge.label }}</span>
+            {% endif %}
+
+            {% if gallery_start_image_url %}
+              <img class="product-gallery__image" id="js_main_image" src="{{ gallery_start_image_url }}" alt="{{ gallery_start_image_alt }}" />
+            {% elif product.promo_video %}
+              <img class="product-gallery__image" id="js_main_image" src="" alt="" hidden />
+            {% else %}
+              <div class="product-gallery__placeholder">Нет изображения</div>
+            {% endif %}
+            {% if product.promo_video %}
+              <video
+                class="product-gallery__video"
+                id="js_main_video"
+                muted
+                loop
+                playsinline
+                preload="metadata"
+                {% if product.promo_video_poster %}poster="{{ product.promo_video_poster.url }}"{% elif product.image %}poster="{{ product.image.url }}"{% endif %}
+                {% if gallery_start_image_url %}hidden{% else %}src="{{ product.promo_video.url }}"{% endif %}
+              ></video>
+              <button class="product-gallery__video-sound" id="js_video_sound_toggle" type="button" aria-label="Включить звук" {% if gallery_start_image_url %}hidden{% endif %}>
+                <svg class="product-gallery__video-sound-muted" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 9v6h4l5 4V5L8 9H4z"></path>
+                  <path d="M18 9l4 4"></path>
+                  <path d="M22 9l-4 4"></path>
+                </svg>
+                <svg class="product-gallery__video-sound-on" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 9v6h4l5 4V5L8 9H4z"></path>
+                  <path d="M17 9a4 4 0 0 1 0 6"></path>
+                  <path d="M19.5 6.5a8 8 0 0 1 0 11"></path>
+                </svg>
+              </button>
+              <div class="product-gallery__video-progress" id="js_video_progress" {% if gallery_start_image_url %}hidden{% endif %}>
+                <div class="product-gallery__video-progress-fill" id="js_video_progress_fill"></div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+        </aside>
+
+        <article class="product-info">
+          <header class="product-info__header">
+            <div class="product-info__code" id="js_product_code" data_product_code="777{{ product.id|stringformat:"04d" }}">
+              <button class="product-info__code-copy" id="js_product_code_copy" type="button" aria-label="Скопировать код товара">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="9" y="9" width="10" height="10" rx="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+              <span>Код: 654{{ product.id|stringformat:"04d" }}</span>
+            </div>
+            {% if product.brand %}
+              <div class="product-info__brand">
+                <a class="product-info__brand-link" href="{% url 'main:catalog' %}?brands={{ product.brand.slug }}">{{ product.brand.name }}</a>
+              </div>
+            {% endif %}
+            <h1 class="product-info__title">{{ product.name }}</h1>
+            {% if product_reviews_count %}
+              <a class="product-info__reviews-link" href="#product-reviews" id="js_product_reviews_link">
+                <span class="product-info__reviews-star" aria-hidden="true">★</span>
+                <span class="product-info__reviews-text">{{ product_average_rating|floatformat:1 }} • {{ product_reviews_count }} отзывов</span>
+                <span itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" hidden>
+                  <meta itemprop="reviewCount" content="{{ product_reviews_count }}">
+                  <meta itemprop="ratingValue" content="{{ product_average_rating|floatformat:1 }}">
+                </span>
+              </a>
+            {% endif %}
+          </header>
+
+          {% if display_variant_groups %}
+            <div class="product-info__section" id="js_variant_section">
+              {% for variant_group in display_variant_groups %}
+                <div class="product-info__variant-group">
+                  <div class="product-info__label">
+                    {{ variant_group.name }}{% if variant_group.has_images %}: <span class="product-info__selected-variant" data_selected_variant_name></span>{% endif %}
+                  </div>
+                  <div class="product-info__variants{% if variant_group.has_images %} product-info__variants--swatches{% endif %}">
+                    {% for product_variant in variant_group.variants %}
+                      {% if variant_group.has_images %}
+                      <button
+                        class="product-info__variant product-info__variant--swatch{% if not product_variant.image_url %} product-info__variant--swatch-empty{% endif %} variant_btn"
+                        type="button"
+                        data_variant_id="{{ product_variant.id }}"
+                        data_variant_option_id="{{ product_variant.option_id }}"
+                        data_variant_name="{{ product_variant.name }}"
+                        data_variant_image_url="{{ product_variant.image_url }}"
+                        data_variant_thumbnail_url="{{ product_variant.thumbnail_url|default:product_variant.image_url }}"
+                        {% if not product_variant.available %}disabled{% endif %}
+                      >
+                        {% if product_variant.image_url %}
+                          <img class="product-info__variant-swatch-image" src="{{ product_variant.thumbnail_url|default:product_variant.image_url }}" alt="{{ product_variant.name }}" loading="lazy" />
+                        {% else %}
+                          <span class="product-info__variant-swatch-fallback">{{ product_variant.name }}</span>
+                        {% endif %}
+                        <span class="product-info__variant-tooltip">{{ product_variant.name }}</span>
+                      </button>
+                      {% else %}
+                      <button
+                        class="product-info__variant variant_btn"
+                        type="button"
+                        data_variant_id="{{ product_variant.id }}"
+                        data_variant_option_id="{{ product_variant.option_id }}"
+                        data_variant_name="{{ product_variant.name }}"
+                        data_variant_image_url="{{ product_variant.image_url }}"
+                        data_variant_thumbnail_url="{{ product_variant.thumbnail_url|default:product_variant.image_url }}"
+                        {% if not product_variant.available %}disabled{% endif %}
+                      >
+                        {{ product_variant.name }}
+                      </button>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div
+            class="product-info__price{% if product.get_discount_percent %} product-info__price--discount{% endif %}"
+            id="js_product_price"
+            data_unit_price="{{ product.price }}"
+            data_unit_old_price="{% if product.is_on_sale %}{{ product.old_price }}{% endif %}"
+            data_unit_saving="{% if product_price_saving %}{{ product_price_saving }}{% endif %}"
+          >
+            <div class="product-info__price-inner">
+              <div class="product-info__price-badge">
+                <span class="product-info__price-percent">-{{ product.get_discount_percent }}%</span>
+                <span class="product-info__price-badge-label">скидка</span>
+              </div>
+              <div class="product-info__price-values">
+                <span class="product-info__price-current" id="js_product_price_current">{{ product.price|floatformat:0 }}₴</span>
+                <span class="product-info__price-old" id="js_product_price_old">{{ product.old_price|floatformat:0 }}₴</span>
+              </div>
+            </div>
+            <div class="product-info__price-saving">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                <line x1="7" y1="7" x2="7.01" y2="7"></line>
+              </svg>
+              <span id="js_product_price_saving">вы экономите {{ product_price_saving|floatformat:0 }}₴</span>
+            </div>
+          </div>
+
+          <div class="product-info__section product-info__section--plain">
+            <div class="product-info__actions{% if not is_product_available %} product-info__actions--unavailable{% endif %}">
+              {% if is_product_available %}
+                <div class="product-info__quantity" aria-label="Количество товара" {% if has_product_skus %}hidden{% endif %}>
+                  <button class="product-info__quantity-button product-info__quantity-button--minus" id="js_quantity_minus" type="button" aria-label="Уменьшить количество"></button>
+                  <input class="product-info__quantity-input" id="input-quantity" type="number" name="quantity" value="1" min="1" autocomplete="off" />
+                  <button class="product-info__quantity-button product-info__quantity-button--plus" id="js_quantity_plus" type="button" aria-label="Увеличить количество"></button>
+                </div>
+              {% endif %}
+              <button
+                class="product-info__button product-info__button--cart{% if not is_product_available or has_product_skus %} product-info__button--disabled{% endif %}"
+                id="js_add_to_cart"
+                type="button"
+                data_product_id="{{ product.id }}"
+                {% if not is_product_available or has_product_skus %}disabled aria-disabled="true"{% endif %}
+              >
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAACPklEQVR4nO2ZT0hUQRzHP2GbXpIuHjoEQqu3vAR7UBAPJt5avWRQ1CXsEqEdIrx4UNBQ9KqdAvegnYwQrFuHgk4RUpldIjqlFV0MlJKRefBDdt+feTOT4nzgx9s3zO878112fvtmHgQCgUDAAl3A/Zi4Bpww1C4Cw/rqhGZgB/iXENcN9T/r/E/8ZwNzhvpSwxmdwBgwcSAWxOAvD7OBWpwTg3/Hv4E+YAUoG469v3B/iwk0JfQvit98Uqh+cQu7Dvil+26SgzdiUPVTi+NeyslHMRyj1SL6fctj4LEQGkzoq77RjZSTV1XpfIxWWfR9nsfAAyE063ENjIi8GXJwWQitejRQEXm3yEGrEPrq0cBbkddODk4Cf7TQX6AxY/6GwT9xHbAtDJwhJ++EWCljrlrYQwkL1lkFilgSgjdwT9lWBYoYFYLqEcM1I7YqUMQVIbiMeyq2KlBEmxBUi9I178V4HTYEG4BdLaiuPUC3o5gSk/8B1GOJtI8INuMhFln2PPlnQMGmgQkh/gV44Sjm9T7AOjeFgUWOICVhYJ0jyClgS5iYBi45qELNLk1Meli8Oyl2fsYUdHVwbeIOjunX1cJFFXoEnHZtIHBYaAQuGuzS5LlTqw7Tw2Njbott37a+z8JZ4LVYuK90mxfaxNNpFOr+QgaNJ1Wqj9r5eeFujfKn2tPys0q+avPC1RoGBjJofKyS/wFPqA3O2oHB13R7WtQLE1svUYxQZzXjwFP9bsHk7KZX738r+nMgEDhu7AHM/4ko6mUOlwAAAABJRU5ErkJggg==" alt="" aria-hidden="true" />
+                <span data_cart_button_text>{% if not is_product_available %}Нет в наличии{% elif has_product_skus %}Выберите вариант товара{% else %}Добавить в корзину{% endif %}</span>
+              </button>
+              <button
+                class="product-info__favorite{% if is_liked %} active{% endif %}"
+                id="js_wishlist_btn"
+                type="button"
+                data_like_url="{% url 'main:product_like' product.id %}"
+                aria-label="Добавить в избранное"
+                aria-pressed="{% if is_liked %}true{% else %}false{% endif %}"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 0 0 1.06-8.84z"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="product-info__description">
+            <div class="product-info__description-title">О товаре:</div>
+            <div class="product-info__description-body" id="product-description-body">
+              <div class="product-info__description-content" id="product-description-content">
+                {% if product.description %}
+                  {{ product.description|safe }}
+                {% else %}
+                  <p>Описание товара пока не добавлено.</p>
+                {% endif %}
+              </div>
+              <button class="product-info__description-more" id="js_product_description_toggle" type="button" aria-expanded="false" aria-controls="product-description-content">
+                Подробнее
+              </button>
+            </div>
+          </div>
+          
+          {% if product_specifications %}
+            <section class="product-info__specs">
+              <button class="product-info__toggle-title product-info__specs-title" type="button" aria-expanded="false" data_collapsible_trigger="product-specs-content">
+                <span>Характеристики</span>
+                <span class="product-info__toggle-icon" aria-hidden="true">
+                  <svg viewBox="0 0 15 15" fill="currentColor" width="15" height="15"><g stroke="none" fill="none" stroke-width="1" fill-rule="evenodd"><g fill="currentColor" fill-rule="nonzero"><g transform="translate(2 7)"><path d="M0 0L11 0 11 1 0 1z"></path></g></g></g></svg>
+                  <svg class="product-info__toggle-icon-plus" viewBox="0 0 15 15" fill="currentColor" width="15" height="15"><g stroke="none" fill="none" stroke-width="1" fill-rule="evenodd"><g fill="currentColor" fill-rule="nonzero"><g transform="translate(2 7)"><path d="M0 0L11 0 11 1 0 1z"></path></g></g></g></svg>
+                </span>
+              </button>
+              <div class="product-info__collapsible is-collapsed" id="product-specs-content">
+                <dl class="product-info__specs-list">
+                  {% for specification in product_specifications %}
+                    <div class="product-info__specs-item">
+                      <dt class="product-info__specs-name">{{ specification.name }}</dt>
+                      <dd class="product-info__specs-value">{{ specification.value }}</dd>
+                    </div>
+                  {% endfor %}
+                </dl>
+              </div>
+            </section>
+          {% endif %}
+
+          <div class="product-info__description product-info__warranty">
+            <button class="product-info__toggle-title product-info__description-title" type="button" aria-expanded="false" data_collapsible_trigger="product-warranty-content">
+              <span>Гарантия</span>
+              <span class="product-info__toggle-icon" aria-hidden="true">
+                <svg viewBox="0 0 15 15" fill="currentColor" width="15" height="15"><g stroke="none" fill="none" stroke-width="1" fill-rule="evenodd"><g fill="currentColor" fill-rule="nonzero"><g transform="translate(2 7)"><path d="M0 0L11 0 11 1 0 1z"></path></g></g></g></svg>
+                <svg class="product-info__toggle-icon-plus" viewBox="0 0 15 15" fill="currentColor" width="15" height="15"><g stroke="none" fill="none" stroke-width="1" fill-rule="evenodd"><g fill="currentColor" fill-rule="nonzero"><g transform="translate(2 7)"><path d="M0 0L11 0 11 1 0 1z"></path></g></g></g></svg>
+              </span>
+            </button>
+            <div class="product-info__collapsible is-collapsed" id="product-warranty-content">
+              <p>Обмен и возврат в течение 14 дней для товаров, не бывших в употреблении. (Картриджи, испарители и жидкости не подлежат обмену и возврату)</p>
+            </div>
+          </div>
+        </article>
+        </div>
+      </section>
+
+      {% if product_reviews_count %}
+        <section class="product-reviews" id="product-reviews">
+          <div class="product-reviews__header">
+            <div>
+              <h2 class="product-reviews__title">Отзывы</h2>
+              <div class="product-reviews__summary">★ {{ product_average_rating|floatformat:1 }} • {{ product_reviews_count }} отзывов</div>
+            </div>
+            <button class="product-reviews__toggle" id="js_product_reviews_toggle" type="button" aria-expanded="false">Показать</button>
+          </div>
+          <div class="product-reviews__body" id="js_product_reviews_body">
+            {% for review in product_reviews %}
+              {% include 'site/shared/includes/review_card.html' with review=review show_product=False %}
+            {% endfor %}
+          </div>
+          {% if product_reviews_count > 10 %}
+            <div class="product-reviews__pagination" id="js_product_reviews_pagination" hidden>
+              <button class="product-reviews__page-btn" id="js_product_reviews_prev" type="button" aria-label="Предыдущая страница отзывов">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+              <span class="product-reviews__page-info" id="js_product_reviews_page_info">1 / 1</span>
+              <button class="product-reviews__page-btn" id="js_product_reviews_next" type="button" aria-label="Следующая страница отзывов">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 6l6 6-6 6" />
+                </svg>
+              </button>
+            </div>
+          {% endif %}
+        </section>
+      {% endif %}
+
+      {% if also_chosen_products %}
+        <section class="product-cross-sell">
+          <h2 class="product-cross-sell__title">Также выбирают</h2>
+          <div class="product-cross-sell__grid">
+            {% for product in also_chosen_products %}
+              {% include 'site/shared/includes/product_card.html' with product=product %}
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+
+      {% if related_products %}
+        <section class="related-products">
+          <h2 class="related-products__title">Рекомендации</h2>
+          <div class="related-products__grid">
+            {% for product in related_products %}
+              {% include 'site/shared/includes/product_card.html' with product=product %}
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+    </main>
+
+    <div class="product-toast" id="js_toast" role="status" aria-live="polite">
+      <div class="product-toast__dot" id="js_toast_dot"></div>
+      <span id="js_toast_text"></span>
+    </div>
+
+    <div class="product-lightbox" id="js_product_lightbox" role="dialog" aria-modal="true" aria-label="Просмотр изображения товара">
+      <button class="product-lightbox__close" id="js_product_lightbox_close" type="button" aria-label="Закрыть">×</button>
+      <button class="product-lightbox__nav product-lightbox__nav--prev" id="js_product_lightbox_prev" type="button" aria-label="Предыдущее изображение">‹</button>
+      <img class="product-lightbox__image" id="js_product_lightbox_image" src="" alt="" />
+      <button class="product-lightbox__nav product-lightbox__nav--next" id="js_product_lightbox_next" type="button" aria-label="Следующее изображение">›</button>
+    </div>
+
+    <script src="{% static 'site/shared/js/product_card.js' %}"></script>
+    <div id="product_sku_payload" data-sku-payload="{{ sku_payload_json|default:'[]' }}" hidden></div>
+    <script src="{% static 'site/product_detail/js/page.js' %}?v=structure1"></script>
+  </body>
+</html>

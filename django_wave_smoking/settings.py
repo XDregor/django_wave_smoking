@@ -41,15 +41,15 @@ UNFOLD = {
     "SITE_TITLE": "WAVE Admin",
     "SITE_HEADER": "WAVE",
     "SITE_SUBHEADER": "Shop management",
-    "SITE_ICON": lambda request: static("assets/img/mini_logo.png"),
+    "SITE_ICON": lambda request: static("site/shared/img/mini_logo.png"),
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": True,
     "STYLES": [
-        lambda request: f"{static('admin/css/unfold_overrides.css')}?v=sidebar-active2",
-        lambda request: f"{static('admin/css/admin_responsive.css')}?v=responsive2",
+        lambda request: f"{static('admin_panel/shared/css/unfold_overrides.css')}?v=sidebar-active2",
+        lambda request: f"{static('admin_panel/shared/css/responsive.css')}?v=responsive2",
     ],
     "SCRIPTS": [
-        lambda request: f"{static('admin/js/unfold_overrides.js')}?v=dark-only1",
+        lambda request: f"{static('admin_panel/shared/js/unfold_overrides.js')}?v=dark-only1",
     ],
     "COLORS": {
         "primary": {
@@ -204,9 +204,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    BASE_DIR / 'main' / 'templates' / 'main',
-]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

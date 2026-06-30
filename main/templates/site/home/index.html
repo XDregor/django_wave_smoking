@@ -1,0 +1,221 @@
+<!doctype html>
+{% load static %}
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WAVE Вейп-шоп</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/theme.css' %}" />
+    <link rel="icon" type="image/png" href="{% static 'site/shared/img/mini_logo.png' %}" />
+
+    
+    {% include 'site/shared/includes/badges.html' %}
+      <link rel="stylesheet" href="{% static 'site/home/css/page.css' %}?v=structure1" />
+  </head>
+  <body>
+    {% include 'site/shared/header.html' %}
+    <!-- Preloader -->
+    <div class="page_preloader" id="page_preloader">
+      <div class="preloader_spinner"></div>
+    </div>
+
+    <!-- Mouse animation -->
+    <div class="cursor_dot cursor_dot_small" id="smallCircle"></div>
+    <div class="cursor_dot cursor_dot_large" id="largeCircle"></div>
+
+    <!-- ==================== HERO BANNER ==================== -->
+    <section class="main_banner">
+      <div class="banner_bg_pattern"></div>
+      <div class="banner_floating_element banner_floating_one"></div>
+      <div class="banner_floating_element banner_floating_two"></div>
+
+      <div class="banner_container">
+        <!-- Левая панель: текст -->
+        <div class="banner_left_panel">
+          <div class="banner_text_block" id="textContent">
+            <!-- <div class="banner_badge">
+              <span id="badgeText">Новая линейка 2026</span>
+            </div>-->
+            <h1 class="banner_title" id="heroTitle">Пар <span class="banner_title_accent">без</span><br />компромиссов</h1>
+            <p class="banner_subtitle" id="heroSubtitle"><span class="italic">Под-системы, жидкости и аксессуары</span> для тех, кто ценит вкус, надёжность и быстрый выбор без лишнего шума.</p>
+            <!-- <div class="banner_actions">
+              <button class="banner_button banner_button_primary" onclick="window.location.href='{% url 'main:catalog' %}'">Смотреть каталог</button>
+              <button class="banner_button banner_button_secondary" onclick="showSale()">Горячие предложения</button>
+            </div> -->
+          </div>
+        </div>
+
+        <!-- Правая панель: карусель -->
+        <div class="banner_right_panel">
+          <div class="banner_carousel">
+            <div class="banner_carousel_blur"></div>
+            <div class="banner_cards_track" id="cardsTrack">
+              <!-- Главная карточка товара -->
+              <div class="banner_product_wrapper">
+                <div class="banner_product_card">
+                  <div class="banner_product_media">
+                    <div class="banner_media_loading" id="productLoading"></div>
+                    <img class="banner_product_image" id="productImage" src="" alt="" onerror="this.classList.add('img_broken')" />
+                    <span class="banner_product_badge" id="productBadge">-15%</span>
+                  </div>
+                  <div class="banner_product_info">
+                    <div class="banner_product_name" id="productName">POD-система Wave One</div>
+                    <div class="banner_product_price" id="productPrice">от 799₴</div>
+                  </div>
+                </div>
+                <div class="banner_product_nav">
+                  <div class="banner_nav_dot active"></div>
+                  <div class="banner_nav_dot"></div>
+                  <div class="banner_nav_dot"></div>
+                  <div class="banner_nav_dot"></div>
+                </div>
+              </div>
+
+              <!-- Коллекции -->
+              <div class="banner_collection_card" data-collection-index="0">
+                <div class="banner_collection_media">
+                  <div class="banner_media_loading" id="collectionLoading0"></div>
+                  <img class="banner_collection_image" id="collectionImage0" src="" alt="" onerror="this.classList.add('img_broken')" />
+                </div>
+                <div class="banner_collection_info">
+                  <span class="banner_collection_label"></span>
+                  <div class="banner_collection_name"></div>
+                  <div class="banner_collection_desc"></div>
+                </div>
+              </div>
+
+              <div class="banner_collection_card" data-collection-index="1">
+                <div class="banner_collection_media">
+                  <div class="banner_media_loading" id="collectionLoading1"></div>
+                  <img class="banner_collection_image" id="collectionImage1" src="" alt="" onerror="this.classList.add('img_broken')" />
+                </div>
+                <div class="banner_collection_info">
+                  <span class="banner_collection_label"></span>
+                  <div class="banner_collection_name"></div>
+                  <div class="banner_collection_desc"></div>
+                </div>
+              </div>
+
+              <div class="banner_collection_card" data-collection-index="2">
+                <div class="banner_collection_media">
+                  <div class="banner_media_loading" id="collectionLoading2"></div>
+                  <img class="banner_collection_image" id="collectionImage2" src="" alt="" onerror="this.classList.add('img_broken')" />
+                </div>
+                <div class="banner_collection_info">
+                  <span class="banner_collection_label"></span>
+                  <div class="banner_collection_name"></div>
+                  <div class="banner_collection_desc"></div>
+                </div>
+              </div>
+            </div>
+            <!-- /banner_cards_track -->
+            <div class="banner_scroll_hint">Листай →</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== BRAND MARQUEE ==================== -->
+    <div class="brand_line_section" style="padding: 0 var(--site-pad)">
+      {{ brand_carousel_items|json_script:"brand-line-data" }}
+      <div class="brand_line_component" id="brandMarquee">
+        <div class="brand_line_track" id="marqueeContainer">
+          <div class="brand_line_row"></div>
+          <div class="brand_line_row brand_line_row_clone" aria-hidden="true"></div>
+        </div>
+        <div class="brand_line_edge_overlay">
+          <div class="brand_line_fade_left"></div>
+          <div class="brand_line_fade_right"></div>
+        </div>
+        <div class="brand_detail_overlay" id="detailWindow">
+          <div class="brand_detail_logo_container">
+            <img class="brand_detail_logo" id="detailLogo" src="" alt="" />
+          </div>
+          <div class="brand_detail_cta">
+            <p class="brand_detail_title">Товары бренда<br /><span class="brand_detail_brand_name" id="brandName"></span></p>
+            <p class="brand_detail_subtitle">Откройте устройства, жидкости и расходники от бренда, который сейчас в фокусе</p>
+            <button class="brand_detail_button" id="ctaButton">Смотреть товары</button>
+          </div>
+        </div>
+        <div class="brand_detail_close_button" id="closeButton"></div>
+      </div>
+    </div>
+
+    <!-- ==================== RECOMMENDATIONS ==================== -->
+    <section class="recommendations_section">
+      <div class="recommendations_container">
+        <div class="recommendations_top_row">
+          <div class="recommendations_intro">
+            <p class="recommendations_eyebrow" id="recommendationsEyebrow">Рекомендации для вас</p>
+            <div class="recommendations_header_row">
+              <h2 class="recommendations_title" id="recommendationsTitle">Самые популярные товары</h2>
+            </div>
+            <p class="recommendations_subtitle" id="recommendationsSubtitle">Подборка товаров, которые чаще всего выбирают наши покупатели.</p>
+          </div>
+          <div class="recommendations_toggle_slot" id="recommendationsToggleSlot">
+            <div class="recommendations_toggle" id="recommendationsToggle" role="tablist" aria-label="Переключение категорий">
+              <button class="recommendations_toggle_btn active" id="toggleBestsellers" role="tab" aria-selected="true" data-tab="bestsellers">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+                Хиты продаж
+              </button>
+              <button class="recommendations_toggle_btn" id="toggleNewItems" role="tab" aria-selected="false" data-tab="new">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="16" />
+                  <line x1="8" y1="12" x2="16" y2="12" />
+                </svg>
+                Новинки
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="recommendations_content" id="recommendationsContent">
+          {% for product in products %} {% include 'site/shared/includes/product_card.html' with product=product %} {% empty %}
+          <p style="grid-column: 1/-1; text-align: center; color: rgba(241, 241, 241, 0.5)">Товары не найдены</p>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== REVIEWS ==================== -->
+    <section class="reviews_section" id="reviewsSection">
+      <div class="reviews_container">
+        <div class="reviews_intro">
+          <h2 class="reviews_title">Отзывы о магазине</h2>
+          <!-- Slider nav (видна только в карусели) -->
+          <div class="reviews_slider_nav" id="reviewsSliderNav" aria-hidden="true">
+            <button class="reviews_slider_nav_dot is-active" data-dot="0" type="button" aria-label="Перейти к отзыву 1"></button>
+            <button class="reviews_slider_nav_dot" data-dot="1" type="button" aria-label="Перейти к отзыву 2"></button>
+            <button class="reviews_slider_nav_dot" data-dot="2" type="button" aria-label="Перейти к отзыву 3"></button>
+          </div>
+        </div>
+
+        {{ home_reviews|json_script:"home-reviews-data" }}
+
+        <!-- > 1050px: 3 карточки в ряд; <= 1050px: карусель -->
+        <div class="reviews_track_wrapper" id="reviewsTrackWrapper">
+          <div class="reviews_track" id="reviewsTrack"></div>
+          <!-- /reviews_track -->
+        </div>
+        <!-- /reviews_track_wrapper -->
+
+        <div class="reviews_cta_wrap">
+          <a class="reviews_cta_button" href="{% url 'main:reviews' %}">
+            Все отзывы
+            <span class="reviews_cta_arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    
+
+    <!-- ==================== SCRIPTS ==================== -->
+    <script src="{% static 'site/home/js/page.js' %}?v=structure1"></script>
+  </body>
+</html>

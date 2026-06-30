@@ -1,0 +1,486 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ site_title|default:"WAVE Admin" }}{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'admin_panel/products/css/form.css' %}?v=wizard17" />
+{% endblock %}
+
+{% block content %}
+    <div class="wave-admin-product-sku">
+        <div class="page-body">
+          <!-- STEP NAV -->
+          <div class="step-nav" id="stepNav">
+            <div class="step-pill active" id="pill1" onclick="goStep(1)">
+              <div class="step-num">1</div>
+              Основное
+            </div>
+            <div class="step-connector"></div>
+            <div class="step-pill locked" id="pill2" onclick="goStep(2)">
+              <div class="step-num">2</div>
+              Описание
+            </div>
+            <div class="step-connector"></div>
+            <div class="step-pill locked" id="pill3" onclick="goStep(3)">
+              <div class="step-num">3</div>
+              Медиа
+            </div>
+            <div class="step-connector"></div>
+            <div class="step-pill locked" id="pill4" onclick="goStep(4)">
+              <div class="step-num">4</div>
+              Варианты
+            </div>
+            <div class="step-connector"></div>
+            <div class="step-pill locked" id="pill5" onclick="goStep(5)">
+              <div class="step-num">5</div>
+              SKU / &#1050;&#1086;&#1084;&#1073;&#1080;&#1085;&#1072;&#1094;&#1080;&#1080;
+            </div>
+            <div class="step-connector"></div>
+            <div class="step-pill locked" id="pill6" onclick="goStep(6)">
+              <div class="step-num">6</div>
+              Публикация
+            </div>
+          </div>
+
+          <!-- ─────────── STEP 1 ─────────── -->
+          <div class="wizard-card step-content active" id="step1">
+            <div class="card-header">
+              <div class="card-header-top">
+                <div class="card-icon">
+                  <svg width="18" height="18" fill="none" stroke="var(--accent)" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="card-title">Основная информация</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="field-group">
+                <label>Название товара <span class="req">*</span></label>
+                <input type="text" id="productName" maxlength="100" placeholder="" value="" autocomplete="off" />
+              </div>
+
+              <div class="field-row">
+                <div class="field-group">
+                  <label>Категория <span class="req">*</span></label>
+                  <div class="input-wrap">
+                    <div class="select-wrap">
+                      <select id="categorySelect">
+                        <option value="" disabled selected>Выберите категорию</option>
+                        {% for category in categories %}
+                          <option value="{{ category.pk }}">{{ category.name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <button class="input-add-btn" type="button" data-tip="Создать категорию" data-quick-add="category" onclick="window.openQuickAdd?.('category')">+</button>
+                  </div>
+                </div>
+                <div class="field-group">
+                  <label>Бренд <span class="req">*</span></label>
+                  <div class="input-wrap">
+                    <div class="select-wrap">
+                      <select id="brandSelect">
+                        <option value="" disabled selected>Выберите бренд</option>
+                        {% for brand in brands %}
+                          <option value="{{ brand.pk }}">{{ brand.name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <button class="input-add-btn" type="button" data-tip="Создать бренд" data-quick-add="brand" onclick="window.openQuickAdd?.('brand')">+</button>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="expand-trigger" id="extraToggle" onclick="toggleExtra()">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg>
+                  Дополнительные поля
+                </div>
+                <div id="extraFields" style="display: none; margin-top: 16px">
+                  <div class="field-row" style="margin-bottom: 16px">
+                    <div class="field-group">
+                      <label>Статус</label>
+                      <select id="statusSelect">
+                        <option value="published" selected>Опубликован</option>
+                        <option value="draft">Черновик</option>
+                      </select>
+                    </div>
+                    <div class="field-group">
+                      <label>Бейдж</label>
+                      <div class="badge-group" id="badgeGroup">
+                        <button class="badge-opt badge-opt--hit" type="button" data-badge="hit" onclick="toggleBadge(this)">Хит</button>
+                        <button class="badge-opt badge-opt--new" type="button" data-badge="new" onclick="toggleBadge(this)">Новинка</button>
+                        <button class="badge-opt badge-opt--top" type="button" data-badge="top" onclick="toggleBadge(this)">Топ</button>
+                      </div>
+                      <div class="field-hint">Скидка и процент скидки определяются автоматически по ценам SKU.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <button class="btn btn-ghost" onclick="window.location.href='/admin/'">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                Отмена
+              </button>
+              <div class="spacer"></div>
+              <button class="btn btn-primary" id="step1Next" disabled onclick="nextStep(1, 1)">
+                Далее
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- ─────────── STEP 2 ─────────── -->
+          <div class="wizard-card step-content" id="step2">
+            <div class="card-header">
+              <div class="card-header-top">
+                <div class="card-icon">
+                  <svg width="18" height="18" fill="none" stroke="var(--accent)" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="card-title">Описание товара</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="field-group">
+                <label>Основное описание <span class="req">*</span></label>
+                <div class="rte">
+                  <div class="rte-toolbar">
+                    <button class="rte-btn" data-command="bold"><b>B</b></button>
+                    <button class="rte-btn" data-command="italic"><i>I</i></button>
+                    <button class="rte-btn" data-command="underline"><u>U</u></button>
+                    <div class="rte-sep"></div>
+                    <button class="rte-btn" data-command="formatBlock" data-tag="h1">H1</button>
+                    <button class="rte-btn" data-command="formatBlock" data-tag="h2">H2</button>
+                    <div class="rte-sep"></div>
+                    <button class="rte-btn" data-command="insertUnorderedList">
+                      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="8" y1="6" x2="21" y2="6" />
+                        <line x1="8" y1="12" x2="21" y2="12" />
+                        <line x1="8" y1="18" x2="21" y2="18" />
+                        <line x1="3" y1="6" x2="3.01" y2="6" />
+                        <line x1="3" y1="12" x2="3.01" y2="12" />
+                        <line x1="3" y1="18" x2="3.01" y2="18" />
+                      </svg>
+                    </button>
+                    <button class="rte-btn" data-command="insertOrderedList">
+                      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="9" y1="6" x2="20" y2="6" />
+                        <line x1="9" y1="12" x2="20" y2="12" />
+                        <line x1="9" y1="18" x2="20" y2="18" />
+                        <circle cx="4" cy="6" r="1" fill="currentColor" />
+                        <circle cx="4" cy="12" r="1" fill="currentColor" />
+                        <circle cx="4" cy="18" r="1" fill="currentColor" />
+                      </svg>
+                    </button>
+                    <div class="rte-sep"></div>
+                    <button class="rte-btn" data-command="createLink">
+                      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="rte-body" id="rteBody" contenteditable="true" role="textbox" aria-multiline="true"></div>
+                </div>
+                <div class="field-hint">Поддерживается форматирование: жирный, курсив, списки, ссылки.</div>
+              </div>
+
+              <div>
+                <div class="expand-trigger" id="charToggle" onclick="toggleChars()">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg>
+                  + Добавить характеристики
+                </div>
+                <div id="charBlock" style="display: none; margin-top: 16px">
+                  <div class="char-rows" id="charRows">
+                    <!-- initially empty -->
+                  </div>
+                  <div id="charEmpty" class="char-empty">Нет характеристик</div>
+                  <button class="btn btn-ghost btn-sm" style="margin-top: 8px" onclick="addChar()">+ Добавить строку</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <button class="btn btn-ghost" onclick="nextStep(-1, 2)">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></svg>
+                Назад
+              </button>
+              <div class="spacer"></div>
+              <button class="btn btn-primary" id="step2Next" disabled onclick="nextStep(1, 2)">
+                Далее
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- ─────────── STEP 3 ─────────── -->
+          <div class="wizard-card step-content" id="step3">
+            <div class="card-header">
+              <div class="card-header-top">
+                <div class="card-icon">
+                  <svg width="18" height="18" fill="none" stroke="var(--accent)" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="card-title">Медиа</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="section-label">Основное изображение</div>
+              <div class="media-grid">
+                <div class="media-thumb" id="mainImage" onclick="document.getElementById('mainFileInput').click()">
+                  <svg class="upload-icon" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                  <span class="upload-label">Загрузить</span>
+                  <input type="file" id="mainFileInput" accept="image/*" onchange="handleMainImage(event)" style="display: none" />
+                </div>
+              </div>
+
+              <div class="section-label">Дополнительные изображения</div>
+              <div class="media-grid" id="extraMediaGrid">
+                <div class="media-thumb" id="extraAddTrigger" onclick="document.getElementById('extraFileInput').click()">
+                  <svg class="upload-icon" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                  <span class="upload-label">Добавить</span>
+                  <input type="file" id="extraFileInput" accept="image/*" multiple onchange="handleExtraImages(event)" style="display: none" />
+                </div>
+              </div>
+
+              <div>
+                <div class="expand-trigger" id="videoToggle" onclick="toggleVideo()">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg>
+                  + Добавить промо-видео
+                </div>
+                <div id="videoBlock" style="display: none; margin-top: 16px">
+                  <div class="section-label" style="margin-bottom: 12px">Видеофайл</div>
+                  <div class="media-grid" style="max-width: 260px">
+                    <div class="media-thumb" id="videoThumb" onclick="document.getElementById('videoFileInput').click()">
+                      <svg class="upload-icon" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <polygon points="23 7 16 12 23 17 23 7" />
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                      </svg>
+                      <span class="upload-label">Загрузить видео</span>
+                      <input type="file" id="videoFileInput" accept="video/*" onchange="handleVideoFile(event)" style="display: none" />
+                    </div>
+                  </div>
+                  <div class="section-label" style="margin-top: 16px; margin-bottom: 12px">Постер</div>
+                  <div class="media-grid" style="max-width: 260px">
+                    <div class="media-thumb" id="posterThumb" onclick="document.getElementById('posterFileInput').click()">
+                      <svg class="upload-icon" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <polyline points="21 15 16 10 5 21" />
+                      </svg>
+                      <span class="upload-label">Загрузить постер</span>
+                      <input type="file" id="posterFileInput" accept="image/*" onchange="handlePosterFile(event)" style="display: none" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <button class="btn btn-ghost" onclick="nextStep(-1, 3)">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></svg>
+                Назад
+              </button>
+              <div class="spacer"></div>
+              <button class="btn btn-primary" onclick="nextStep(1, 3)">
+                Далее
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- ─────────── STEP 4 (ПЕРЕРАБОТАННЫЙ) ─────────── -->
+          <div class="wizard-card step-content" id="step4">
+            <div class="card-header">
+              <div class="card-header-top">
+                <div class="card-icon">
+                  <svg width="18" height="18" fill="none" stroke="var(--accent)" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="2" />
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="card-title">Варианты товара</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="variant-workspace">
+                <div class="variant-section-head">
+                  <div>
+                    <div class="variant-section-title">Группы вариантов</div>
+                    <div class="variant-section-copy">Каждая группа формирует отдельное свойство товара и будущие SKU-комбинации.</div>
+                  </div>
+                  <div class="variant-limit" id="variantGroupCounter">0 из 4 групп</div>
+                </div>
+
+                <div id="variantGroupsContainer"></div>
+
+                <div class="variant-group-addbar">
+                  <button class="btn btn-ghost" id="addGroupBtn" type="button">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    Добавить группу
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <button class="btn btn-ghost" onclick="nextStep(-1, 4)">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></svg>
+                Назад
+              </button>
+              <div class="spacer"></div>
+              <button class="btn btn-primary" onclick="nextStep(1, 4)">
+                Далее — SKU
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- ─────────── STEP 5 ─────────── -->
+          <div class="wizard-card step-content" id="step5">
+            <div class="card-header">
+              <div class="card-header-top">
+                <div class="card-icon">
+                  <svg width="18" height="18" fill="none" stroke="var(--accent)" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="12" y1="1" x2="12" y2="23" />
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="card-title">SKU / &#1050;&#1086;&#1084;&#1073;&#1080;&#1085;&#1072;&#1094;&#1080;&#1080;</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body" style="padding-bottom: 0">
+              <div class="sku-tree-widget">
+                <div class="tree-outer" id="treeOuter">
+                  <div class="tree-inner" id="treeInner">
+                    <svg class="tree-svg" id="treeSvg"></svg>
+                    <div class="tree-columns" id="treeColumns"></div>
+                  </div>
+                </div>
+                <div class="inherit-tooltip" id="inheritTooltip"></div>
+                <div class="toast" id="toast"></div>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <button class="btn btn-ghost" onclick="nextStep(-1, 5)">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></svg>
+                Назад
+              </button>
+              <div class="spacer"></div>
+              <button class="btn btn-primary" id="step5Next" disabled onclick="nextStep(1, 5)">
+                Перейти к проверке
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- ─────────── STEP 6 ─────────── -->
+          <div class="wizard-card step-content" id="step6">
+            <div class="card-header">
+              <div class="card-header-top">
+                <div class="card-icon" style="background: var(--accent-dim); border-color: var(--accent-glow)">
+                  <svg width="18" height="18" fill="none" stroke="var(--accent)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
+                </div>
+                <div>
+                  <div class="card-title">Проверка и публикация</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="final-review" id="finalReview"></div>
+            </div>
+            <div class="card-footer">
+              <button class="btn btn-ghost" onclick="nextStep(-1, 6)">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></svg>
+                Вернуться к редактированию
+              </button>
+              <div class="spacer"></div>
+              <button class="btn btn-success" id="publishBtn" disabled onclick="publish(event)">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z" /></svg>
+                Опубликовать товар
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- /page-body -->
+      </div>
+      <!-- /wave-admin-product-sku -->
+  <div id="qaBackdrop" class="qa-backdrop" style="display:none" onclick="closeQuickAdd(event)">
+    <div class="qa-popup" onclick="event.stopPropagation()">
+      <div class="qa-title" id="qaTitle">Новая категория</div>
+      <div class="qa-field">
+        <label>Название <span class="req">*</span></label>
+        <input type="text" id="qaNameInput" placeholder="Введите название..." autocomplete="off" oninput="qaUpdateSlug()" onkeydown="qaKeydown(event)">
+      </div>
+      <div class="qa-field">
+        <label>Slug</label>
+        <div class="qa-slug-wrap">
+          <span class="qa-slug-label">slug</span>
+          <span class="qa-slug-value" id="qaSlugValue">—</span>
+        </div>
+      </div>
+      <div class="qa-actions">
+        <button class="btn btn-ghost" type="button" onclick="closeQuickAdd()">Отмена</button>
+        <button class="btn btn-primary" type="button" id="qaConfirmBtn" onclick="qaConfirm()" disabled>Добавить</button>
+      </div>
+    </div>
+  </div>
+  {{ variant_catalog|json_script:"sku-variant-catalog" }}
+  {{ edit_product_payload|default:"{}"|json_script:"sku-edit-product-data" }}
+  <div
+    id="sku-admin-config"
+    data-save-url="{{ request.path }}"
+    data-product-list-url="{{ product_list_url }}"
+    data-quick-add-url="{{ quick_add_url }}"
+    data-mode="{{ sku_admin_mode|default:'create' }}"
+    data-product-id="{{ edit_product.pk|default:'' }}"
+    hidden
+  ></div>
+  <script src="{% static 'admin_panel/products/js/config.js' %}?v=structure1"></script>
+  <script src="{% static 'admin_panel/products/js/form.js' %}?v=wizard14"></script>
+  <script src="{% static 'admin_panel/products/js/variants.js' %}?v=variants3"></script>
+{% endblock %}

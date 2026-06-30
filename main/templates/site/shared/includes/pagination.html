@@ -1,0 +1,27 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'site/shared/css/pagination.css' %}?v=structure1" />
+
+
+<div class="site_pagination_component" data_pagination_component_wrapper="{{ pagination_id }}">
+  <nav class="site_pagination_container{% if pagination_class %} {{ pagination_class }}{% endif %}" id="{{ pagination_id }}" data-pagination aria-label="{{ pagination_label|default:'Pagination' }}"></nav>
+
+  <template data_pagination_template_name="prev">
+    <button class="site_pagination_button_element" type="button" data_pagination_prev_button aria-label="Previous page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6" /></svg>
+    </button>
+  </template>
+
+  <template data_pagination_template_name="page">
+    <button class="site_pagination_button_element __ACTIVE_CLASS__" type="button" data_pagination_page_number="__PAGE__">__PAGE__</button>
+  </template>
+
+  <template data_pagination_template_name="dots">
+    <span class="site_pagination_dots_span">…</span>
+  </template>
+
+  <template data_pagination_template_name="next">
+    <button class="site_pagination_button_element" type="button" data_pagination_next_button aria-label="Next page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6" /></svg>
+    </button>
+  </template>
+</div>

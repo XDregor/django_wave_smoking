@@ -8,126 +8,131 @@
 {% block extrastyle %}
     {{ block.super }}
     {{ form.media }}
-    <link rel="stylesheet" href="{% static 'admin/css/admin_login.css' %}?v=login1" />
+    <link rel="stylesheet" href="{% static 'admin_panel/shared/css/login.css' %}?v=login3" />
 {% endblock %}
 
 {% block extrahead %}
     {{ block.super }}
-    <script src="{% static 'admin/js/admin_login.js' %}?v=login1" defer></script>
+    <script src="{% static 'admin_panel/shared/js/login.js' %}?v=login3" defer></script>
 {% endblock %}
 
 {% block base %}
     <main class="wave-login-shell">
-        <section class="wave-login-brand" aria-label="WAVE Admin">
-            <div class="wave-login-brand__top">
-                <img src="{% static 'assets/img/mini_logo.png' %}" alt="WAVE" class="wave-login-logo" />
-                <div>
-                    <strong>WAVE</strong>
-                    <span>ADMINISTRATION</span>
-                </div>
+        <header class="wave-login-topbar">
+            <div class="wave-login-brand" aria-label="WAVE Admin">
+                <img src="{% static 'site/shared/img/mini_logo.png' %}" alt="" class="wave-login-logo" />
+                <span class="wave-login-brand__name">WAVE</span>
+                <span class="wave-login-brand__section">Admin</span>
             </div>
 
-            <div class="wave-login-brand__content">
-                <span class="wave-login-eyebrow">Панель управления</span>
-                <p>Рабочее пространство<br />вашего магазина.</p>
-            </div>
-
-            <div class="wave-login-brand__footer">
-                <span class="wave-login-status-dot" aria-hidden="true"></span>
-                Защищённый доступ
-            </div>
-        </section>
-
-        <section class="wave-login-auth">
             {% if site_url %}
                 <a class="wave-login-back" href="{{ site_url }}">
                     <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
-                    На сайт
+                    <span>Вернуться на сайт</span>
                 </a>
             {% endif %}
+        </header>
 
-            <div class="wave-login-form-wrap">
-                <header class="wave-login-heading">
-                    <span class="wave-login-heading__mark" aria-hidden="true"></span>
-                    <h1>Вход в панель</h1>
-                    <p>Введите данные учётной записи администратора.</p>
-                </header>
+        <div class="wave-login-layout">
+            <section class="wave-login-auth" aria-labelledby="wave-login-title">
+                <div class="wave-login-auth__inner">
+                    <header class="wave-login-header">
+                        <h1 id="wave-login-title">Вход в WAVE</h1>
+                        <span class="wave-login-kicker">
+                            <span class="material-symbols-outlined" aria-hidden="true">shield_lock</span>
+                            Служебный доступ
+                        </span>
+                    </header>
 
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="wave-login-message{% if message.tags %} is-{{ message.tags }}{% endif %}" role="status">
-                            <span class="material-symbols-outlined" aria-hidden="true">info</span>
-                            <span>{{ message }}</span>
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="wave-login-message{% if message.tags %} is-{{ message.tags }}{% endif %}" role="status">
+                                <span class="material-symbols-outlined" aria-hidden="true">info</span>
+                                <span>{{ message }}</span>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if form.errors or form.non_field_errors %}
+                        <div class="wave-login-error" role="alert">
+                            <span class="material-symbols-outlined" aria-hidden="true">error</span>
+                            <div>
+                                <strong>Не удалось войти</strong>
+                                <span>Проверьте логин и пароль, затем повторите попытку.</span>
+                            </div>
                         </div>
-                    {% endfor %}
-                {% endif %}
+                    {% endif %}
 
-                {% if form.errors or form.non_field_errors %}
-                    <div class="wave-login-error" role="alert">
-                        <span class="material-symbols-outlined" aria-hidden="true">error</span>
-                        <div>
-                            <strong>Не удалось войти</strong>
-                            <span>Проверьте логин и пароль и повторите попытку.</span>
+                    {% if user.is_authenticated %}
+                        <div class="wave-login-error" role="alert">
+                            <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+                            <div>
+                                <strong>Недостаточно прав</strong>
+                                <span>Текущая учётная запись не имеет доступа к панели.</span>
+                            </div>
                         </div>
+                    {% endif %}
+
+                    <form action="{{ app_path }}" method="post" id="login-form" class="wave-login-form">
+                        {% csrf_token %}
+
+                        <div class="wave-login-field{% if form.username.errors %} has-error{% endif %}">
+                            <label for="{{ form.username.id_for_label }}">Логин</label>
+                            <div class="wave-login-input">
+                                <span class="material-symbols-outlined wave-login-input__icon" aria-hidden="true">person</span>
+                                {{ form.username }}
+                            </div>
+                            {% for error in form.username.errors %}<span class="wave-login-field-error">{{ error }}</span>{% endfor %}
+                        </div>
+
+                        <div class="wave-login-field{% if form.password.errors %} has-error{% endif %}">
+                            <div class="wave-login-label-row">
+                                <label for="{{ form.password.id_for_label }}">Пароль</label>
+                                {% url 'admin_password_reset' as password_reset_url %}
+                                {% url 'admin:admin_password_reset' as unfold_password_reset_url %}
+                                {% if password_reset_url or unfold_password_reset_url %}
+                                    <a href="{{ password_reset_url|default:unfold_password_reset_url }}">Забыли пароль?</a>
+                                {% endif %}
+                            </div>
+                            <div class="wave-login-input wave-login-password">
+                                <span class="material-symbols-outlined wave-login-input__icon" aria-hidden="true">key</span>
+                                {{ form.password }}
+                                <button class="wave-login-password-toggle" type="button" data-password-toggle aria-label="Показать пароль" aria-pressed="false">
+                                    <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+                                </button>
+                            </div>
+                            {% for error in form.password.errors %}<span class="wave-login-field-error">{{ error }}</span>{% endfor %}
+                        </div>
+
+                        <input type="hidden" name="next" value="{{ next }}" />
+
+                        <button class="wave-login-submit" type="submit" data-login-submit>
+                            <span class="wave-login-submit__highlight" aria-hidden="true"></span>
+                            <span data-login-submit-text>Войти в панель</span>
+                            <span class="material-symbols-outlined wave-login-submit__arrow" aria-hidden="true">arrow_forward</span>
+                            <span class="wave-login-spinner" aria-hidden="true"></span>
+                        </button>
+                    </form>
+
+                    <div class="wave-login-security">
+                        <span class="material-symbols-outlined" aria-hidden="true">verified_user</span>
+                        <span>Доступ только для сотрудников с правами администратора</span>
                     </div>
-                {% endif %}
+                </div>
+            </section>
 
-                {% if user.is_authenticated %}
-                    <div class="wave-login-error" role="alert">
-                        <span class="material-symbols-outlined" aria-hidden="true">lock</span>
-                        <div>
-                            <strong>Недостаточно прав</strong>
-                            <span>Текущая учётная запись не имеет доступа к панели.</span>
-                        </div>
-                    </div>
-                {% endif %}
-
-                <form action="{{ app_path }}" method="post" id="login-form" class="wave-login-form">
-                    {% csrf_token %}
-
-                    <div class="wave-login-field{% if form.username.errors %} has-error{% endif %}">
-                        <label for="{{ form.username.id_for_label }}">Логин</label>
-                        <div class="wave-login-input-wrap">
-                            <span class="material-symbols-outlined wave-login-input-icon" aria-hidden="true">person</span>
-                            {{ form.username }}
-                        </div>
-                        {% for error in form.username.errors %}<span class="wave-login-field-error">{{ error }}</span>{% endfor %}
-                    </div>
-
-                    <div class="wave-login-field{% if form.password.errors %} has-error{% endif %}">
-                        <div class="wave-login-label-row">
-                            <label for="{{ form.password.id_for_label }}">Пароль</label>
-                            {% url 'admin_password_reset' as password_reset_url %}
-                            {% url 'admin:admin_password_reset' as unfold_password_reset_url %}
-                            {% if password_reset_url or unfold_password_reset_url %}
-                                <a href="{{ password_reset_url|default:unfold_password_reset_url }}">Забыли пароль?</a>
-                            {% endif %}
-                        </div>
-                        <div class="wave-login-input-wrap">
-                            <span class="material-symbols-outlined wave-login-input-icon" aria-hidden="true">lock</span>
-                            {{ form.password }}
-                            <button class="wave-login-password-toggle" type="button" data-password-toggle aria-label="Показать пароль" aria-pressed="false">
-                                <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
-                            </button>
-                        </div>
-                        {% for error in form.password.errors %}<span class="wave-login-field-error">{{ error }}</span>{% endfor %}
-                    </div>
-
-                    <input type="hidden" name="next" value="{{ next }}" />
-
-                    <button class="wave-login-submit" type="submit" data-login-submit>
-                        <span data-login-submit-text>Войти</span>
-                        <span class="material-symbols-outlined wave-login-submit__arrow" aria-hidden="true">arrow_forward</span>
-                        <span class="wave-login-spinner" aria-hidden="true"></span>
-                    </button>
-                </form>
-
-                <p class="wave-login-note">
-                    Доступ разрешён только сотрудникам с правами администратора.
-                </p>
-            </div>
-
-            <span class="wave-login-version">WAVE ADMIN</span>
-        </section>
+            <aside class="wave-login-visual" aria-hidden="true">
+                <div class="wave-login-visual__rule wave-login-visual__rule--vertical"></div>
+                <div class="wave-login-visual__rule wave-login-visual__rule--horizontal"></div>
+                <div class="wave-login-visual__lights">
+                    <span data-login-light></span>
+                    <span data-login-light></span>
+                    <span data-login-light></span>
+                </div>
+                <div class="wave-login-product-float" data-login-visual>
+                    <img src="{% static 'site/shared/img/liquid_for_pod.png' %}" alt="" class="wave-login-product" />
+                </div>
+            </aside>
+        </div>
     </main>
 {% endblock %}

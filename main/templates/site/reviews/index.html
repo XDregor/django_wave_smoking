@@ -1,0 +1,125 @@
+<!doctype html>
+{% load static %}
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WAVE - Отзывы покупателей</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/theme.css' %}" />
+    <link rel="icon" type="image/png" href="{% static 'site/shared/img/mini_logo.png' %}" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/review_card.css' %}" />
+
+    
+      <link rel="stylesheet" href="{% static 'site/reviews/css/page.css' %}?v=structure1" />
+  </head>
+  <body>
+    {% include 'site/shared/header.html' %}
+    <div class="page">
+      <nav class="catalog_breadcrumb">
+        <a href="{% url 'main:home' %}">Главная</a>
+        <span class="catalog_breadcrumb_sep">›</span>
+        <span class="catalog_breadcrumb_current">Отзывы</span>
+      </nav>
+      <div class="layout">
+        <aside class="sidebar">
+          <div class="sidebar-inner">
+            <div class="summary-card">
+              <p class="summary-label">Общий рейтинг</p>
+              <div class="summary-score-row">
+                <span class="summary-big">{{ rating_summary.average|floatformat:1 }}</span>
+                <div class="summary-right">
+                  <div class="summary-stars" id="summaryStars"></div>
+                  <p class="summary-sub">&middot; {{ rating_summary.total }} отзывов</p>
+                </div>
+              </div>
+            </div>
+
+            <button class="sidebar-add-btn" id="openModalBtn2">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M4 13.5V16h2.5l7.37-7.37-2.5-2.5L4 13.5zM15.71 6.29a1 1 0 000-1.41l-1.59-1.59a1 1 0 00-1.41 0l-1.24 1.24 2.5 2.5 1.24-1.24z" fill="currentColor" /></svg>
+              Оставить отзыв
+            </button>
+
+            <div class="filters-card">
+              <p class="filters-label">Фильтр</p>
+              <div class="filter-list" id="filterBtns">
+                <button class="filter-btn active" data-filter="all">Все отзывы <span class="filter-badge">{{ rating_summary.total }}</span></button>
+                <button class="filter-btn" data-filter="5"><span class="filter-stars" id="fs5"></span><span class="filter-badge">{{ rating_summary.count_5 }}</span></button>
+                <button class="filter-btn" data-filter="4"><span class="filter-stars" id="fs4"></span><span class="filter-badge">{{ rating_summary.count_4 }}</span></button>
+                <button class="filter-btn" data-filter="3"><span class="filter-stars" id="fs3"></span><span class="filter-badge">{{ rating_summary.count_3 }}</span></button>
+                <button class="filter-btn" data-filter="2"><span class="filter-stars" id="fs2"></span><span class="filter-badge">{{ rating_summary.count_2 }}</span></button>
+                <button class="filter-btn" data-filter="1"><span class="filter-stars" id="fs1"></span><span class="filter-badge">{{ rating_summary.count_1 }}</span></button>
+                <div class="divider"></div>
+                <button class="filter-btn" data-filter="verified">
+                  <span style="display: flex; align-items: center; gap: 6px">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M13 19L16 22L21 17" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                      <path
+                        d="M9 22H7C5.89543 22 5 21.1046 5 20V11.1817C5 11.0632 4.96494 10.9474 4.89923 10.8488L3.10077 8.15115C3.03506 8.05259 3 7.93679 3 7.81833V2.6C3 2.26863 3.26863 2 3.6 2H5.4C5.73137 2 6 2.26863 6 2.6V4.4C6 4.73137 6.26863 5 6.6 5H9.4C9.73137 5 10 4.73137 10 4.4V2.6C10 2.26863 10.2686 2 10.6 2H13.4C13.7314 2 14 2.26863 14 2.6V4.4C14 4.73137 14.2686 5 14.6 5H17.4C17.7314 5 18 4.73137 18 4.4V2.6C18 2.26863 18.2686 2 18.6 2H20.4C20.7314 2 21 2.26863 21 2.6V7.81833C21 7.93679 20.9649 8.05259 20.8992 8.15115L19.1008 10.8488C19.0351 10.9474 19 11.0632 19 11.1817V13.5"
+                        stroke="var(--accent)"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      ></path>
+                    </svg>
+                    Проверенные
+                  </span>
+                  <span class="filter-badge">{{ rating_summary.verified }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <main class="reviews_main">
+          <div class="toolbar">
+            <p class="toolbar-count"><em id="shownCount">{{ rating_summary.total }}</em> из <span id="totalReviewsCount">{{ rating_summary.total }}</span> отзывов</p>
+          </div>
+          <div id="reviewsList"></div>
+          {% include 'site/shared/includes/pagination.html' with pagination_id='reviewsPagination' pagination_label='Reviews pagination' %}
+        </main>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="modalBackdrop">
+      <div class="modal">
+        <div class="modal-head">
+          <h2 class="modal-title">Написать отзыв</h2>
+          <button class="modal-close" id="closeModalBtn">
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>
+          </button>
+        </div>
+        <span class="modal-section-label">Ваша оценка</span>
+        <div class="stars-picker" id="starsPicker">
+          <svg viewBox="0 0 24 24" data-i="1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="var(--buda)" /></svg>
+          <svg viewBox="0 0 24 24" data-i="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="var(--buda)" /></svg>
+          <svg viewBox="0 0 24 24" data-i="3"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="var(--buda)" /></svg>
+          <svg viewBox="0 0 24 24" data-i="4"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="var(--buda)" /></svg>
+          <svg viewBox="0 0 24 24" data-i="5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="var(--buda)" /></svg>
+        </div>
+        <div class="modal-row">
+          <div class="field"><label>Имя</label><input type="text" placeholder="Аноним" id="formName" /></div>
+          <div class="field"><label>Товар</label><input type="text" placeholder="Название товара" id="formProduct" /></div>
+        </div>
+        <div class="field"><label>Комментарий</label><textarea placeholder="Расскажите подробнее..." id="formText"></textarea></div>
+        <button class="modal-submit" id="submitReviewBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13" />
+            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+          </svg>
+          Опубликовать
+        </button>
+      </div>
+    </div>
+
+    {% include 'site/shared/includes/scroll_to_top.html' %}
+
+    {{ reviews_json|json_script:"reviewsData" }}
+    {{ products_json|json_script:"reviewProductsData" }}
+    {{ rating_summary|json_script:"ratingSummaryData" }}
+
+    <script src="{% static 'site/reviews/js/page.js' %}?v=structure1"></script>
+  </body>
+</html>

@@ -12,9 +12,9 @@ ENV/
 # Django local data
 db.sqlite3
 db.sqlite3-journal
-media/
-products/
-staticfiles/
+/media/
+/products/
+/staticfiles/
 
 # Environment and secrets
 .env
