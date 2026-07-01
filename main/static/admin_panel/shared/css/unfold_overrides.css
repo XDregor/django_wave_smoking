@@ -80,8 +80,8 @@ aside a:hover,
   background: rgba(255, 255, 255, 0.04) !important;
 }
 
-#nav-sidebar-apps > div {
-  margin-bottom: 4px !important;
+#nav-sidebar-apps .simplebar-content > div {
+  margin-bottom: 8px !important;
 }
 
 #nav-sidebar-apps hr {
@@ -101,7 +101,11 @@ aside a:hover,
 }
 
 #nav-sidebar-apps ol {
-  gap: 1px !important;
+  gap: 0 !important;
+}
+
+#nav-sidebar-apps .simplebar-content ol > li + li {
+  margin-top: 4px !important;
 }
 
 #nav-sidebar-apps a {

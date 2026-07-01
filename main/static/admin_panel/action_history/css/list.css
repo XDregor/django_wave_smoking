@@ -449,3 +449,134 @@ body:has(.wa-history) #content {
         width: 100%;
     }
 }
+
+/* Action history: information first, decoration second */
+.wa-history .page-body {
+    max-width: 1140px;
+    gap: 16px;
+}
+
+.wa-history .history-hero {
+    grid-template-columns: minmax(0, 1fr) 150px;
+    gap: 10px;
+    align-items: center;
+}
+
+.wa-history .history-hero-main {
+    padding: 2px 0;
+    border: 0;
+    background: transparent;
+}
+
+.wa-history h1 {
+    font-size: 18px;
+    letter-spacing: 0;
+}
+
+.wa-history .history-hero-main p {
+    max-width: 760px;
+    margin-top: 5px;
+    color: var(--text-3);
+    font-size: 11.5px;
+}
+
+.wa-history .history-retention {
+    padding: 11px 13px;
+    border-radius: 7px;
+}
+
+.wa-history .history-retention strong {
+    font-size: 16px;
+}
+
+.wa-history .history-stats {
+    gap: 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+}
+
+.wa-history .stat-card {
+    padding: 10px 13px;
+    border: 0;
+    border-right: 1px solid var(--border);
+    border-radius: 0;
+    background: transparent;
+}
+
+.wa-history .stat-card:last-child {
+    border-right: 0;
+}
+
+.wa-history .stat-card strong {
+    font-size: 17px;
+}
+
+.wa-history .history-toolbar {
+    gap: 7px;
+    padding: 8px;
+    border-radius: 8px;
+}
+
+.wa-history .search-input {
+    height: 36px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    font-size: 12px;
+}
+
+.wa-history .history-list {
+    gap: 6px;
+}
+
+.wa-history .history-item {
+    padding: 11px 13px;
+    border-radius: 7px;
+}
+
+.wa-history .history-item:hover {
+    background: var(--surface-2);
+}
+
+.wa-history .history-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 7px;
+}
+
+@media (max-width: 720px) {
+    .wa-history .history-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .wa-history .history-retention {
+        display: grid;
+        grid-template-columns: auto auto 1fr;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .wa-history .history-retention strong,
+    .wa-history .history-retention small {
+        margin: 0;
+    }
+
+    .wa-history .history-retention small {
+        text-align: right;
+    }
+}
+
+@media (max-width: 560px) {
+    .wa-history .history-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .wa-history .stat-card:nth-child(2) {
+        border-right: 0;
+    }
+
+    .wa-history .stat-card:nth-child(-n + 2) {
+        border-bottom: 1px solid var(--border);
+    }
+}

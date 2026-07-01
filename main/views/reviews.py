@@ -43,6 +43,7 @@ def reviews(request):
             "code": f"{product.id:04d}",
             "review_count": product.review_count,
             "average_rating": round(float(product.average_rating), 1) if product.average_rating else 0,
+            "likes": product.display_likes,
         }
         for product in products_for_review
     ]
@@ -121,6 +122,6 @@ def api_review_vote(request, id):
     review.refresh_from_db(fields=("helpful_count",))
     return JsonResponse({
         "ok": True,
-        "helpful": review.helpful_count,
+        "helpful": review.display_helpful_count,
         "liked": liked,
     })

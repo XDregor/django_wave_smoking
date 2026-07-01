@@ -98,6 +98,7 @@ class ProductAdmin(
         "discount_badge",
         "publication_badge",
         "likes",
+        "likes_adjustment",
         "created",
     )
     list_filter = ("available", "brand", "category", "badge_type", "created", "updated")
@@ -142,7 +143,7 @@ class ProductAdmin(
         }),
         ("Служебное", {
             "classes": ("collapse",),
-            "fields": ("slug", "likes", "created", "updated"),
+            "fields": ("slug", "likes", "likes_adjustment", "created", "updated"),
         }),
     )
     actions = ("publish_products", "unpublish_products")

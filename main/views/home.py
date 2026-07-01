@@ -3,7 +3,7 @@ from .shared import *
 @ensure_csrf_cookie
 def home(request):
     products = list(
-        Product.objects.filter(available=True)
+        with_product_card_review_stats(Product.objects.filter(available=True))
         .select_related("brand", "category")
         .prefetch_related(available_variant_prefetch, product_sku_prefetch)[:12]
     )

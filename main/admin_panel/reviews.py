@@ -9,6 +9,7 @@ class ProductReviewAdmin(BusinessAdminMixin, ModelAdmin):
         "approval_badge",
         "is_verified",
         "helpful_count",
+        "helpful_adjustment",
         "created",
     )
     list_filter = ("rating", "is_verified", "is_approved", "created", "product__brand")
@@ -26,6 +27,7 @@ class ProductReviewAdmin(BusinessAdminMixin, ModelAdmin):
         "is_verified",
         "is_approved",
         "helpful_count",
+        "helpful_adjustment",
         "created",
         "updated",
     )
@@ -48,6 +50,11 @@ class ProductReviewAdmin(BusinessAdminMixin, ModelAdmin):
                 self.admin_site.admin_view(self.reviews_delete_view),
                 name="main_productreview_delete",
             ),
+            path(
+                "set-helpful-adjustment/",
+                self.admin_site.admin_view(self.reviews_set_helpful_adjustment_view),
+                name="main_productreview_set_helpful_adjustment",
+            ),
         ]
         return custom_urls + super().get_urls()
 
@@ -63,6 +70,7 @@ class ProductReviewAdmin(BusinessAdminMixin, ModelAdmin):
             "toggle_verified_url": reverse("admin:main_productreview_toggle_verified"),
             "toggle_visibility_url": reverse("admin:main_productreview_toggle_visibility"),
             "delete_url": reverse("admin:main_productreview_delete"),
+            "helpful_adjustment_url": reverse("admin:main_productreview_set_helpful_adjustment"),
         }
         return TemplateResponse(request, "admin_panel/reviews/list.html", context)
 
@@ -114,6 +122,26 @@ class ProductReviewAdmin(BusinessAdminMixin, ModelAdmin):
         review.delete()
         return JsonResponse({"success": True, "deleted_id": str(review_id)})
 
+    def reviews_set_helpful_adjustment_view(self, request):
+        review, error_response = self.get_review_for_action(request)
+        if error_response:
+            return error_response
+        try:
+            payload = json.loads(request.body.decode("utf-8") or "{}")
+            adjustment = int(payload.get("adjustment", 0))
+        except (json.JSONDecodeError, TypeError, ValueError):
+            return JsonResponse({"success": False, "message": "Укажите целое число."}, status=400)
+        if not -1_000_000 <= adjustment <= 1_000_000:
+            return JsonResponse({"success": False, "message": "Допустимый диапазон: от -1000000 до 1000000."}, status=400)
+        review.helpful_adjustment = adjustment
+        review.save(update_fields=("helpful_adjustment", "updated"))
+        self.log_change(
+            request,
+            review,
+            f"Ручная корректировка полезности: {adjustment:+d}; итог: {review.display_helpful_count}.",
+        )
+        return JsonResponse({"success": True, "review": self.serialize_admin_review(review)})
+
     def serialize_admin_review(self, review):
         author_name = review.author_name or (review.user.get_username() if review.user_id else "Аноним")
         initials = "".join(part[:1] for part in author_name.split()[:2]).upper() or "??"
@@ -128,7 +156,9 @@ class ProductReviewAdmin(BusinessAdminMixin, ModelAdmin):
             "text": review.text,
             "is_verified": bool(review.is_verified),
             "is_published": bool(review.is_approved),
-            "helpful_count": review.helpful_count,
+            "helpful_count": review.display_helpful_count,
+            "helpful_real_count": review.helpful_count,
+            "helpful_adjustment": review.helpful_adjustment,
             "created_label": review.created.strftime("%d.%m.%Y") if review.created else "",
             "created_ts": int(review.created.timestamp()) if review.created else 0,
         }

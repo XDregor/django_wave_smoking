@@ -91,6 +91,7 @@ class Product(models.Model):
     stock = models.PositiveIntegerField(default=0, verbose_name="Stock")
     available = models.BooleanField(default=True, verbose_name="Available")
     likes = models.PositiveIntegerField(default=0, verbose_name="Likes")
+    likes_adjustment = models.IntegerField(default=0, verbose_name="Admin likes adjustment")
     badge_type = models.CharField(
         max_length=10,
         choices=BADGE_CHOICES,
@@ -113,6 +114,10 @@ class Product(models.Model):
         ordering = ("name",)
         verbose_name = "Product"
         verbose_name_plural = "Products"
+
+    @property
+    def display_likes(self):
+        return max(0, int(self.likes or 0) + int(self.likes_adjustment or 0))
 
     def save(self, *args, **kwargs):
         self.slug = make_unique_slug(Product, self.name, self.pk)

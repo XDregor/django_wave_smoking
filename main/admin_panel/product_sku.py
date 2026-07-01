@@ -148,6 +148,9 @@ class ProductSkuAdminMixin:
             "brand": str(product.brand_id or ""),
             "status": "published" if product.available else "draft",
             "badgeCodes": [product.badge_type] if product.badge_type else [],
+            "likesReal": product.likes,
+            "likesAdjustment": product.likes_adjustment,
+            "likesTotal": product.display_likes,
             "descriptionHtml": product.description or "",
             "chars": [
                 {"key": item.name, "value": item.value}
@@ -280,6 +283,13 @@ class ProductSkuAdminMixin:
             errors.append("Root-цена SKU должна быть больше нуля.")
         if root_old_price is not None and root_price is not None and root_old_price < root_price:
             errors.append("Root-старая цена SKU не может быть ниже финальной.")
+        try:
+            likes_adjustment = int(payload.get("likesAdjustment", 0) or 0)
+        except (TypeError, ValueError):
+            errors.append("Корректировка лайков должна быть целым числом.")
+        else:
+            if not -1_000_000 <= likes_adjustment <= 1_000_000:
+                errors.append("Корректировка лайков должна быть от -1000000 до 1000000.")
 
         option_name_max = VariantOption._meta.get_field("name").max_length
         filter_name_max = VariantOption._meta.get_field("filter_name").max_length
@@ -350,6 +360,7 @@ class ProductSkuAdminMixin:
             stock=total_stock,
             available=payload.get("status", "published") == "published",
             badge_type="" if has_discount else self.resolve_badge_type(payload.get("badgeCodes") or []),
+            likes_adjustment=int(payload.get("likesAdjustment", 0) or 0),
         )
         product.full_clean()
         product.save()
@@ -444,6 +455,7 @@ class ProductSkuAdminMixin:
         product.stock = total_stock
         product.available = payload.get("status", "published") == "published"
         product.badge_type = "" if has_discount else self.resolve_badge_type(payload.get("badgeCodes") or [])
+        product.likes_adjustment = int(payload.get("likesAdjustment", 0) or 0)
         product.full_clean()
         product.save()
 

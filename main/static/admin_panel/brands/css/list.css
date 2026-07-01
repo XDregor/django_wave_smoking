@@ -686,27 +686,6 @@
             cursor: not-allowed;
         }
 
-        .wa-brands .modal-field .slug-preview {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: var(--surface-2);
-            border: 1px solid var(--border-hi);
-            border-radius: var(--radius-xs);
-            padding: 8px 12px;
-            color: var(--text-3);
-            font-family: var(--mono);
-            font-size: 12px;
-        }
-        .wa-brands .modal-field .slug-preview .lock-icon {
-            color: var(--text-3);
-            flex-shrink: 0;
-        }
-        .wa-brands .modal-field .slug-preview .slug-text {
-            color: var(--text-2);
-            font-weight: 500;
-        }
-
         .wa-brands .toggle-row {
             display: flex;
             align-items: center;

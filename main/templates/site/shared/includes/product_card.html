@@ -1,8 +1,9 @@
-{% with badge=product.get_badge_data product_variants=product.display_product_variants available_variants=product.available_product_variants %}
+{% with badge=product.get_badge_data product_variants=product.display_product_variants available_variants=product.available_product_variants product_skus=product.sku_payload %}
 <article
   class="product_card_component{% if product.stock <= 0 or product_variants and not available_variants %} product_card_unavailable_state{% endif %}"
   data_product_card_id="{{ product.id }}"
   data_product_card_url="{% url 'main:product_detail' product.id product.slug %}"
+  data_product_card_requires_selection="{% if product_skus or product_variants %}true{% else %}false{% endif %}"
 >
   <div class="product_card_media_container">
     <div class="product_card_skeleton_element"></div>
@@ -30,10 +31,10 @@
       data_product_card_liked_state="{% if product.is_liked %}true{% else %}false{% endif %}"
       aria-label="В избранное"
     >
-      <svg viewBox="0 0 24 24">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
       </svg>
-      <span class="product_card_like_count_text">{{ product.likes|default:0 }}</span>
+      <span class="product_card_like_count_text">{{ product.display_likes|default:0 }}</span>
     </button>
   </div>
 
@@ -46,49 +47,42 @@
       <a href="{% url 'main:product_detail' product.id product.slug %}">{{ product.name }}</a>
     </h3>
 
-    <div class="product_card_price_row_container">
-      <span class="product_card_price_value">{{ product.price|floatformat:0 }}₴</span>
-      {% if product.is_on_sale %}
-        <span class="product_card_old_price_value">{{ product.old_price|floatformat:0 }}₴</span>
-      {% endif %}
-    </div>
-
-    {% if product_variants %}
-      {% regroup product_variants by group as variant_groups %}
-      <div class="product_card_variants_summary">
-        {% for variant_group in variant_groups %}
-          <div class="product_card_variant_group">
-            <span class="product_card_variant_group_label">{{ variant_group.grouper|default:"Вариант" }}:</span>
-            <div class="product_card_variant_group_values">
-              {% with variants_count=variant_group.list|length %}
-                {% for product_variant in variant_group.list %}
-                  {% if variants_count <= 4 or forloop.counter <= 3 %}
-                    <button
-                      class="product_card_variant_option_button{% if variants_count > 4 and forloop.counter == 3 %} product_card_variant_option_mobile_hide{% endif %}{% if not product_variant.available or product.stock <= 0 or product_variants and not available_variants %} product_card_variant_option_out_state{% endif %}"
-                      type="button"
-                      data_product_variant_id="{{ product_variant.id }}"
-                      data_product_variant_name="{{ product_variant.name }}"
-                      data_product_variant_stock="{{ product_variant.stock }}"
-                      {% if not product_variant.available or product.stock <= 0 or product_variants and not available_variants %}disabled{% endif %}
-                    >
-                      {{ product_variant.name }}
-                    </button>
-                  {% endif %}
-                {% endfor %}
-                {% if variants_count > 4 %}
-                  <span class="product_card_variant_more_indicator product_card_variant_more_desktop" aria-label="{{ variants_count|add:'-3' }} more variants">
-                    еще {{ variants_count|add:"-3" }}
-                  </span>
-                  <span class="product_card_variant_more_indicator product_card_variant_more_mobile" aria-label="{{ variants_count|add:'-2' }} more variants">
-                    еще {{ variants_count|add:"-2" }}
-                  </span>
-                {% endif %}
-              {% endwith %}
-            </div>
-          </div>
-        {% endfor %}
-      </div>
+    {% if product.card_review_count %}
+      <a class="product_card_rating_row" href="{% url 'main:product_detail' product.id product.slug %}#product-reviews" aria-label="Рейтинг {{ product.card_average_rating|floatformat:1 }}, отзывов: {{ product.card_review_count }}">
+        <span class="product_card_rating_value">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.7 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3-4.6-4.5 6.3-.9L12 2.7Z"/></svg>
+          {{ product.card_average_rating|floatformat:1 }}
+        </span>
+        <span class="product_card_rating_separator" aria-hidden="true"></span>
+        <span class="product_card_review_count">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z"/></svg>
+          {{ product.card_review_count }}
+        </span>
+      </a>
     {% endif %}
+
+    <div class="product_card_footer_row">
+      <button
+        class="product_card_cart_button"
+        type="button"
+        data_product_card_cart_url="{% url 'main:api_cart_add' %}"
+        {% if product.stock <= 0 or product_variants and not available_variants %}disabled aria-disabled="true" title="Нет в наличии"{% elif product_skus or product_variants %}title="Выбрать вариант" aria-label="Выбрать вариант товара"{% else %}title="Добавить в корзину" aria-label="Добавить товар в корзину"{% endif %}
+      >
+        <svg class="product_card_cart_icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 5h2l1.8 9.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L20 8H6"/>
+          <circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/>
+          <path d="M15 3v6M12 6h6"/>
+        </svg>
+        <svg class="product_card_cart_check_icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>
+      </button>
+
+      <div class="product_card_price_row_container">
+        <span class="product_card_price_value">{{ product.price|floatformat:0 }}₴</span>
+        {% if product.is_on_sale %}
+          <span class="product_card_old_price_value">{{ product.old_price|floatformat:0 }}₴</span>
+        {% endif %}
+      </div>
+    </div>
   </div>
 </article>
 {% endwith %}

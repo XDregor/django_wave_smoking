@@ -8,7 +8,7 @@
   {{ block.super }}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{% static 'admin_panel/variant_groups/css/list.css' %}?v=variant-groups4" />
+  <link rel="stylesheet" href="{% static 'admin_panel/variant_groups/css/list.css' %}?v=variant-groups5" />
 {% endblock %}
 
 {% block content %}
@@ -71,7 +71,6 @@
       <div class="modal" role="dialog" aria-modal="true" aria-labelledby="variantGroupModalTitle">
         <div class="modal-header">
           <div>
-            <div class="modal-kicker">Справочник</div>
             <h2 class="modal-title" id="variantGroupModalTitle">Добавить группу вариантов</h2>
           </div>
           <button class="modal-close" id="variantGroupModalClose" type="button" aria-label="Закрыть">
@@ -85,12 +84,10 @@
           <div class="modal-field group-name-field">
             <label for="variantGroupName">Название группы</label>
             <input id="variantGroupName" type="text" maxlength="80" placeholder="Например: Цвет" autocomplete="off" />
-            <span class="field-hint">Slug формируется автоматически.</span>
           </div>
           <div class="modal-field group-order-field">
             <label for="variantGroupOrder">Порядок</label>
             <input id="variantGroupOrder" type="text" inputmode="numeric" maxlength="5" value="0" autocomplete="off" />
-            <span class="field-hint">Меньше — выше.</span>
           </div>
         </div>
 
@@ -98,7 +95,6 @@
           <div class="options-header">
             <div>
               <div class="options-title">Значения группы</div>
-              <div class="options-subtitle">Пользователь видит название, каталог фильтрует по filter_name.</div>
             </div>
             <button class="btn btn-secondary btn-sm" id="addVariantOptionBtn" type="button">
               <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">

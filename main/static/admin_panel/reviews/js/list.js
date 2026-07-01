@@ -163,6 +163,13 @@
     const verifyText = review.is_verified ? "Проверено" : "Проверить";
     const visibilityText = review.is_published ? "Скрыть" : "Опубликовать";
     const visibilityClass = review.is_published ? "btn-hide" : "btn-publish";
+    const verifyIcon = review.is_verified
+      ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>'
+      : '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m8.5 12 2.2 2.2 4.8-5"></path></svg>';
+    const visibilityIcon = review.is_published
+      ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"></path><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"></path><path d="M9.9 4.2A10.4 10.4 0 0 1 12 4c7 0 10 8 10 8a16 16 0 0 1-2.1 3.4"></path><path d="M6.1 6.1C3.3 8.1 2 12 2 12s3 8 10 8a10.7 10.7 0 0 0 5.9-1.8"></path></svg>'
+      : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+    const deleteIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 14H6L5 6"></path></svg>';
 
     return `
       <article class="review-card${hiddenClass}" data-review-id="${escHtml(review.id)}">
@@ -187,11 +194,22 @@
           ${longText ? `<button class="review-expand-btn" type="button" data-action="expand" data-review-id="${escHtml(review.id)}">Показать полностью</button>` : ""}
         </div>
         <footer class="review-card-footer">
-          <span class="summary-sub">${Number(review.helpful_count || 0)} полезных отметок</span>
+          <div class="review-helpful-admin">
+            <div class="review-helpful-summary">
+              <span>Полезно</span>
+              <strong>${Number(review.helpful_count || 0)}</strong>
+              <small>${Number(review.helpful_real_count || 0)} реальных · ${Number(review.helpful_adjustment || 0) >= 0 ? "+" : ""}${Number(review.helpful_adjustment || 0)} вручную</small>
+            </div>
+            <div class="review-helpful-stepper" aria-label="Ручная корректировка полезности">
+              <button type="button" data-action="helpful-decrement" data-review-id="${escHtml(review.id)}" aria-label="Уменьшить корректировку"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+              <input type="number" min="-1000000" max="1000000" step="1" value="${Number(review.helpful_adjustment || 0)}" data-helpful-adjustment="${escHtml(review.id)}" aria-label="Ручная корректировка полезности">
+              <button type="button" data-action="helpful-increment" data-review-id="${escHtml(review.id)}" aria-label="Увеличить корректировку"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+            </div>
+          </div>
           <div class="spacer"></div>
-          <button class="btn btn-sm ${review.is_verified ? "btn-verified" : "btn-accent"}" type="button" data-action="verify" data-review-id="${escHtml(review.id)}">${verifyText}</button>
-          <button class="btn btn-sm ${visibilityClass}" type="button" data-action="visibility" data-review-id="${escHtml(review.id)}">${visibilityText}</button>
-          <button class="btn btn-sm btn-danger" type="button" data-action="delete" data-review-id="${escHtml(review.id)}">Удалить</button>
+          <button class="btn btn-sm ${review.is_verified ? "btn-verified" : "btn-accent"}" type="button" data-action="verify" data-review-id="${escHtml(review.id)}">${verifyIcon}<span>${verifyText}</span></button>
+          <button class="btn btn-sm ${visibilityClass}" type="button" data-action="visibility" data-review-id="${escHtml(review.id)}">${visibilityIcon}<span>${visibilityText}</span></button>
+          <button class="btn btn-sm btn-danger" type="button" data-action="delete" data-review-id="${escHtml(review.id)}">${deleteIcon}<span>Удалить</span></button>
         </footer>
       </article>
     `;
@@ -288,14 +306,14 @@
     }
   }
 
-  async function postAction(url, reviewId) {
+  async function postAction(url, reviewId, extraPayload = {}) {
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-CSRFToken": getCookie("csrftoken"),
       },
-      body: JSON.stringify({ id: reviewId }),
+      body: JSON.stringify({ id: reviewId, ...extraPayload }),
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.success) {
@@ -306,6 +324,20 @@
 
   function replaceReview(updatedReview) {
     reviews = reviews.map((review) => (String(review.id) === String(updatedReview.id) ? updatedReview : review));
+  }
+
+  async function saveHelpfulAdjustment(reviewId, adjustment, sourceElement = null) {
+    const normalized = Math.max(-1000000, Math.min(1000000, Math.trunc(Number(adjustment) || 0)));
+    if (sourceElement) sourceElement.disabled = true;
+    try {
+      const data = await postAction(root.dataset.helpfulAdjustmentUrl, reviewId, { adjustment: normalized });
+      replaceReview(data.review);
+      renderAll();
+      toast("Корректировка полезности сохранена.", "ok");
+    } catch (error) {
+      toast(error.message, "err");
+      if (sourceElement) sourceElement.disabled = false;
+    }
   }
 
   function openDeleteModal(reviewId) {
@@ -362,6 +394,14 @@
     const reviewId = actionButton.dataset.reviewId;
     const action = actionButton.dataset.action;
 
+    if (action === "helpful-increment" || action === "helpful-decrement") {
+      const review = reviews.find((item) => String(item.id) === String(reviewId));
+      const current = Number(review?.helpful_adjustment || 0);
+      const adjustment = current + (action === "helpful-increment" ? 1 : -1);
+      await saveHelpfulAdjustment(reviewId, adjustment, actionButton);
+      return;
+    }
+
     if (action === "expand") {
       const text = document.getElementById(`review-text-${reviewId}`);
       text?.classList.toggle("expanded");
@@ -385,6 +425,19 @@
       toast(error.message, "err");
       actionButton.disabled = false;
     }
+  });
+
+  root.addEventListener("change", async (event) => {
+    const input = event.target.closest("[data-helpful-adjustment]");
+    if (!input) return;
+    await saveHelpfulAdjustment(input.dataset.helpfulAdjustment, input.value, input);
+  });
+
+  root.addEventListener("keydown", (event) => {
+    const input = event.target.closest("[data-helpful-adjustment]");
+    if (!input || event.key !== "Enter") return;
+    event.preventDefault();
+    input.blur();
   });
 
   els.search?.addEventListener("input", () => {

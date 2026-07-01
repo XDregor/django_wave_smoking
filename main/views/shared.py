@@ -39,6 +39,20 @@ product_sku_prefetch = Prefetch(
 )
 
 
+def with_product_card_review_stats(queryset):
+    return queryset.annotate(
+        card_review_count=Count(
+            "reviews",
+            filter=Q(reviews__is_approved=True),
+            distinct=True,
+        ),
+        card_average_rating=Avg(
+            "reviews__rating",
+            filter=Q(reviews__is_approved=True),
+        ),
+    )
+
+
 def mark_liked_products(products, liked_product_ids):
     for product in products:
         product.is_liked = product.id in liked_product_ids
@@ -97,6 +111,9 @@ def serialize_badge(product):
 
 def serialize_product(product, liked_product_ids=None):
     liked_product_ids = liked_product_ids or set()
+    review_count = int(getattr(product, "card_review_count", 0) or 0)
+    average_rating = getattr(product, "card_average_rating", None)
+    requires_selection = bool(product.sku_payload or product.display_product_variants)
     return {
         "id": product.id,
         "name": product.name,
@@ -110,8 +127,12 @@ def serialize_product(product, liked_product_ids=None):
         "image_url": product.image.url if product.image else None,
         "variant_options": product.variant_payload,
         "display_variant_options": product.display_variant_payload,
-        "likes": product.likes,
+        "likes": product.display_likes,
         "is_liked": product.id in liked_product_ids,
+        "review_count": review_count,
+        "average_rating": round(float(average_rating), 1) if average_rating is not None else None,
+        "requires_selection": requires_selection,
+        "is_available": is_product_available_for_purchase(product),
         "detail_url": f"/products/{product.id}/{product.slug}/",
     }
 
@@ -299,7 +320,7 @@ def serialize_review(review, liked_review_ids=None):
         "product": review.product.name,
         "product_url": f"/products/{review.product.id}/{review.product.slug}/",
         "text": review.text,
-        "helpful": review.helpful_count,
+        "helpful": review.display_helpful_count,
         "liked": review.id in liked_review_ids,
     }
 

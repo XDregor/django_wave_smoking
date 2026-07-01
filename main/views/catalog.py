@@ -3,7 +3,7 @@ from .shared import *
 @ensure_csrf_cookie
 def catalog(request):
     products = list(
-        Product.objects.filter(available=True)
+        with_product_card_review_stats(Product.objects.filter(available=True))
         .select_related("category", "brand")
         .prefetch_related(available_variant_prefetch, product_sku_prefetch)
     )
@@ -61,7 +61,7 @@ def api_search_products(request):
     matched_products.sort(key=lambda product: (
         0 if is_product_available_for_purchase(product) else 1,
         get_product_search_rank(product, normalized_query),
-        -int(product.likes or 0),
+        -int(product.display_likes),
         product.name.lower(),
     ))
 
@@ -73,7 +73,7 @@ def api_search_products(request):
 def product_list(request, category_slug=None):
     categories = Category.objects.all()
     products_queryset = (
-        Product.objects.filter(available=True)
+        with_product_card_review_stats(Product.objects.filter(available=True))
         .select_related("category", "brand")
         .prefetch_related(available_variant_prefetch, product_sku_prefetch)
     )

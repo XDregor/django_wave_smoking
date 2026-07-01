@@ -30,6 +30,7 @@ class ProductReview(models.Model):
     is_verified = models.BooleanField(default=False, verbose_name="Verified")
     is_approved = models.BooleanField(default=True, verbose_name="Approved")
     helpful_count = models.PositiveIntegerField(default=0, verbose_name="Helpful")
+    helpful_adjustment = models.IntegerField(default=0, verbose_name="Admin helpful adjustment")
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -37,6 +38,10 @@ class ProductReview(models.Model):
         ordering = ("-created",)
         verbose_name = "Product review"
         verbose_name_plural = "Product reviews"
+
+    @property
+    def display_helpful_count(self):
+        return max(0, int(self.helpful_count or 0) + int(self.helpful_adjustment or 0))
 
     def clean(self):
         super().clean()

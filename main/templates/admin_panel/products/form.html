@@ -8,7 +8,7 @@
   {{ block.super }}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{% static 'admin_panel/products/css/form.css' %}?v=wizard17" />
+  <link rel="stylesheet" href="{% static 'admin_panel/products/css/form.css' %}?v=wizard20" />
 {% endblock %}
 
 {% block content %}
@@ -202,7 +202,6 @@
                   </div>
                   <div class="rte-body" id="rteBody" contenteditable="true" role="textbox" aria-multiline="true"></div>
                 </div>
-                <div class="field-hint">Поддерживается форматирование: жирный, курсив, списки, ссылки.</div>
               </div>
 
               <div>
@@ -431,6 +430,24 @@
             </div>
 
             <div class="card-body">
+              <div class="product-likes-adjustment" id="productLikesAdjustmentControl">
+                <div class="product-likes-adjustment__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l8.9 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8Z" /></svg>
+                </div>
+                <div class="product-likes-adjustment__copy">
+                  <strong>Лайки товара</strong>
+                  <span>Реальные <b id="productLikesReal">0</b> · итог <b id="productLikesTotal">0</b></span>
+                </div>
+                <div class="product-likes-adjustment__stepper" aria-label="Ручная корректировка лайков">
+                  <button id="productLikesMinus" type="button" aria-label="Уменьшить корректировку">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /></svg>
+                  </button>
+                  <input id="productLikesAdjustment" type="number" min="-1000000" max="1000000" step="1" value="0" aria-label="Ручная корректировка лайков" />
+                  <button id="productLikesPlus" type="button" aria-label="Увеличить корректировку">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                  </button>
+                </div>
+              </div>
               <div class="final-review" id="finalReview"></div>
             </div>
             <div class="card-footer">
@@ -481,6 +498,6 @@
     hidden
   ></div>
   <script src="{% static 'admin_panel/products/js/config.js' %}?v=structure1"></script>
-  <script src="{% static 'admin_panel/products/js/form.js' %}?v=wizard14"></script>
+  <script src="{% static 'admin_panel/products/js/form.js' %}?v=wizard15"></script>
   <script src="{% static 'admin_panel/products/js/variants.js' %}?v=variants3"></script>
 {% endblock %}

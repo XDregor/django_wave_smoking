@@ -8,7 +8,7 @@
   {{ block.super }}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{% static 'admin_panel/reviews/css/list.css' %}?v=reviews8" />
+  <link rel="stylesheet" href="{% static 'admin_panel/reviews/css/list.css' %}?v=reviews14" />
 {% endblock %}
 
 {% block content %}
@@ -19,6 +19,7 @@
     data-toggle-verified-url="{{ toggle_verified_url }}"
     data-toggle-visibility-url="{{ toggle_visibility_url }}"
     data-delete-url="{{ delete_url }}"
+    data-helpful-adjustment-url="{{ helpful_adjustment_url }}"
   >
     <div class="shell">
       <main class="main">
@@ -170,5 +171,5 @@
 
 {% block extrahead %}
   {{ block.super }}
-  <script src="{% static 'admin_panel/reviews/js/list.js' %}?v=reviews8" defer></script>
+  <script src="{% static 'admin_panel/reviews/js/list.js' %}?v=reviews11" defer></script>
 {% endblock %}

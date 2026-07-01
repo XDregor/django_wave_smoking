@@ -26,8 +26,6 @@
     modalImageInput: document.getElementById("modalImageInput"),
     modalImageContent: document.getElementById("modalImgContent"),
     modalName: document.getElementById("modalNameInput"),
-    modalSlug: document.getElementById("modalSlugPreview"),
-    modalSlugHidden: document.getElementById("modalSlugHidden"),
     modalToggle: document.getElementById("modalToggleCheck"),
     modalSave: document.getElementById("modalSaveBtn"),
     modalDelete: document.getElementById("modalDeleteBtn"),
@@ -46,25 +44,6 @@
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(";").shift();
     return "";
-  }
-
-  function translit(value) {
-    const map = {
-      а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "e", ж: "zh", з: "z", и: "i", й: "y",
-      к: "k", л: "l", м: "m", н: "n", о: "o", п: "p", р: "r", с: "s", т: "t", у: "u", ф: "f",
-      х: "h", ц: "c", ч: "ch", ш: "sh", щ: "sch", ъ: "", ы: "y", ь: "", э: "e", ю: "yu", я: "ya",
-      і: "i", ї: "yi", є: "ye", ґ: "g",
-    };
-    return String(value || "")
-      .toLowerCase()
-      .split("")
-      .map((char) => map[char] ?? char)
-      .join("")
-      .replace(/[^a-z0-9\s-]/g, "")
-      .trim()
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
   }
 
   function updateModalImage(src) {
@@ -165,8 +144,6 @@
     els.modalTitle.textContent = "Добавить бренд";
     els.modalName.value = "";
     els.modalName.style.borderColor = "";
-    els.modalSlug.textContent = "—";
-    els.modalSlugHidden.value = "";
     els.modalToggle.checked = false;
     els.modalSave.textContent = "Создать";
     els.modalDelete.style.display = "none";
@@ -185,8 +162,6 @@
     els.modalTitle.textContent = "Редактировать бренд";
     els.modalName.value = brand.name || "";
     els.modalName.style.borderColor = "";
-    els.modalSlug.textContent = brand.slug || "—";
-    els.modalSlugHidden.value = brand.slug || "";
     els.modalToggle.checked = Boolean(brand.in_carousel);
     els.modalSave.textContent = "Сохранить";
     els.modalDelete.style.display = "flex";
@@ -355,11 +330,6 @@
     state.imagePreview = URL.createObjectURL(file);
     updateModalImage(state.imagePreview);
     toast("Изображение выбрано", "ok");
-  });
-  els.modalName?.addEventListener("input", () => {
-    const slug = translit(els.modalName.value);
-    els.modalSlug.textContent = slug || "—";
-    els.modalSlugHidden.value = slug;
   });
   els.modalSave?.addEventListener("click", saveBrand);
   els.modalDelete?.addEventListener("click", deleteBrand);

@@ -89,7 +89,11 @@ def product_detail(request, id, slug):
     product_specifications = list(product.specifications.all().order_by("order", "id"))
 
     also_chosen_candidates = list(
-        Product.objects.filter(also_chosen_for__product=product, available=True, stock__gt=0)
+        with_product_card_review_stats(Product.objects.filter(
+            also_chosen_for__product=product,
+            available=True,
+            stock__gt=0,
+        ))
         .select_related("category", "brand")
         .prefetch_related(available_variant_prefetch, product_sku_prefetch)
         .exclude(id=product.id)
@@ -102,7 +106,11 @@ def product_detail(request, id, slug):
     also_chosen_product_ids = {item.id for item in also_chosen_products}
 
     related_candidates = list(
-        Product.objects.filter(category=product.category, available=True, stock__gt=0)
+        with_product_card_review_stats(Product.objects.filter(
+            category=product.category,
+            available=True,
+            stock__gt=0,
+        ))
         .select_related("category", "brand")
         .prefetch_related(available_variant_prefetch, product_sku_prefetch)
         .exclude(id=product.id)
@@ -156,7 +164,7 @@ def product_like(request, id):
         request.session["liked_product_ids"] = list(liked_ids)
         request.session.modified = True
         product.refresh_from_db(fields=("likes",))
-        return JsonResponse({"liked": liked, "likes": product.likes})
+        return JsonResponse({"liked": liked, "likes": product.display_likes})
 
     like = ProductLike.objects.filter(user=request.user, product=product).first()
     if like:
@@ -167,4 +175,4 @@ def product_like(request, id):
         liked = True
 
     product.refresh_from_db(fields=("likes",))
-    return JsonResponse({"liked": liked, "likes": product.likes})
+    return JsonResponse({"liked": liked, "likes": product.display_likes})

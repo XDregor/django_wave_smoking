@@ -807,3 +807,70 @@ body:has(.wa-variant-groups) .\@container.px-4.pb-4.grow {
     --accent-glow: rgba(255, 138, 29, 0.18);
     --danger: #f87171;
 }
+
+/* Variant directory UX refinement */
+.wa-variant-groups .page-body {
+    max-width: 1140px;
+    gap: 16px;
+}
+
+.wa-variant-groups .toolbar {
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card);
+}
+
+.wa-variant-groups .search-input {
+    height: 36px;
+    padding: 8px 12px 8px 38px;
+    border-width: 1px;
+    border-radius: 6px;
+    background: var(--card-hi);
+    font-size: 12.5px;
+}
+
+.wa-variant-groups .search-icon {
+    left: 12px;
+}
+
+.wa-variant-groups .variant-groups-grid {
+    gap: 10px;
+}
+
+.wa-variant-groups .variant-group-card {
+    min-height: 158px;
+    padding: 13px;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+.wa-variant-groups .variant-group-card:hover {
+    transform: translateY(-1px);
+    box-shadow: none;
+}
+
+.wa-variant-groups .group-card-icon {
+    width: 34px;
+    height: 34px;
+}
+
+.wa-variant-groups .variant-group-card:hover .group-card-icon {
+    border-color: var(--border-hi);
+    background: var(--card-hover);
+    color: var(--text-1);
+}
+
+.wa-variant-groups .group-card-options {
+    margin-top: 12px;
+}
+
+@media (max-width: 560px) {
+    .wa-variant-groups .topbar-summary-label {
+        display: none;
+    }
+
+    .wa-variant-groups .variant-group-card {
+        min-height: 146px;
+    }
+}

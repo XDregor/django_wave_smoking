@@ -629,3 +629,71 @@ body:has(.wa-categories) .\@container.px-4.pb-4.grow {
     --accent-glow: rgba(255, 138, 29, 0.18);
     --danger: #f87171;
 }
+
+/* Compact catalogue structure */
+.wa-categories .page-body {
+    max-width: 1140px;
+    gap: 16px;
+}
+
+.wa-categories .toolbar {
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card);
+}
+
+.wa-categories .search-input {
+    height: 36px;
+    padding: 8px 12px 8px 38px;
+    border-width: 1px;
+    border-radius: 6px;
+    background: var(--card-hi);
+    font-size: 12.5px;
+}
+
+.wa-categories .search-icon {
+    left: 12px;
+}
+
+.wa-categories .category-list {
+    gap: 6px;
+}
+
+.wa-categories .category-row {
+    min-height: 62px;
+    border-radius: 7px;
+    box-shadow: none;
+}
+
+.wa-categories .category-row:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.wa-categories .category-icon {
+    width: 34px;
+    height: 34px;
+}
+
+.wa-categories .category-row:hover .category-icon {
+    border-color: var(--border-hi);
+    background: var(--card-hover);
+    color: var(--text-1);
+}
+
+@media (max-width: 560px) {
+    .wa-categories .topbar-summary-label {
+        display: none;
+    }
+
+    .wa-categories .category-row {
+        grid-template-columns: 34px minmax(0, 1fr) 16px;
+        gap: 10px;
+        padding: 9px 10px;
+    }
+
+    .wa-categories .category-count {
+        display: none;
+    }
+}

@@ -274,40 +274,26 @@
 
           const badgeHtml = p.badge && p.badge.type
             ? `<span class="product_card_badge_element product_card_badge_${p.badge.type}_variant">${p.badge.label}</span>` : "";
-          const oldHtml = p.old_price
+          const oldHtml = Number(p.old_price || 0) > Number(p.price || 0)
             ? `<span class="product_card_old_price_value">${Number(p.old_price).toLocaleString("uk-UA")}₴</span>` : "";
           const imgHtml = p.image_url
             ? `<img src="${p.image_url}" alt="${p.name}" class="product_card_image_element" loading="lazy" />` : "";
-          const variants = Array.isArray(p.display_variant_options) ? p.display_variant_options : [];
           const isUnavailable = !isProductAvailable(p);
-          const variantGroups = variants.reduce((groups, variant) => {
-            const group = variant.group || "Вариант";
-            if (!groups.has(group)) groups.set(group, []);
-            groups.get(group).push(variant);
-            return groups;
-          }, new Map());
-          const variantsSummaryHtml = variantGroups.size
-            ? `<div class="product_card_variants_summary">${[...variantGroups.entries()].map(([group, values]) => `
-                <div class="product_card_variant_group">
-                  <span class="product_card_variant_group_label">${group}:</span>
-                  <div class="product_card_variant_group_values">
-                    ${(values.length > 4 ? values.slice(0, 3) : values).map((variant, index) => {
-                      const isAvailable = Boolean(variant.available) && !isUnavailable;
-                      const mobileHideClass = values.length > 4 && index === 2 ? " product_card_variant_option_mobile_hide" : "";
-                      return `<button class="product_card_variant_option_button${mobileHideClass}${isAvailable ? "" : " product_card_variant_option_out_state"}" type="button" data_product_variant_id="${variant.id || ""}" data_product_variant_name="${variant.name}" data_product_variant_stock="${variant.stock || 0}"${isAvailable ? "" : " disabled"}>${variant.name}</button>`;
-                    }).join("")}
-                    ${values.length > 4 ? `<span class="product_card_variant_more_indicator product_card_variant_more_desktop" aria-label="${values.length - 3} more variants">еще ${values.length - 3}</span><span class="product_card_variant_more_indicator product_card_variant_more_mobile" aria-label="${values.length - 2} more variants">еще ${values.length - 2}</span>` : ""}
-                  </div>
-                </div>
-              `).join("")}</div>` : "";
-          const detailUrl = p.slug ? `/products/${p.id}/${p.slug}/` : "#";
+          const detailUrl = p.detail_url || (p.slug ? `/products/${p.id}/${p.slug}/` : "#");
           const brandHtml = p.brand ? `<div class="product_card_brand_text">${p.brand}</div>` : "";
           const detailAttr = ` data_product_card_url="${detailUrl}"`;
+          const requiresSelection = Boolean(p.requires_selection);
+          const ratingHtml = Number(p.review_count || 0) > 0
+            ? `<a class="product_card_rating_row" href="${detailUrl}#product-reviews" aria-label="Рейтинг ${Number(p.average_rating || 0).toFixed(1)}, отзывов: ${Number(p.review_count)}">
+                <span class="product_card_rating_value"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.7 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3-4.6-4.5 6.3-.9L12 2.7Z"/></svg>${Number(p.average_rating || 0).toFixed(1)}</span>
+                <span class="product_card_rating_separator" aria-hidden="true"></span>
+                <span class="product_card_review_count"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z"/></svg>${Number(p.review_count)}</span>
+              </a>` : "";
           const unavailableMediaHtml = isUnavailable
             ? `<div class="product_card_unavailable_overlay_element" aria-hidden="true"></div><div class="product_card_unavailable_status_text">Нет в наличии</div>` : "";
           const nameHtml = `<a href="${detailUrl}">${p.name}</a>`;
           return `
-          <article class="product_card_component${isUnavailable ? " product_card_unavailable_state" : ""}" data_product_card_id="${p.id}"${detailAttr}>
+          <article class="product_card_component${isUnavailable ? " product_card_unavailable_state" : ""}" data_product_card_id="${p.id}"${detailAttr} data_product_card_requires_selection="${requiresSelection ? "true" : "false"}">
             <div class="product_card_media_container">
               <div class="product_card_skeleton_element"></div>
               ${badgeHtml}
@@ -323,11 +309,17 @@
               <h3 class="product_card_name_text product_card_name_link_element">
                 ${nameHtml}
               </h3>
-              <div class="product_card_price_row_container">
-                <span class="product_card_price_value">${Number(p.price).toLocaleString("uk-UA")}₴</span>
-                ${oldHtml}
+              ${ratingHtml}
+              <div class="product_card_footer_row">
+                <button class="product_card_cart_button" type="button" data_product_card_cart_url="/api/cart/add/"${isUnavailable ? " disabled aria-disabled=\"true\" title=\"Нет в наличии\"" : requiresSelection ? " title=\"Выбрать вариант\" aria-label=\"Выбрать вариант товара\"" : " title=\"Добавить в корзину\" aria-label=\"Добавить товар в корзину\""}>
+                  <svg class="product_card_cart_icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h2l1.8 9.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L20 8H6"/><circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/><path d="M15 3v6M12 6h6"/></svg>
+                  <svg class="product_card_cart_check_icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>
+                </button>
+                <div class="product_card_price_row_container">
+                  <span class="product_card_price_value">${Number(p.price).toLocaleString("uk-UA")}₴</span>
+                  ${oldHtml}
+                </div>
               </div>
-              ${variantsSummaryHtml}
             </div>
           </article>`;
         }

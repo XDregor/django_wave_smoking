@@ -46,6 +46,29 @@
         }
       }
 
+      function normalizeLikesAdjustment(value) {
+        return Math.max(-1000000, Math.min(1000000, Math.trunc(Number(value) || 0)));
+      }
+
+      function updateProductLikesAdjustmentUi() {
+        const input = document.getElementById("productLikesAdjustment");
+        const realNode = document.getElementById("productLikesReal");
+        const totalNode = document.getElementById("productLikesTotal");
+        if (!input || !realNode || !totalNode) return;
+        const realLikes = Math.max(0, Math.trunc(Number(skuEditProduct?.likesReal) || 0));
+        const adjustment = normalizeLikesAdjustment(input.value);
+        input.value = String(adjustment);
+        realNode.textContent = String(realLikes);
+        totalNode.textContent = String(Math.max(0, realLikes + adjustment));
+      }
+
+      function setProductLikesAdjustment(value) {
+        const input = document.getElementById("productLikesAdjustment");
+        if (!input) return;
+        input.value = String(normalizeLikesAdjustment(value));
+        updateProductLikesAdjustmentUi();
+      }
+
       function getSkuAdminSavedChars() {
         return Array.from(document.querySelectorAll("#charRows .char-row")).map((row) => {
           const inputs = row.querySelectorAll("input");
@@ -86,6 +109,7 @@
           category: document.getElementById("categorySelect")?.value || "",
           brand: document.getElementById("brandSelect")?.value || "",
           status: document.getElementById("statusSelect")?.value || "published",
+          likesAdjustment: normalizeLikesAdjustment(document.getElementById("productLikesAdjustment")?.value),
           badgeCodes: Array.from(document.querySelectorAll("#badgeGroup .badge-opt.selected")).map((button) => button.dataset.badge).filter(Boolean),
           descriptionHtml: sanitizeRteHtml(document.getElementById("rteBody")?.innerHTML || ""),
           chars: getSkuAdminSavedChars(),
@@ -121,6 +145,7 @@
           setSelectValue("categorySelect", saved.category);
           setSelectValue("brandSelect", saved.brand);
           setSelectValue("statusSelect", saved.status || "published");
+          setProductLikesAdjustment(saved.likesAdjustment ?? skuEditProduct?.likesAdjustment ?? 0);
           document.querySelectorAll("#badgeGroup .badge-opt").forEach((button) => {
             setBadgeSelected(button, Array.isArray(saved.badgeCodes) && saved.badgeCodes.includes(button.dataset.badge));
           });
@@ -604,6 +629,7 @@
         setSelectValue("categorySelect", data.category);
         setSelectValue("brandSelect", data.brand);
         setSelectValue("statusSelect", data.status || "published");
+        setProductLikesAdjustment(data.likesAdjustment || 0);
         document.querySelectorAll("#badgeGroup .badge-opt").forEach((button) => {
           setBadgeSelected(button, (data.badgeCodes || []).includes(button.dataset.badge));
         });
@@ -629,6 +655,25 @@
         const catSelect = document.getElementById("categorySelect");
         const brandSelect = document.getElementById("brandSelect");
         const rteBody = document.getElementById("rteBody");
+        const likesAdjustmentInput = document.getElementById("productLikesAdjustment");
+        const likesMinusButton = document.getElementById("productLikesMinus");
+        const likesPlusButton = document.getElementById("productLikesPlus");
+
+        likesAdjustmentInput?.addEventListener("input", updateProductLikesAdjustmentUi);
+        likesAdjustmentInput?.addEventListener("blur", updateProductLikesAdjustmentUi);
+        likesAdjustmentInput?.addEventListener("keydown", function (event) {
+          if (event.key !== "Enter") return;
+          event.preventDefault();
+          this.blur();
+        });
+        likesMinusButton?.addEventListener("click", () => {
+          setProductLikesAdjustment(Number(likesAdjustmentInput?.value || 0) - 1);
+          scheduleSkuAdminStateSave();
+        });
+        likesPlusButton?.addEventListener("click", () => {
+          setProductLikesAdjustment(Number(likesAdjustmentInput?.value || 0) + 1);
+          scheduleSkuAdminStateSave();
+        });
 
         nameInput.addEventListener("input", function () {
           validateStep(1);
@@ -2008,6 +2053,7 @@
           brand: finalSelectText("brandSelect"),
           status: finalSelectText("statusSelect"),
           badges: finalGetBadges(skus),
+          likesAdjustment: normalizeLikesAdjustment(document.getElementById("productLikesAdjustment")?.value),
           descriptionHtml: sanitizeRteHtml(descriptionEl?.innerHTML || ""),
           descriptionText: descriptionEl?.innerText.trim() || "",
           chars: finalGetCharacteristics(),
@@ -2039,6 +2085,7 @@
               <div class="final-line"><span class="final-key">Бренд</span><span class="final-value">${finalEscape(data.brand || "Не выбран")}</span></div>
               <div class="final-line"><span class="final-key">Статус</span><span class="final-value">${finalEscape(data.status || "Не указан")}</span></div>
               <div class="final-line"><span class="final-key">Бейджи</span><span class="final-value">${finalEscape(badgesText)}</span></div>
+              <div class="final-line"><span class="final-key">Лайки</span><span class="final-value">${Math.max(0, Number(skuEditProduct?.likesReal || 0) + data.likesAdjustment)} итог (${data.likesAdjustment >= 0 ? "+" : ""}${data.likesAdjustment} вручную)</span></div>
             </div>
           </section>
           <section class="final-section">
@@ -2075,6 +2122,7 @@
           category: document.getElementById("categorySelect")?.value || "",
           brand: document.getElementById("brandSelect")?.value || "",
           status: document.getElementById("statusSelect")?.value || "published",
+          likesAdjustment: normalizeLikesAdjustment(document.getElementById("productLikesAdjustment")?.value),
           badgeCodes: hasForcedSale ? [] : Array.from(document.querySelectorAll("#badgeGroup .badge-opt.selected")).map((btn) => btn.dataset.badge).filter(Boolean),
           descriptionHtml: sanitizeRteHtml(descriptionEl?.innerHTML || ""),
           descriptionText: descriptionEl?.innerText.trim() || "",

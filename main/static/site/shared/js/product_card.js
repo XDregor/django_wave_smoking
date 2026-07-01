@@ -52,24 +52,59 @@
     }
   }
 
-  function openProductCardVariant(button) {
-    if (button.disabled) return;
-    const card = button.closest(".product_card_component");
-    if (!card) return;
-
-    const url = card.getAttribute("data_product_card_url");
-    const variantId = button.getAttribute("data_product_variant_id");
-    if (!url || !variantId) return;
-
-    const detailUrl = new URL(url, window.location.origin);
-    detailUrl.searchParams.set("variant_id", variantId);
-    window.location.href = detailUrl.toString();
-  }
-
   function openProductCard(card) {
     if (!card) return;
     const url = card.getAttribute("data_product_card_url");
     if (url) window.location.href = url;
+  }
+
+  async function handleCartAction(button) {
+    const card = button.closest(".product_card_component");
+    if (!card || button.disabled) return;
+
+    if (card.getAttribute("data_product_card_requires_selection") === "true") {
+      openProductCard(card);
+      return;
+    }
+
+    const productId = Number(card.getAttribute("data_product_card_id"));
+    const cartUrl = button.getAttribute("data_product_card_cart_url");
+    if (!productId || !cartUrl) return;
+
+    button.disabled = true;
+    button.classList.add("is_loading");
+    try {
+      const response = await fetch(cartUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        body: JSON.stringify({ product_id: productId, quantity: 1 }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        if (data.error === "out_of_stock") {
+          card.classList.add("product_card_unavailable_state");
+          button.setAttribute("aria-disabled", "true");
+          button.title = "Нет в наличии";
+        }
+        return;
+      }
+
+      button.classList.add("is_added");
+      window.setTimeout(() => button.classList.remove("is_added"), 1200);
+      window._shopPanel?.updateCartCounters?.(Number(data.cart?.total_quantity || 0));
+      window._shopPanel?.refreshCart?.();
+      document.dispatchEvent(new CustomEvent("product-card:cart-added", {
+        detail: { productId, cart: data.cart || null },
+      }));
+    } finally {
+      button.classList.remove("is_loading");
+      if (!card.classList.contains("product_card_unavailable_state")) button.disabled = false;
+    }
   }
 
   document.addEventListener("click", (event) => {
@@ -81,11 +116,11 @@
       return;
     }
 
-    const variantButton = event.target.closest(".product_card_variant_option_button");
-    if (variantButton) {
+    const cartButton = event.target.closest(".product_card_cart_button");
+    if (cartButton) {
       event.preventDefault();
       event.stopPropagation();
-      openProductCardVariant(variantButton);
+      handleCartAction(cartButton);
       return;
     }
 
