@@ -15,6 +15,7 @@
         id: String(option.id),
         name: String(option.name || "").trim(),
         filterName: String(option.filterName || option.filter_name || option.name || "").trim(),
+        colorHex: String(option.colorHex || option.color_hex || "").trim(),
       })),
     ])
   );
@@ -62,12 +63,13 @@
     };
   }
 
-  function createNewVariant(catalogOptionId, name, filterName = name) {
+  function createNewVariant(catalogOptionId, name, filterName = name, colorHex = "") {
     return {
       id: nextVariantId++,
       catalogOptionId: String(catalogOptionId),
       name: String(name || "").trim(),
       filterName: String(filterName || name || "").trim(),
+      colorHex: String(colorHex || "").trim(),
       imageData: null,
       imageFile: null,
       imageOrder: 0,
@@ -137,12 +139,12 @@
     assignCatalogGroup(groupId, catalogGroupId, trimmedName);
   }
 
-  function addVariantFromCatalog(groupId, optionId, name, filterName = name) {
+  function addVariantFromCatalog(groupId, optionId, name, filterName = name, colorHex = "") {
     const group = variantGroups.find((item) => item.id === groupId);
     if (!group || group.variants.length >= MAX_VARIANTS_PER_GROUP) return;
     const normalizedOptionId = String(optionId);
     if (group.variants.some((variant) => variant.catalogOptionId === normalizedOptionId)) return;
-    const variant = createNewVariant(normalizedOptionId, name, filterName);
+    const variant = createNewVariant(normalizedOptionId, name, filterName, colorHex);
     variant.imageOrder = group.variants.length;
     group.variants.push(variant);
     renderAllGroups();
@@ -156,7 +158,7 @@
       (option) => option.name.toLocaleLowerCase() === trimmedName.toLocaleLowerCase()
     );
     if (existing) {
-      addVariantFromCatalog(groupId, existing.id, existing.name, existing.filterName);
+      addVariantFromCatalog(groupId, existing.id, existing.name, existing.filterName, existing.colorHex);
       return;
     }
     const optionId = nextRuntimeId("custom_option");
@@ -382,7 +384,7 @@
         option.innerHTML = `<span class="opt-icon">✓</span>${escapeVariantHtml(item.name)}`;
         option.addEventListener("mousedown", (event) => {
           event.preventDefault();
-          addVariantFromCatalog(group.id, item.id, item.name, item.filterName);
+          addVariantFromCatalog(group.id, item.id, item.name, item.filterName, item.colorHex);
         });
         dropdown.appendChild(option);
       });
@@ -654,6 +656,7 @@
         catalogOptionId: variant.catalogOptionId ? String(variant.catalogOptionId) : String(variant.id),
         name: String(variant.name || "").trim(),
         filterName: String(variant.filterName || variant.filter_name || variant.name || "").trim(),
+        colorHex: String(variant.colorHex || variant.color_hex || "").trim(),
         imageData: null,
         imageFile: null,
         imageUrl: variant.imageUrl || variant.image_url || "",

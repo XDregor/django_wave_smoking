@@ -12,10 +12,12 @@
 
 {% block extrastyle %}
     {{ block.super }}
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="{% static 'admin_panel/shared/css/home.css' %}?v=home3" />
+    <link rel="stylesheet" href="{% static 'admin_panel/home/css/index.css' %}?v=dashboard5" />
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script src="{% static 'admin_panel/home/js/index.js' %}?v=dashboard7" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -27,72 +29,93 @@
     {% url "admin:main_product_media_list" as media_url %}
     {% url "admin:main_productreview_changelist" as reviews_url %}
     {% url "admin:admin_logentry_changelist" as history_url %}
+    {% url "admin_dashboard_visits" as visits_url %}
 
-    <div class="wa-admin-home">
+    <main class="wa-admin-home" data-visits-url="{{ visits_url }}">
         <div class="page-body">
-            <section class="home-section">
-                <div class="section-head">
-                    <h2>Товары</h2>
-                </div>
-                <div class="home-grid two">
-                    <a class="home-card" href="{{ add_product_url }}">
-                        <span class="material-symbols-outlined home-icon">add_circle</span>
-                        <span class="home-card-title">Добавить товар</span>
-                        <span class="home-card-sub">Создание товара через карточный мастер</span>
-                    </a>
-                    <a class="home-card" href="{{ products_url }}">
-                        <span class="material-symbols-outlined home-icon">inventory_2</span>
-                        <span class="home-card-title">Управление товарами</span>
-                        <span class="home-card-sub">Список, поиск, публикация и массовые действия</span>
-                    </a>
+            <section class="traffic-panel" aria-labelledby="trafficTitle">
+                <header class="traffic-head">
+                    <div class="traffic-title">
+                        <h2 id="trafficTitle">Посещаемость</h2>
+                        <span>14 дней</span>
+                    </div>
+                    <span class="traffic-updated" data-traffic-updated>Обновление</span>
+                </header>
+
+                <div class="traffic-chart" data-traffic-chart aria-busy="true">
+                    <div class="traffic-chart-stage">
+                        <svg class="traffic-chart-svg" data-traffic-svg viewBox="0 0 100 30" preserveAspectRatio="none" role="img" aria-label="График посещаемости сайта">
+                            <line class="traffic-empty-line" x1="4" x2="98" y1="27" y2="27"></line>
+                        </svg>
+                        <div class="traffic-tooltip" data-traffic-tooltip hidden></div>
+                    </div>
+                    <div class="traffic-axis" data-traffic-axis aria-hidden="true"></div>
                 </div>
             </section>
 
-            <section class="home-section">
-                <div class="section-head">
-                    <h2>Наполнение</h2>
-                </div>
-                <div class="home-grid four">
-                    <a class="home-card" href="{{ brands_url }}">
-                        <span class="material-symbols-outlined home-icon">sell</span>
-                        <span class="home-card-title">Бренды</span>
-                        <span class="home-card-sub">Логотипы и карусель брендов</span>
-                    </a>
-                    <a class="home-card" href="{{ categories_url }}">
-                        <span class="material-symbols-outlined home-icon">category</span>
-                        <span class="home-card-title">Категории</span>
-                        <span class="home-card-sub">Структура каталога</span>
-                    </a>
-                    <a class="home-card" href="{{ variant_groups_url }}">
-                        <span class="material-symbols-outlined home-icon">tune</span>
-                        <span class="home-card-title">Группы вариантов</span>
-                        <span class="home-card-sub">Цвета, вкусы, крепость и другие варианты</span>
-                    </a>
-                    <a class="home-card" href="{{ media_url }}">
-                        <span class="material-symbols-outlined home-icon">perm_media</span>
-                        <span class="home-card-title">Медиа</span>
-                        <span class="home-card-sub">Фото, видео, постеры и изображения вариантов</span>
-                    </a>
-                </div>
-            </section>
+            <nav class="workspace-directory" aria-labelledby="workspaceTitle">
+                <header class="workspace-head">
+                    <h2 id="workspaceTitle">Управление магазином</h2>
+                </header>
 
-            <section class="home-section">
-                <div class="section-head">
-                    <h2>Модерация и история</h2>
-                </div>
-                <div class="home-grid two">
-                    <a class="home-card" href="{{ reviews_url }}">
-                        <span class="material-symbols-outlined home-icon">reviews</span>
-                        <span class="home-card-title">Отзывы</span>
-                        <span class="home-card-sub">Проверка, публикация и удаление отзывов</span>
+                <div class="workspace-primary">
+                    <a class="workspace-card workspace-card--products" href="{{ products_url }}">
+                        <span class="workspace-card-top">
+                            <span class="workspace-icon workspace-icon--large material-symbols-outlined">inventory_2</span>
+                        </span>
+                        <span class="workspace-card-copy">
+                            <strong>Управление товарами</strong>
+                        </span>
+                        <span class="workspace-arrow material-symbols-outlined">arrow_forward</span>
                     </a>
-                    <a class="home-card" href="{{ history_url }}">
-                        <span class="material-symbols-outlined home-icon">history</span>
-                        <span class="home-card-title">История действий</span>
-                        <span class="home-card-sub">Журнал изменений в админке</span>
+
+                    <a class="workspace-card workspace-card--create" href="{{ add_product_url }}">
+                        <span class="workspace-card-top">
+                            <span class="workspace-icon workspace-icon--large material-symbols-outlined">add_circle</span>
+                        </span>
+                        <span class="workspace-card-copy">
+                            <strong>Добавить товар</strong>
+                        </span>
+                        <span class="workspace-arrow material-symbols-outlined">arrow_forward</span>
                     </a>
                 </div>
-            </section>
+
+                <div class="workspace-resources" aria-label="Наполнение каталога">
+                    <a class="workspace-card workspace-card--resource" href="{{ brands_url }}">
+                        <span class="workspace-icon material-symbols-outlined">sell</span>
+                        <strong>Бренды</strong>
+                        <span class="workspace-arrow material-symbols-outlined">north_east</span>
+                    </a>
+                    <a class="workspace-card workspace-card--resource" href="{{ categories_url }}">
+                        <span class="workspace-icon material-symbols-outlined">category</span>
+                        <strong>Категории</strong>
+                        <span class="workspace-arrow material-symbols-outlined">north_east</span>
+                    </a>
+                    <a class="workspace-card workspace-card--resource" href="{{ variant_groups_url }}">
+                        <span class="workspace-icon material-symbols-outlined">tune</span>
+                        <strong>Группы вариантов</strong>
+                        <span class="workspace-arrow material-symbols-outlined">north_east</span>
+                    </a>
+                    <a class="workspace-card workspace-card--resource" href="{{ media_url }}">
+                        <span class="workspace-icon material-symbols-outlined">perm_media</span>
+                        <strong>Медиа</strong>
+                        <span class="workspace-arrow material-symbols-outlined">north_east</span>
+                    </a>
+                </div>
+
+                <div class="workspace-utilities" aria-label="Контроль магазина">
+                    <a class="workspace-card workspace-card--utility" href="{{ reviews_url }}">
+                        <span class="workspace-icon material-symbols-outlined">reviews</span>
+                        <span><strong>Отзывы</strong></span>
+                        <span class="workspace-arrow material-symbols-outlined">arrow_forward</span>
+                    </a>
+                    <a class="workspace-card workspace-card--utility" href="{{ history_url }}">
+                        <span class="workspace-icon material-symbols-outlined">history</span>
+                        <span><strong>История действий</strong></span>
+                        <span class="workspace-arrow material-symbols-outlined">arrow_forward</span>
+                    </a>
+                </div>
+            </nav>
         </div>
-    </div>
+    </main>
 {% endblock %}

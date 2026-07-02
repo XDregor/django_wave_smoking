@@ -158,10 +158,11 @@ from .product import (
 )
 from .reviews import ProductLike, ProductReview, ProductReviewHelpful
 from .cart import Cart, CartItem
+from .analytics import SiteVisit
 
 __all__ = (
     "Brand", "Cart", "CartItem", "Category", "Product", "ProductAlsoChosen",
     "ProductImage", "ProductLike", "ProductReview", "ProductReviewHelpful",
     "ProductSKU", "ProductSpecification", "ProductVariant", "VariantGroup",
-    "VariantOption", "sanitize_product_description",
+    "VariantOption", "SiteVisit", "sanitize_product_description",
 )

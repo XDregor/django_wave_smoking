@@ -92,7 +92,7 @@ class BrandAdmin(BusinessAdminMixin, ModelAdmin):
         if not brand:
             return JsonResponse({"success": False, "message": "Бренд не найден."}, status=404)
         brand_id = brand.pk
-        self.log_deletion(request, brand, f"Бренд удалён: {brand}")
+        self.log_deletions(request, Brand.objects.filter(pk=brand.pk))
         brand.delete()
         return JsonResponse({"success": True, "deleted_id": str(brand_id)})
 

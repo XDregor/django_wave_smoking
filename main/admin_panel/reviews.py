@@ -118,7 +118,7 @@ class ProductReviewAdmin(BusinessAdminMixin, ModelAdmin):
         if error_response:
             return error_response
         review_id = review.pk
-        self.log_deletion(request, review, f"Отзыв удалён: {review}")
+        self.log_deletions(request, ProductReview.objects.filter(pk=review.pk))
         review.delete()
         return JsonResponse({"success": True, "deleted_id": str(review_id)})
 

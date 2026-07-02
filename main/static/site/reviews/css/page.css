@@ -46,24 +46,6 @@
         background: none;
       }
 
-      .catalog_breadcrumb {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: var(--fs-micro);
-        font-family: "Roboto", sans-serif;
-        color: rgba(241, 241, 241, 0.35);
-      }
-      .catalog_breadcrumb a:hover {
-        color: var(--white);
-      }
-      .catalog_breadcrumb_sep {
-        opacity: 0.3;
-      }
-      .catalog_breadcrumb_current {
-        color: rgba(241, 241, 241, 0.6);
-      }
-
       /* LAYOUT */
       .page {
         max-width: 1380px;

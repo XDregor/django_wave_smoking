@@ -93,7 +93,7 @@ class CategoryAdmin(BusinessAdminMixin, ModelAdmin):
             )
 
         deleted_id = category.pk
-        self.log_deletion(request, category, f"Категория удалена: {category}")
+        self.log_deletions(request, Category.objects.filter(pk=category.pk))
         category.delete()
         return JsonResponse({"success": True, "deleted_id": str(deleted_id)})
 

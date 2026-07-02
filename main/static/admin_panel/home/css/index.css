@@ -1,0 +1,632 @@
+.wa-admin-home,
+.wa-admin-home *,
+.wa-admin-home *::before,
+.wa-admin-home *::after {
+    box-sizing: border-box;
+}
+
+.wa-admin-home {
+    --home-bg: #09090b;
+    --home-surface: #101013;
+    --home-hover: #17171b;
+    --home-border: rgba(255, 255, 255, 0.075);
+    --home-border-strong: rgba(255, 255, 255, 0.14);
+    --home-text: #f2f2f3;
+    --home-muted: #898990;
+    --home-subtle: #5e5e66;
+    --home-accent: #ff8a1d;
+    --home-accent-soft: rgba(255, 138, 29, 0.1);
+    min-height: calc(100vh - 80px);
+    background: var(--home-bg);
+    color: var(--home-text);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13px;
+}
+
+body:has(.wa-admin-home) #main,
+body:has(.wa-admin-home) #content,
+body:has(.wa-admin-home) #main > .bg-white,
+body:has(.wa-admin-home) #main > .dark\:bg-base-900,
+body:has(.wa-admin-home) .bg-white.border-b.border-base-200.mb-4.px-4.z-40,
+body:has(.wa-admin-home) .\@container.px-4.pb-4.grow {
+    background: var(--home-bg) !important;
+}
+
+body:has(.wa-admin-home) .bg-white.border-b.border-base-200.mb-4.px-4.z-40 {
+    border-bottom-style: none !important;
+    border-bottom-width: 0 !important;
+}
+
+body:has(.wa-admin-home) #content {
+    width: 100%;
+    max-width: none;
+}
+
+.wa-admin-home .page-body {
+    width: min(100%, 1320px);
+    margin: 0 auto;
+    display: grid;
+    gap: 12px;
+}
+
+.wa-admin-home h2,
+.wa-admin-home h3 {
+    margin: 0;
+    color: var(--home-text);
+    letter-spacing: 0;
+}
+
+.traffic-panel {
+    border: 1px solid var(--home-border);
+    border-radius: 10px;
+    background: var(--home-surface);
+    overflow: hidden;
+}
+
+.traffic-head {
+    min-height: 64px;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    border-bottom: 1px solid var(--home-border);
+}
+
+.traffic-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.traffic-title h2 {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.traffic-title > span {
+    padding: 3px 7px;
+    border: 1px solid var(--home-border);
+    border-radius: 5px;
+    color: var(--home-subtle);
+    font-size: 9px;
+    font-weight: 650;
+    text-transform: uppercase;
+}
+
+.traffic-today {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.traffic-today span {
+    color: var(--home-muted);
+    font-size: 10px;
+}
+
+.traffic-today strong {
+    color: var(--home-accent);
+    font-size: 24px;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.traffic-updated {
+    margin-left: auto;
+    color: var(--home-subtle);
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.traffic-updated::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    display: inline-block;
+    margin-right: 6px;
+    border-radius: 50%;
+    background: var(--home-accent);
+    vertical-align: 1px;
+}
+
+.traffic-chart {
+    padding: 10px 18px 12px;
+    transition: opacity 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.traffic-chart.is-updating {
+    opacity: 0.58;
+}
+
+.traffic-chart-stage {
+    position: relative;
+    height: 166px;
+}
+
+.traffic-chart-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+}
+
+.traffic-grid-line {
+    stroke: rgba(255, 255, 255, 0.055);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+}
+
+.traffic-grid-label {
+    fill: var(--home-subtle);
+    font-size: 9px;
+    font-family: inherit;
+}
+
+.traffic-area {
+    fill: rgba(255, 138, 29, 0.065);
+}
+
+.traffic-line {
+    fill: none;
+    stroke: var(--home-accent);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+}
+
+.traffic-empty-line {
+    stroke: rgba(255, 138, 29, 0.42);
+    stroke-width: 2;
+    stroke-dasharray: 5 6;
+    vector-effect: non-scaling-stroke;
+}
+
+.traffic-empty-label {
+    fill: var(--home-muted);
+    font-family: inherit;
+    font-size: 11px;
+}
+
+.traffic-point {
+    fill: var(--home-surface);
+    stroke: var(--home-accent);
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+    transition: fill 120ms ease, r 120ms ease;
+}
+
+.traffic-point:focus {
+    fill: var(--home-accent);
+    outline: none;
+}
+
+.traffic-tooltip {
+    position: absolute;
+    z-index: 2;
+    min-width: 88px;
+    padding: 7px 9px;
+    border: 1px solid var(--home-border-strong);
+    border-radius: 6px;
+    background: #1a1a1f;
+    color: var(--home-text);
+    font-size: 10px;
+    line-height: 1.4;
+    text-align: center;
+    pointer-events: none;
+    transform: translate(-50%, calc(-100% - 8px));
+}
+
+.traffic-tooltip strong {
+    display: block;
+    color: var(--home-accent);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+.traffic-axis {
+    min-height: 14px;
+    padding-left: 36px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    color: var(--home-subtle);
+    font-size: 9px;
+    font-variant-numeric: tabular-nums;
+}
+
+.traffic-axis span:last-child {
+    text-align: right;
+}
+
+.workspace-directory {
+    padding: 14px 0 4px;
+}
+
+.workspace-head {
+    padding: 0 2px 14px;
+}
+
+.workspace-head > span {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--home-subtle);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.workspace-head h2 {
+    font-size: 18px;
+    font-weight: 720;
+}
+
+.workspace-primary,
+.workspace-resources,
+.workspace-utilities {
+    display: grid;
+    gap: 10px;
+}
+
+.workspace-primary {
+    grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.85fr);
+}
+
+.workspace-resources {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: 10px;
+}
+
+.workspace-utilities {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 10px;
+}
+
+.workspace-card {
+    --card-accent: var(--home-accent);
+    position: relative;
+    min-width: 0;
+    display: flex;
+    color: inherit;
+    text-decoration: none;
+    border: 1px solid var(--home-border);
+    border-radius: 10px;
+    background: var(--home-surface);
+    overflow: hidden;
+    transform: translateY(0);
+    transition:
+        transform 190ms cubic-bezier(0.23, 1, 0.32, 1),
+        background-color 190ms ease,
+        border-color 190ms ease,
+        box-shadow 190ms ease;
+}
+
+.workspace-card::after {
+    content: "";
+    position: absolute;
+    inset: auto 18px 0;
+    height: 2px;
+    border-radius: 2px 2px 0 0;
+    background: var(--card-accent);
+    opacity: 0;
+    transform: scaleX(0.22);
+    transform-origin: left;
+    transition:
+        opacity 180ms ease,
+        transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.workspace-card:focus-visible {
+    outline: 2px solid rgba(255, 138, 29, 0.62);
+    outline-offset: 2px;
+}
+
+.workspace-card:focus-visible::after {
+    opacity: 1;
+    transform: scaleX(1);
+}
+
+.workspace-card:active {
+    transform: translateY(0) scale(0.985);
+    transition-duration: 100ms;
+}
+
+.workspace-card--products,
+.workspace-card--create {
+    min-height: 178px;
+    padding: 22px;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.workspace-card--products {
+    background: #121216;
+}
+
+.workspace-card--create {
+    border-color: rgba(255, 138, 29, 0.2);
+    background: #14120f;
+}
+
+.workspace-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.workspace-card-label {
+    color: var(--home-subtle);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.workspace-icon {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--home-border);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.03);
+    color: #b6b6bc;
+    font-size: 19px;
+    transition:
+        transform 200ms cubic-bezier(0.23, 1, 0.32, 1),
+        background-color 180ms ease,
+        border-color 180ms ease,
+        color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.workspace-icon--large {
+    width: 46px;
+    height: 46px;
+    border-radius: 11px;
+    font-size: 23px;
+}
+
+.workspace-card--create .workspace-icon {
+    border-color: rgba(255, 138, 29, 0.25);
+    background: var(--home-accent-soft);
+    color: var(--home-accent);
+}
+
+.workspace-card-copy {
+    display: block;
+    padding-right: 54px;
+}
+
+.workspace-card-copy strong,
+.workspace-card-copy small,
+.workspace-card--utility strong,
+.workspace-card--utility small {
+    display: block;
+}
+
+.workspace-card-copy strong {
+    color: var(--home-text);
+    font-size: 20px;
+    font-weight: 730;
+    line-height: 1.2;
+}
+
+.workspace-card-copy small {
+    margin-top: 7px;
+    color: var(--home-muted);
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.workspace-arrow {
+    color: var(--home-subtle);
+    transition:
+        color 170ms ease,
+        transform 200ms cubic-bezier(0.23, 1, 0.32, 1),
+        background-color 170ms ease;
+}
+
+.workspace-card--products > .workspace-arrow,
+.workspace-card--create > .workspace-arrow {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+    font-size: 18px;
+}
+
+.workspace-card--resource {
+    min-height: 116px;
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.workspace-card--resource strong {
+    max-width: calc(100% - 26px);
+    color: var(--home-text);
+    font-size: 12.5px;
+    font-weight: 680;
+    line-height: 1.3;
+}
+
+.workspace-card--resource .workspace-arrow {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    font-size: 16px;
+}
+
+.workspace-card--utility {
+    min-height: 74px;
+    padding: 14px 16px;
+    align-items: center;
+    gap: 12px;
+}
+
+.workspace-card--utility > span:nth-child(2) {
+    min-width: 0;
+    flex: 1;
+}
+
+.workspace-card--utility strong {
+    color: var(--home-text);
+    font-size: 12px;
+    font-weight: 680;
+}
+
+.workspace-card--utility small {
+    margin-top: 3px;
+    color: var(--home-subtle);
+    font-size: 9.5px;
+}
+
+.workspace-card--utility .workspace-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    font-size: 17px;
+}
+
+.workspace-card--utility .workspace-arrow {
+    font-size: 17px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .traffic-point:hover {
+        fill: var(--home-accent);
+    }
+
+    .workspace-card:hover {
+        z-index: 1;
+        border-color: var(--home-border-strong);
+        background: var(--home-hover);
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.24);
+        transform: translateY(-3px);
+    }
+
+    .workspace-card--create:hover {
+        border-color: rgba(255, 138, 29, 0.34);
+        background: #191510;
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.24), 0 0 22px rgba(255, 138, 29, 0.07);
+    }
+
+    .workspace-card:hover::after {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+
+    .workspace-card:hover .workspace-icon {
+        border-color: rgba(255, 138, 29, 0.28);
+        background: var(--home-accent-soft);
+        color: var(--home-accent);
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+        transform: translateY(-2px) scale(1.035);
+    }
+
+    .workspace-card:hover .workspace-arrow {
+        color: var(--home-accent);
+        transform: translateX(3px);
+    }
+
+    .workspace-card--resource:hover .workspace-arrow {
+        transform: translate(2px, -2px);
+    }
+}
+
+@media (max-width: 1050px) {
+    .workspace-primary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .workspace-resources {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .workspace-primary {
+        grid-template-columns: 1fr;
+    }
+
+    .workspace-card--products,
+    .workspace-card--create {
+        min-height: 154px;
+    }
+}
+
+@media (max-width: 540px) {
+    .wa-admin-home .page-body {
+        padding-top: 2px;
+    }
+
+    .traffic-head {
+        min-height: 58px;
+        gap: 14px;
+        padding-inline: 14px;
+    }
+
+    .traffic-updated {
+        width: 6px;
+        overflow: hidden;
+        font-size: 0;
+    }
+
+    .traffic-updated::before {
+        margin: 0;
+    }
+
+    .traffic-chart {
+        padding-inline: 12px;
+    }
+
+    .traffic-chart-stage {
+        height: 150px;
+    }
+
+    .workspace-directory {
+        padding-top: 10px;
+    }
+
+    .workspace-resources,
+    .workspace-utilities {
+        grid-template-columns: 1fr;
+    }
+
+    .workspace-card--resource {
+        min-height: 88px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 12px;
+    }
+
+    .workspace-card--resource strong {
+        font-size: 12px;
+    }
+
+    .workspace-card--resource .workspace-arrow {
+        top: 50%;
+        transform: translateY(-50%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wa-admin-home *,
+    .wa-admin-home *::before,
+    .wa-admin-home *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

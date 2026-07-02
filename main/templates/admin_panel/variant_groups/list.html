@@ -8,7 +8,7 @@
   {{ block.super }}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{% static 'admin_panel/variant_groups/css/list.css' %}?v=variant-groups5" />
+  <link rel="stylesheet" href="{% static 'admin_panel/variant_groups/css/list.css' %}?v=variant-groups9" />
 {% endblock %}
 
 {% block content %}
@@ -82,8 +82,22 @@
 
         <div class="group-fields">
           <div class="modal-field group-name-field">
-            <label for="variantGroupName">Название группы</label>
+            <label for="variantGroupName" id="variantGroupNameLabel">Название группы</label>
             <input id="variantGroupName" type="text" maxlength="80" placeholder="Например: Цвет" autocomplete="off" />
+            <div class="color-group-identity" id="colorGroupIdentity" hidden>
+              <span class="color-group-identity-mark" aria-hidden="true">
+                <i></i><i></i><i></i><i></i>
+              </span>
+              <span class="color-group-identity-copy">
+                <strong>Цвет</strong>
+              </span>
+              <span class="color-group-identity-lock" aria-label="Системная группа" title="Системная группа">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <rect x="4" y="10" width="16" height="11" rx="2"></rect>
+                  <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+                </svg>
+              </span>
+            </div>
           </div>
           <div class="modal-field group-order-field">
             <label for="variantGroupOrder">Порядок</label>
@@ -104,9 +118,10 @@
             </button>
           </div>
 
-          <div class="options-column-head" aria-hidden="true">
+          <div class="options-column-head" id="variantOptionsColumnHead" aria-hidden="true">
             <span>Название</span>
             <span>Для фильтра</span>
+            <span class="color-column-label">Цвет</span>
             <span>Использование</span>
             <span></span>
           </div>
@@ -123,11 +138,26 @@
       </div>
     </div>
 
+    <div class="color-palette-popover" id="colorPalettePopover" role="dialog" aria-label="Палитра цвета" hidden>
+      <div class="color-palette-header">
+        <div>
+          <strong>Выберите цвет</strong>
+          <span>Базовая палитра</span>
+        </div>
+        <div class="color-palette-current">
+          <span class="color-palette-current-swatch" id="colorPaletteCurrentSwatch"></span>
+          <code id="colorPaletteCurrentValue">#808080</code>
+        </div>
+      </div>
+      <div class="color-palette-grid" id="colorPaletteGrid"></div>
+      <div class="color-palette-hint">Точный оттенок можно указать в поле HEX.</div>
+    </div>
+
     <div class="toast-container" id="variantGroupToasts" aria-live="polite"></div>
   </div>
 {% endblock %}
 
 {% block extrahead %}
   {{ block.super }}
-  <script src="{% static 'admin_panel/variant_groups/js/list.js' %}?v=variant-groups1" defer></script>
+  <script src="{% static 'admin_panel/variant_groups/js/list.js' %}?v=variant-groups6" defer></script>
 {% endblock %}

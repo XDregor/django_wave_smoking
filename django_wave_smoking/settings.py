@@ -45,7 +45,7 @@ UNFOLD = {
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": True,
     "STYLES": [
-        lambda request: f"{static('admin_panel/shared/css/unfold_overrides.css')}?v=sidebar-active5",
+        lambda request: f"{static('admin_panel/shared/css/unfold_overrides.css')}?v=admin-controls6",
         lambda request: f"{static('admin_panel/shared/css/responsive.css')}?v=responsive2",
     ],
     "SCRIPTS": [
@@ -133,18 +133,29 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'main.middleware.SiteVisitMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'django_wave_smoking.urls'
 
+TEMPLATE_LOADERS = [
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+]
+if not DEBUG:
+    TEMPLATE_LOADERS = [
+        ('django.template.loaders.cached.Loader', TEMPLATE_LOADERS),
+    ]
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [BASE_DIR / 'main' / 'templates'],
-        'APP_DIRS': True,
+        'APP_DIRS': False,
         'OPTIONS': {
+            'loaders': TEMPLATE_LOADERS,
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.template.context_processors.media',

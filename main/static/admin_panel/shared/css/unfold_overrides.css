@@ -127,7 +127,6 @@ aside a:hover,
 #nav-sidebar-apps a[class*="dark:bg-white"],
 #nav-sidebar-apps a[aria-current="page"] {
   background: rgba(255, 255, 255, 0.06) !important;
-  color: var(--primary-500, #ff8a1d) !important;
   font-weight: 700 !important;
 }
 
@@ -205,7 +204,7 @@ label,
   color: var(--wave-admin-muted) !important;
 }
 
-input,
+input:not(.option-color-hex),
 select,
 textarea,
 .select2-selection,
@@ -224,7 +223,7 @@ textarea {
   line-height: 1.55 !important;
 }
 
-input:focus,
+input:not(.option-color-hex):focus,
 select:focus,
 textarea:focus,
 .select2-container--focus .select2-selection {

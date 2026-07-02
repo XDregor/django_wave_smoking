@@ -67,9 +67,8 @@ class ProductListAdminMixin:
         if not ids:
             return JsonResponse({"success": False, "message": "Не выбраны товары."}, status=400)
         products = Product.objects.filter(pk__in=ids)
-        for product in products:
-            self.log_deletion(request, product, f"Товар удалён через массовое действие: {product}")
         deleted_ids = [str(pk) for pk in products.values_list("pk", flat=True)]
+        self.log_deletions(request, products)
         deleted_count, _ = products.delete()
         return JsonResponse({"success": True, "deleted": deleted_count, "ids": deleted_ids})
 

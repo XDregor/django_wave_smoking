@@ -4,7 +4,7 @@ from .shared import *
 class VariantOptionInline(TabularInline):
     model = VariantOption
     extra = 0
-    fields = ("name", "filter_name", "slug", "order")
+    fields = ("name", "filter_name", "color_hex", "slug", "order")
     readonly_fields = ("slug",)
     show_change_link = True
 
@@ -15,6 +15,11 @@ class VariantGroupAdmin(BusinessAdminMixin, ModelAdmin):
     search_fields = ("name", "slug")
     readonly_fields = ("slug",)
     inlines = (VariantOptionInline,)
+
+    def has_delete_permission(self, request, obj=None):
+        if obj and obj.is_system_group:
+            return False
+        return super().has_delete_permission(request, obj)
 
     def get_urls(self):
         custom_urls = [
@@ -74,6 +79,11 @@ class VariantGroupAdmin(BusinessAdminMixin, ModelAdmin):
             return JsonResponse({"success": False, "message": "Введите название группы."}, status=400)
         if len(name) > VariantGroup._meta.get_field("name").max_length:
             return JsonResponse({"success": False, "message": "Название группы слишком длинное."}, status=400)
+        if group.pk and group.is_system_group and name != group.name:
+            return JsonResponse(
+                {"success": False, "message": "Название системной группы изменить нельзя."},
+                status=409,
+            )
         duplicate_group = VariantGroup.objects.filter(name__iexact=name)
         if group.pk:
             duplicate_group = duplicate_group.exclude(pk=group.pk)
@@ -83,6 +93,8 @@ class VariantGroupAdmin(BusinessAdminMixin, ModelAdmin):
         try:
             order = max(0, int(payload.get("order") or 0))
         except (TypeError, ValueError):
+            order = 0
+        if group.is_color_group:
             order = 0
 
         raw_options = payload.get("options") or []
@@ -97,6 +109,12 @@ class VariantGroupAdmin(BusinessAdminMixin, ModelAdmin):
                 return JsonResponse({"success": False, "message": "Некорректное значение варианта."}, status=400)
             option_name = strip_tags(str(item.get("name") or "")).strip()
             filter_name = strip_tags(str(item.get("filter_name") or option_name)).strip() or option_name
+            color_hex = self.normalize_color_hex(item.get("color_hex")) if group.is_color_group else ""
+            if group.is_color_group and not color_hex:
+                return JsonResponse(
+                    {"success": False, "message": f"Выберите физический цвет для варианта «{option_name or index + 1}»."},
+                    status=400,
+                )
             if not option_name:
                 return JsonResponse({"success": False, "message": "Укажите название каждого варианта."}, status=400)
             if len(option_name) > option_name_max or len(filter_name) > option_name_max:
@@ -116,6 +134,7 @@ class VariantGroupAdmin(BusinessAdminMixin, ModelAdmin):
                 "id": option_id,
                 "name": option_name,
                 "filter_name": filter_name,
+                "color_hex": color_hex,
                 "order": index,
             })
 
@@ -153,6 +172,7 @@ class VariantGroupAdmin(BusinessAdminMixin, ModelAdmin):
                     option = VariantOption(group=group)
                 option.name = item["name"]
                 option.filter_name = item["filter_name"]
+                option.color_hex = item["color_hex"]
                 option.order = item["order"]
                 option.save()
 
@@ -187,6 +207,11 @@ class VariantGroupAdmin(BusinessAdminMixin, ModelAdmin):
         group = VariantGroup.objects.filter(pk=group_id).first()
         if not group:
             return JsonResponse({"success": False, "message": "Группа вариантов не найдена."}, status=404)
+        if group.is_system_group:
+            return JsonResponse(
+                {"success": False, "message": "Системную группу «Цвет» удалить нельзя."},
+                status=409,
+            )
         if ProductVariant.objects.filter(variant__group=group).exists() or ProductSKU.objects.filter(options__group=group).exists():
             return JsonResponse(
                 {"success": False, "message": "Нельзя удалить группу, варианты которой используются товарами или SKU."},
@@ -194,7 +219,7 @@ class VariantGroupAdmin(BusinessAdminMixin, ModelAdmin):
             )
 
         deleted_id = group.pk
-        self.log_deletion(request, group, f"Группа вариантов удалена: {group}")
+        self.log_deletions(request, VariantGroup.objects.filter(pk=group.pk))
         group.delete()
         return JsonResponse({"success": True, "deleted_id": str(deleted_id)})
 
@@ -205,8 +230,25 @@ class VariantGroupAdmin(BusinessAdminMixin, ModelAdmin):
             "name": group.name,
             "slug": group.slug,
             "order": group.order,
+            "kind": group.kind,
+            "is_system": group.is_system_group,
+            "is_color": group.is_color_group,
             "options": [self.serialize_admin_variant_option(option) for option in options],
         }
+
+    def normalize_color_hex(self, value):
+        color_hex = str(value or "").strip().upper()
+        if not color_hex:
+            return ""
+        if not color_hex.startswith("#"):
+            color_hex = f"#{color_hex}"
+        if len(color_hex) != 7:
+            return ""
+        try:
+            int(color_hex[1:], 16)
+        except ValueError:
+            return ""
+        return color_hex
 
     def serialize_admin_variant_option(self, option):
         product_count = getattr(option, "admin_product_count", None)
@@ -219,6 +261,7 @@ class VariantGroupAdmin(BusinessAdminMixin, ModelAdmin):
             "id": str(option.pk),
             "name": option.name,
             "filter_name": option.filter_name or option.name,
+            "color_hex": option.color_hex,
             "order": option.order,
             "product_count": product_count,
             "sku_count": sku_count,
@@ -234,7 +277,7 @@ class VariantGroupAdmin(BusinessAdminMixin, ModelAdmin):
 
 @admin.register(VariantOption)
 class VariantOptionAdmin(HiddenFromMenuAdminMixin, ModelAdmin):
-    list_display = ("name", "filter_name", "group", "order", "slug")
+    list_display = ("name", "filter_name", "color_hex", "group", "order", "slug")
     list_filter = ("group",)
     search_fields = ("name", "filter_name", "group__name")
     autocomplete_fields = ("group",)

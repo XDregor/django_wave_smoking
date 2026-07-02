@@ -20,6 +20,7 @@ class ProductSkuAdminMixin:
                             "id": str(option.pk),
                             "name": option.name,
                             "filterName": option.filter_name or option.name,
+                            "colorHex": option.color_hex,
                         }
                         for option in group.options.all()
                     ],
@@ -59,6 +60,7 @@ class ProductSkuAdminMixin:
                             "id": str(option.pk),
                             "name": option.name,
                             "filterName": option.filter_name or option.name,
+                            "colorHex": option.color_hex,
                         }
                         for option in group.options.all()
                     ],
@@ -118,6 +120,7 @@ class ProductSkuAdminMixin:
                 "catalogOptionId": str(option.pk),
                 "name": option.name,
                 "filterName": option.filter_name or option.name,
+                "colorHex": option.color_hex,
                 "imageUrl": image_url,
                 "imageOrder": product_variant.image_order,
             })

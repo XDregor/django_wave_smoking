@@ -278,29 +278,6 @@
         font-weight: 700;
       }
 
-      /* Хлебные крошки */
-      .catalog_breadcrumb_nav {
-        position: absolute;
-        top: 24px;
-        left: var(--site-pad);
-        z-index: 2;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: var(--fs-micro);
-        color: rgba(241, 241, 241, 0.35);
-        max-width: calc(100% - var(--site-pad) * 2);
-      }
-      .catalog_breadcrumb_nav a:hover {
-        color: var(--white);
-      }
-      .catalog_breadcrumb_nav_separator {
-        opacity: 0.3;
-      }
-      .catalog_breadcrumb_nav_current_page {
-        color: rgba(241, 241, 241, 0.6);
-      }
-
       /* ===================== MAIN LAYOUT ===================== */
       .catalog_layout_container {
         display: block;
