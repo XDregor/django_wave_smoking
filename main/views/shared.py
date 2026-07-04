@@ -137,6 +137,35 @@ def serialize_product(product, liked_product_ids=None):
     }
 
 
+def build_product_browser_context(request, products):
+    liked_product_ids = get_liked_product_ids(request)
+    mark_liked_products(products, liked_product_ids)
+
+    products_data = []
+    for product in products:
+        item = serialize_product(product, liked_product_ids)
+        item.update({
+            "category_id": product.category_id,
+            "category_name": product.category.name if product.category else "",
+            "brand_id": product.brand_id,
+            "brand_slug": product.brand.slug if product.brand else "",
+            "brand": product.brand.name if product.brand else "",
+            "stock": product.stock,
+            "created": product.created.isoformat() if product.created else "",
+        })
+        products_data.append(item)
+
+    return {
+        "products": products,
+        "products_json": products_data,
+        "categories_json": [
+            {"id": category.id, "name": category.name, "slug": category.slug}
+            for category in Category.objects.all()
+        ],
+        "liked_product_ids": liked_product_ids,
+    }
+
+
 def get_product_search_code(product):
     return f"654{str(product.id).zfill(4)}"
 

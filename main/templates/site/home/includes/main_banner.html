@@ -1,0 +1,45 @@
+{% load static %}
+<section
+  class="main_banner wave_campaign_hero"
+  id="mainBanner"
+  aria-labelledby="mainBannerTitle"
+  data-smoke-vertical="{% static 'site/shared/img/MainBanner/20da17b9-776a-468d-a4f9-7dfd40c627c0.png' %}"
+  data-smoke-floor="{% static 'site/shared/img/MainBanner/69fccd66-0adf-4da4-b944-e62537d85b60.png' %}"
+  data-devices="{% static 'site/shared/img/MainBanner/ChatGPT Image 3 июл. 2026 г., 22_09_58.png' %}"
+  data-cartridges="{% static 'site/shared/img/MainBanner/ChatGPT Image 3 июл. 2026 г., 22_02_00.png' %}"
+  data-cartridge-single="{% static 'site/shared/img/MainBanner/f6bf120b-9106-4dbd-aec5-a51eb62b912b.png' %}"
+  data-cartridge-backdrop="{% static 'site/shared/img/MainBanner/8295fbc5-1409-461c-bea5-7393dfdf2e91.png' %}"
+  data-tastes="{% static 'site/shared/img/MainBanner/ChatGPT Image 3 июл. 2026 г., 22_02_13.png' %}"
+  data-taste-secondary="{% static 'site/shared/img/MainBanner/3fb518c6-cb94-412d-b06b-fd1dd45cb5b2.png' %}"
+>
+  <div class="wave_campaign_backdrop" aria-hidden="true">
+    <img class="wave_campaign_backdrop_image" id="mainBannerBackdrop" alt="" />
+    <img class="wave_campaign_smoke wave_campaign_smoke--vertical" id="mainBannerSmokeVertical" alt="" />
+    <img class="wave_campaign_smoke wave_campaign_smoke--floor" id="mainBannerSmokeFloor" alt="" />
+  </div>
+
+  <div class="wave_campaign_frame">
+    <div class="wave_campaign_content">
+      <div class="wave_campaign_copy" id="mainBannerCopy">
+        <h1 class="wave_campaign_title" id="mainBannerTitle">
+          Вкус, который<br /><span>держит ритм.</span>
+        </h1>
+        <p class="wave_campaign_description" id="mainBannerDescription">
+          Современные устройства для ровной и контролируемой подачи. Компактный формат, понятное управление и ничего лишнего.
+        </p>
+        <div class="wave_campaign_actions">
+          <a class="wave_campaign_cta wave_campaign_cta--primary" id="mainBannerCta" href="#products">
+            <span id="mainBannerCtaText">Смотреть устройства</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="wave_campaign_stage" id="mainBannerVisual" aria-live="polite">
+        <img class="wave_campaign_visual wave_campaign_visual--primary" id="mainBannerPrimaryVisual" alt="Устройства для вейпинга" />
+        <img class="wave_campaign_visual wave_campaign_visual--secondary" id="mainBannerSecondaryVisual" alt="" hidden />
+      </div>
+    </div>
+  </div>
+  <nav class="wave_campaign_dots" id="mainBannerDots" aria-label="Сцены баннера"></nav>
+</section>

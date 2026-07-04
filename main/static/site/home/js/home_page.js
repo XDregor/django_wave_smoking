@@ -70,6 +70,7 @@
 
       // ===== HERO BANNER =====
       (function () {
+        if (window.__waveMainBannerV2) return;
         const cardTexts = {
           0: { badge: "Новая линейка 2026", title: 'Пар <span class="banner_title_accent">без</span><br>компромиссов', subtitle: '<span class="italic">Под-системы, жидкости и аксессуары</span> для тех, кто ценит вкус, надёжность и быстрый выбор без лишнего шума.' },
           1: { badge: "Pod-системы", title: 'Компактный <span class="banner_title_accent">формат</span><br>на каждый день', subtitle: '<span class="italic">Лёгкие устройства с яркой вкусопередачей</span> для повседневного использования, дороги и коротких пауз.' },
@@ -577,17 +578,8 @@
           brands: brandLineDataElement ? JSON.parse(brandLineDataElement.textContent || "[]") : [],
           animationSpeed: 36,
         };
-        let isDetailActive = false,
-          currentBrand = null;
-
         function initBrandMarquee() {
-          const brandMarquee = document.getElementById("brandMarquee");
           const marqueeContainer = document.getElementById("marqueeContainer");
-          const detailWindow = document.getElementById("detailWindow");
-          const detailLogo = document.getElementById("detailLogo");
-          const closeButton = document.getElementById("closeButton");
-          const ctaButton = document.getElementById("ctaButton");
-          const brandNameElement = document.getElementById("brandName");
           if (!marqueeContainer || !config.brands.length) return;
           const tracks = marqueeContainer.querySelectorAll(".brand_line_row");
           tracks.forEach((track, trackIndex) => {
@@ -597,28 +589,6 @@
             });
           });
           marqueeContainer.style.animationDuration = `${config.animationSpeed}s`;
-          if (closeButton) {
-            closeButton.addEventListener("click", (e) => {
-              e.stopPropagation();
-              closeBrandDetail(detailWindow, marqueeContainer, closeButton);
-            });
-          }
-          if (ctaButton) {
-            ctaButton.addEventListener("click", (e) => {
-              e.stopPropagation();
-              if (currentBrand) alert(`Открываем товары бренда ${currentBrand.name}`);
-            });
-          }
-          if (brandMarquee) {
-            brandMarquee.addEventListener("click", (e) => {
-              if (isDetailActive && !e.target.closest(".brand_detail_overlay") && !e.target.closest(".brand_detail_close_button") && !e.target.closest(".brand_line_item")) {
-                closeBrandDetail(detailWindow, marqueeContainer, closeButton);
-              }
-            });
-          }
-          document.addEventListener("keydown", (e) => {
-            if (e.key === "Escape" && isDetailActive) closeBrandDetail(detailWindow, marqueeContainer, closeButton);
-          });
         }
 
         function createBrandElement(brand, isClone = false) {
@@ -638,41 +608,7 @@
             container.tabIndex = -1;
             return container;
           }
-          container.addEventListener("click", (e) => {
-            e.stopPropagation();
-            openBrandDetail(brand);
-          });
           return container;
-        }
-
-        function openBrandDetail(brand) {
-          if (isDetailActive) return;
-          const marqueeContainer = document.getElementById("marqueeContainer");
-          const detailWindow = document.getElementById("detailWindow");
-          const detailLogo = document.getElementById("detailLogo");
-          const closeButton = document.getElementById("closeButton");
-          const brandNameElement = document.getElementById("brandName");
-          currentBrand = brand;
-          isDetailActive = true;
-          if (marqueeContainer) marqueeContainer.classList.add("brand_line_track_dimmed");
-          if (detailLogo) {
-            detailLogo.src = brand.logo;
-            detailLogo.alt = brand.name;
-          }
-          if (brandNameElement) brandNameElement.textContent = brand.name.toUpperCase();
-          if (detailWindow) detailWindow.classList.add("active");
-          if (closeButton) closeButton.classList.add("active");
-        }
-
-        function closeBrandDetail(detailWindow, marqueeContainer, closeButton) {
-          if (!isDetailActive) return;
-          if (detailWindow) detailWindow.classList.remove("active");
-          if (closeButton) closeButton.classList.remove("active");
-          setTimeout(() => {
-            if (marqueeContainer) marqueeContainer.classList.remove("brand_line_track_dimmed");
-          }, 300);
-          isDetailActive = false;
-          currentBrand = null;
         }
 
         if (document.readyState === "loading") {
@@ -686,11 +622,24 @@
       (function () {
         const REVIEWS_LIMIT = 3;
         const REVIEW_SWAP_DELAY = 60000;
-        const REVIEW_FADE_DELAY = 240;
+        const REVIEW_EXIT_DURATION = 260;
+        const REVIEW_ENTER_DURATION = 540;
         const starSvg = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1l2.4 7.2H19l-5.7 4.1 2.2 6.9L10 15l-5.5 4.2 2.2-6.9L1 9.2h6.6z" /></svg>';
+        const userAvatarSvg = '<svg class="reviews_avatar_icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M9.99296258,10.5729355 C12.478244,10.5729355 14.4929626,8.55821687 14.4929626,6.0729355 C14.4929626,3.58765413 12.478244,1.5729355 9.99296258,1.5729355 C7.5076812,1.5729355 5.49296258,3.58765413 5.49296258,6.0729355 C5.49296258,8.55821687 7.5076812,10.5729355 9.99296258,10.5729355 Z M10,0 C13.3137085,0 16,2.6862915 16,6 C16,8.20431134 14.8113051,10.1309881 13.0399615,11.173984 C16.7275333,12.2833441 19.4976819,15.3924771 19.9947005,19.2523727 C20.0418583,19.6186047 19.7690435,19.9519836 19.3853517,19.9969955 C19.0016598,20.0420074 18.6523872,19.7816071 18.6052294,19.4153751 C18.0656064,15.2246108 14.4363723,12.0699838 10.034634,12.0699838 C5.6099956,12.0699838 1.93381693,15.231487 1.39476476,19.4154211 C1.34758036,19.7816499 0.998288773,20.0420271 0.614600177,19.9969899 C0.230911582,19.9519526 -0.0418789616,19.6185555 0.00530544566,19.2523267 C0.500630192,15.4077896 3.28612316,12.3043229 6.97954305,11.1838052 C5.19718955,10.1447285 4,8.21217353 4,6 C4,2.6862915 6.6862915,0 10,0 Z"/></svg>';
+        const helpfulHeartSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
         let allReviews = [];
         let visibleReviews = [];
         let swapTimer = null;
+
+        function getCookie(name) {
+          return document.cookie
+            .split(";")
+            .map((item) => item.trim())
+            .find((item) => item.startsWith(`${name}=`))
+            ?.split("=")
+            .slice(1)
+            .join("=") || "";
+        }
 
         function readReviewsData() {
           const dataEl = document.getElementById("home-reviews-data");
@@ -724,12 +673,27 @@
           card.dataset.reviewIndex = String(index);
           card.dataset.reviewId = String(review.id);
 
+          const quote = document.createElement("span");
+          quote.className = "reviews_quote_mark";
+          quote.setAttribute("aria-hidden", "true");
+          quote.textContent = "“";
+
           const header = document.createElement("div");
           header.className = "reviews_card_header";
 
           const avatar = document.createElement("div");
           avatar.className = "reviews_avatar";
-          avatar.textContent = review.avatar || "?";
+          avatar.innerHTML = userAvatarSvg;
+
+          const helpfulButton = document.createElement("button");
+          helpfulButton.className = `reviews_avatar_like${review.liked ? " is-liked" : ""}`;
+          helpfulButton.type = "button";
+          helpfulButton.dataset.reviewHelpfulId = String(review.id);
+          helpfulButton.setAttribute("aria-pressed", String(Boolean(review.liked)));
+          helpfulButton.setAttribute("aria-label", `Отметить отзыв полезным. Отметок: ${Number(review.helpful || 0)}`);
+          helpfulButton.title = `Полезно: ${Number(review.helpful || 0)}`;
+          helpfulButton.innerHTML = helpfulHeartSvg;
+          avatar.appendChild(helpfulButton);
 
           const meta = document.createElement("div");
           meta.className = "reviews_meta";
@@ -757,8 +721,39 @@
 
           meta.append(author, date);
           header.append(avatar, meta, stars);
-          card.append(header, text, product);
+          card.append(quote, header, text, product);
           return card;
+        }
+
+        async function toggleReviewHelpful(button) {
+          const reviewId = Number(button.dataset.reviewHelpfulId || 0);
+          if (!reviewId || button.disabled) return;
+          button.disabled = true;
+          try {
+            const response = await fetch(`/api/reviews/${reviewId}/vote/`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+                "X-Requested-With": "XMLHttpRequest",
+              },
+              body: JSON.stringify({ vote: "up" }),
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) return;
+
+            const review = allReviews.find((item) => Number(item.id) === reviewId);
+            if (review) {
+              review.helpful = Number(data.helpful || 0);
+              review.liked = Boolean(data.liked);
+            }
+            button.classList.toggle("is-liked", Boolean(data.liked));
+            button.setAttribute("aria-pressed", String(Boolean(data.liked)));
+            button.setAttribute("aria-label", `Отметить отзыв полезным. Отметок: ${Number(data.helpful || 0)}`);
+            button.title = `Полезно: ${Number(data.helpful || 0)}`;
+          } finally {
+            button.disabled = false;
+          }
         }
 
         function syncReviewDots() {
@@ -808,23 +803,42 @@
           const oldCard = track.children[visibleIndex];
           if (!oldCard) return;
 
-          oldCard.classList.add("is-review-swapping");
+          const enterOffset = visibleIndex % 2 === 0 ? "22px" : "-22px";
+          const exitOffset = visibleIndex % 2 === 0 ? "-16px" : "16px";
+          oldCard.style.setProperty("--review-swap-x", exitOffset);
+          oldCard.classList.add("is-review-leaving");
+          oldCard.setAttribute("aria-hidden", "true");
+          track.setAttribute("aria-busy", "true");
           window.setTimeout(() => {
             visibleReviews[visibleIndex] = nextReview;
             const nextCard = createReviewCard(nextReview, visibleIndex);
-            nextCard.classList.add("is-review-swapping");
+            nextCard.style.setProperty("--review-swap-x", enterOffset);
+            nextCard.classList.add("is-review-entering");
             oldCard.replaceWith(nextCard);
             syncReviewDots();
             requestAnimationFrame(() => {
-              nextCard.classList.remove("is-review-swapping");
+              requestAnimationFrame(() => nextCard.classList.add("is-review-visible"));
             });
-          }, REVIEW_FADE_DELAY);
+            window.setTimeout(() => {
+              nextCard.classList.add("has-swapped");
+              nextCard.classList.remove("is-review-entering", "is-review-visible");
+              nextCard.style.removeProperty("--review-swap-x");
+              track.removeAttribute("aria-busy");
+            }, REVIEW_ENTER_DURATION);
+          }, REVIEW_EXIT_DURATION);
         }
 
         function initHomeReviews() {
           allReviews = readReviewsData();
           visibleReviews = getRandomItems(allReviews, Math.min(REVIEWS_LIMIT, allReviews.length));
           renderReviews();
+          document.getElementById("reviewsTrack")?.addEventListener("click", (event) => {
+            const helpfulButton = event.target.closest("[data-review-helpful-id]");
+            if (!helpfulButton) return;
+            event.preventDefault();
+            event.stopPropagation();
+            toggleReviewHelpful(helpfulButton);
+          });
           if (swapTimer) clearInterval(swapTimer);
           if (allReviews.length > visibleReviews.length) {
             swapTimer = window.setInterval(replaceRandomReview, REVIEW_SWAP_DELAY);

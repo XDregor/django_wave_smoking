@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="{% static 'site/shared/css/review_card.css' %}" />
 
     
-      <link rel="stylesheet" href="{% static 'site/reviews/css/page.css' %}?v=structure1" />
+      <link rel="stylesheet" href="{% static 'site/reviews/css/reviews_page.css' %}?v=structure1" />
   </head>
   <body>
     {% include 'site/shared/header.html' %}
@@ -115,6 +115,6 @@
     {{ products_json|json_script:"reviewProductsData" }}
     {{ rating_summary|json_script:"ratingSummaryData" }}
 
-    <script src="{% static 'site/reviews/js/page.js' %}?v=structure1"></script>
+    <script src="{% static 'site/reviews/js/reviews_page.js' %}?v=structure1"></script>
   </body>
 </html>

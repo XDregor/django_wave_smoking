@@ -17,16 +17,21 @@
   }
 
   .product_card_badge_element {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 2;
-    padding: 4px 9px;
-    border-radius: 999px;
-    font-size: var(--fs-micro);
+    top: 9px;
+    left: 9px;
+    z-index: 3;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 4px;
+    font-size: 9px;
     font-weight: 800;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    text-align: center;
     text-transform: uppercase;
   }
   .product_card_badge_new_variant {

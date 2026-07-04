@@ -208,7 +208,9 @@
         }
 
         function scrollToTop(smooth = true) {
-          window.scrollTo({ top: 0, behavior: smooth ? "smooth" : "instant" });
+          const productBrowser = document.querySelector("[data-product-browser]");
+          const top = productBrowser ? productBrowser.getBoundingClientRect().top + window.scrollY - 96 : 0;
+          window.scrollTo({ top, behavior: smooth ? "smooth" : "instant" });
         }
 
         /* ============================================================
@@ -274,21 +276,23 @@
 
           const badgeHtml = p.badge && p.badge.type
             ? `<span class="product_card_badge_element product_card_badge_${p.badge.type}_variant">${p.badge.label}</span>` : "";
+          const discountPercent = getDiscountPercent(p);
           const oldHtml = Number(p.old_price || 0) > Number(p.price || 0)
-            ? `<span class="product_card_old_price_value">${Number(p.old_price).toLocaleString("uk-UA")}₴</span>` : "";
+            ? `<div class="product_card_price_meta_row"><span class="product_card_old_price_value">${Number(p.old_price).toLocaleString("uk-UA")} грн</span>${discountPercent ? `<span class="product_card_discount_value">-${discountPercent}%</span>` : ""}</div>`
+            : `<div class="product_card_price_meta_row"></div>`;
           const imgHtml = p.image_url
             ? `<img src="${p.image_url}" alt="${p.name}" class="product_card_image_element" loading="lazy" />` : "";
           const isUnavailable = !isProductAvailable(p);
           const detailUrl = p.detail_url || (p.slug ? `/products/${p.id}/${p.slug}/` : "#");
-          const brandHtml = p.brand ? `<div class="product_card_brand_text">${p.brand}</div>` : "";
+          const brandHtml = `<div class="product_card_brand_text">${p.brand || ""}</div>`;
           const detailAttr = ` data_product_card_url="${detailUrl}"`;
           const requiresSelection = Boolean(p.requires_selection);
-          const ratingHtml = Number(p.review_count || 0) > 0
+          const ratingHtml = `<div class="product_card_rating_slot">${Number(p.review_count || 0) > 0
             ? `<a class="product_card_rating_row" href="${detailUrl}#product-reviews" aria-label="Рейтинг ${Number(p.average_rating || 0).toFixed(1)}, отзывов: ${Number(p.review_count)}">
                 <span class="product_card_rating_value"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.7 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3-4.6-4.5 6.3-.9L12 2.7Z"/></svg>${Number(p.average_rating || 0).toFixed(1)}</span>
                 <span class="product_card_rating_separator" aria-hidden="true"></span>
                 <span class="product_card_review_count"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z"/></svg>${Number(p.review_count)}</span>
-              </a>` : "";
+              </a>` : ""}</div>`;
           const unavailableMediaHtml = isUnavailable
             ? `<div class="product_card_unavailable_overlay_element" aria-hidden="true"></div><div class="product_card_unavailable_status_text">Нет в наличии</div>` : "";
           const nameHtml = `<a href="${detailUrl}">${p.name}</a>`;
@@ -306,19 +310,22 @@
             </div>
             <div class="product_card_info_block">
               ${brandHtml}
-              <h3 class="product_card_name_text product_card_name_link_element">
-                ${nameHtml}
-              </h3>
-              ${ratingHtml}
+              <div class="product_card_identity_block">
+                <h3 class="product_card_name_text product_card_name_link_element">
+                  ${nameHtml}
+                </h3>
+                ${ratingHtml}
+              </div>
+              <div class="product_card_color_swatches"></div>
               <div class="product_card_footer_row">
+                <div class="product_card_price_row_container">
+                  ${oldHtml}
+                  <span class="product_card_price_value">${Number(p.price).toLocaleString("uk-UA")} грн</span>
+                </div>
                 <button class="product_card_cart_button" type="button" data_product_card_cart_url="/api/cart/add/"${isUnavailable ? " disabled aria-disabled=\"true\" title=\"Нет в наличии\"" : requiresSelection ? " title=\"Выбрать вариант\" aria-label=\"Выбрать вариант товара\"" : " title=\"Добавить в корзину\" aria-label=\"Добавить товар в корзину\""}>
                   <svg class="product_card_cart_icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h2l1.8 9.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L20 8H6"/><circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/><path d="M15 3v6M12 6h6"/></svg>
                   <svg class="product_card_cart_check_icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>
                 </button>
-                <div class="product_card_price_row_container">
-                  <span class="product_card_price_value">${Number(p.price).toLocaleString("uk-UA")}₴</span>
-                  ${oldHtml}
-                </div>
               </div>
             </div>
           </article>`;
@@ -445,8 +452,10 @@
           // Обновляем счётчики
           const tcEl = document.getElementById("totalCount");
           if (tcEl) tcEl.textContent = total.toLocaleString("uk-UA");
-          document.getElementById("catalog_total_count_bar_id").textContent = total.toLocaleString("uk-UA");
-          document.getElementById("catalog_shown_count_id").textContent = Math.min(state.perPage, page.length).toString();
+          const totalBar = document.getElementById("catalog_total_count_bar_id");
+          const shownCount = document.getElementById("catalog_shown_count_id");
+          if (totalBar) totalBar.textContent = total.toLocaleString("uk-UA");
+          if (shownCount) shownCount.textContent = Math.min(state.perPage, page.length).toString();
 
           if (page.length === 0) {
             grid.innerHTML = "";
@@ -806,7 +815,7 @@
         /* Определяем доступные опции по ширине и дефолтное значение */
         function getViewOptions() {
           const w = window.innerWidth;
-          if (w > 1200) return { options: [4, 5], default: 5 };
+          if (w > 1200) return { options: [3, 4], default: 4 };
           if (w > 900) return { options: [2, 3], default: 3 };
           // ≤900: мобиль — 1 или 2 колонки
           return { options: [1, 2], default: 2 };
@@ -934,22 +943,37 @@
           const arrowBtn = document.getElementById("filter_drawer_arrow_id");
           if (!toggleBtn || !drawer || !overlay) return;
 
+          [overlay, drawer, arrowBtn].filter(Boolean).forEach((element) => {
+            if (element.parentElement !== document.body) document.body.appendChild(element);
+          });
+
+          let previousBodyOverflow = "";
+
           function openDrawer() {
+            previousBodyOverflow = document.body.style.overflow;
             drawer.classList.add("open");
             overlay.classList.add("open");
             arrowBtn?.classList.add("open");
+            document.body.classList.add("filter_drawer_open");
+            drawer.setAttribute("aria-hidden", "false");
             document.body.style.overflow = "hidden";
           }
           function closeDrawer() {
             drawer.classList.remove("open");
             overlay.classList.remove("open");
             arrowBtn?.classList.remove("open");
-            document.body.style.overflow = "";
+            document.body.classList.remove("filter_drawer_open");
+            drawer.setAttribute("aria-hidden", "true");
+            document.body.style.overflow = previousBodyOverflow;
           }
 
+          drawer.setAttribute("aria-hidden", "true");
           toggleBtn.addEventListener("click", openDrawer);
           arrowBtn?.addEventListener("click", closeDrawer);
           overlay.addEventListener("click", closeDrawer);
+          document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && drawer.classList.contains("open")) closeDrawer();
+          });
         }
 
         function initMobileDrawer() {

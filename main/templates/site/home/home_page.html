@@ -10,11 +10,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="{% static 'site/shared/css/theme.css' %}" />
     <link rel="icon" type="image/png" href="{% static 'site/shared/img/mini_logo.png' %}" />
-    <link rel="stylesheet" href="{% static 'site/shared/css/product_card.css' %}?v=compact-square-1" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/product_card.css' %}?v=product-card-7" />
 
     
     {% include 'site/shared/includes/badges.html' %}
-      <link rel="stylesheet" href="{% static 'site/home/css/page.css' %}?v=structure1" />
+      <link rel="stylesheet" href="{% static 'site/catalog/css/catalog_page.css' %}?v=home-catalog-5" />
+    <link rel="stylesheet" href="{% static 'site/home/css/home_page.css' %}?v=reviews-swap-2" />
+    <link rel="stylesheet" href="{% static 'site/home/css/main_banner.css' %}?v=campaign-8" />
   </head>
   <body>
     {% include 'site/shared/header.html' %}
@@ -28,6 +30,7 @@
     <div class="cursor_dot cursor_dot_large" id="largeCircle"></div>
 
     <!-- ==================== HERO BANNER ==================== -->
+    {% comment %}
     <section class="main_banner">
       <div class="banner_bg_pattern"></div>
       <div class="banner_floating_element banner_floating_one"></div>
@@ -118,6 +121,8 @@
         </div>
       </div>
     </section>
+    {% endcomment %}
+    {% include 'site/home/includes/main_banner.html' %}
 
     <!-- ==================== BRAND MARQUEE ==================== -->
     <div class="brand_line_section" style="padding: 0 var(--site-pad)">
@@ -131,21 +136,11 @@
           <div class="brand_line_fade_left"></div>
           <div class="brand_line_fade_right"></div>
         </div>
-        <div class="brand_detail_overlay" id="detailWindow">
-          <div class="brand_detail_logo_container">
-            <img class="brand_detail_logo" id="detailLogo" src="" alt="" />
-          </div>
-          <div class="brand_detail_cta">
-            <p class="brand_detail_title">Товары бренда<br /><span class="brand_detail_brand_name" id="brandName"></span></p>
-            <p class="brand_detail_subtitle">Откройте устройства, жидкости и расходники от бренда, который сейчас в фокусе</p>
-            <button class="brand_detail_button" id="ctaButton">Смотреть товары</button>
-          </div>
-        </div>
-        <div class="brand_detail_close_button" id="closeButton"></div>
       </div>
     </div>
 
-    <!-- ==================== RECOMMENDATIONS ==================== -->
+    {% comment %}
+    <!-- Legacy rectangular recommendations layout kept as a visual fallback. -->
     <section class="recommendations_section">
       <div class="recommendations_container">
         <div class="recommendations_top_row">
@@ -181,16 +176,44 @@
       </div>
     </section>
 
+    {% endcomment %}
+
+    <section class="recommendations_section recommendations_catalog_section" id="products">
+      <div class="recommendations_container">
+        <div class="recommendations_top_row recommendations_catalog_header">
+          <div class="recommendations_intro">
+            <p class="recommendations_eyebrow">Каталог</p>
+            <h2 class="recommendations_title">Товары для отдыха</h2>
+            <div class="recommendations_catalog_meta_row">
+              <p class="recommendations_subtitle">То, что нужно для комфортного образа жизни и отдыха. Только актуальные устройства, жидкости и аксессуары.</p>
+              {% include 'site/shared/includes/product_browser_controls.html' %}
+            </div>
+          </div>
+        </div>
+        {% include 'site/shared/includes/product_browser.html' with controls_external=True %}
+      </div>
+    </section>
+
     <!-- ==================== REVIEWS ==================== -->
     <section class="reviews_section" id="reviewsSection">
       <div class="reviews_container">
         <div class="reviews_intro">
-          <h2 class="reviews_title">Отзывы о магазине</h2>
-          <!-- Slider nav (видна только в карусели) -->
-          <div class="reviews_slider_nav" id="reviewsSliderNav" aria-hidden="true">
-            <button class="reviews_slider_nav_dot is-active" data-dot="0" type="button" aria-label="Перейти к отзыву 1"></button>
-            <button class="reviews_slider_nav_dot" data-dot="1" type="button" aria-label="Перейти к отзыву 2"></button>
-            <button class="reviews_slider_nav_dot" data-dot="2" type="button" aria-label="Перейти к отзыву 3"></button>
+          <div class="reviews_heading_block">
+            <p class="reviews_eyebrow">Опыт покупателей</p>
+            <h2 class="reviews_title">Отзывы о магазине</h2>
+          </div>
+          <div class="reviews_intro_actions">
+            <div class="reviews_slider_nav" id="reviewsSliderNav" aria-hidden="true">
+              <button class="reviews_slider_nav_dot is-active" data-dot="0" type="button" aria-label="Перейти к отзыву 1"></button>
+              <button class="reviews_slider_nav_dot" data-dot="1" type="button" aria-label="Перейти к отзыву 2"></button>
+              <button class="reviews_slider_nav_dot" data-dot="2" type="button" aria-label="Перейти к отзыву 3"></button>
+            </div>
+            <a class="reviews_cta_button" href="{% url 'main:reviews' %}">
+              Все отзывы
+              <span class="reviews_cta_arrow" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              </span>
+            </a>
           </div>
         </div>
 
@@ -203,21 +226,17 @@
         </div>
         <!-- /reviews_track_wrapper -->
 
-        <div class="reviews_cta_wrap">
-          <a class="reviews_cta_button" href="{% url 'main:reviews' %}">
-            Все отзывы
-            <span class="reviews_cta_arrow" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
-            </span>
-          </a>
-        </div>
       </div>
     </section>
 
     
 
     <!-- ==================== SCRIPTS ==================== -->
-    <script src="{% static 'site/shared/js/product_card.js' %}?v=compact-square-1"></script>
-    <script src="{% static 'site/home/js/page.js' %}?v=structure1"></script>
+    {{ products_json|json_script:"productsData" }}
+    {{ categories_json|json_script:"categoriesData" }}
+    <script src="{% static 'site/shared/js/product_card.js' %}?v=product-card-7"></script>
+    <script src="{% static 'site/catalog/js/catalog_page.js' %}?v=home-catalog-4"></script>
+    <script src="{% static 'site/home/js/main_banner.js' %}?v=campaign-10"></script>
+    <script src="{% static 'site/home/js/home_page.js' %}?v=reviews-swap-2"></script>
   </body>
 </html>

@@ -122,7 +122,7 @@ def product_detail(request, id, slug):
     mark_liked_products(also_chosen_products, liked_product_ids)
     mark_liked_products(related_products, liked_product_ids)
 
-    return render(request, "site/product_detail/index.html", {
+    return render(request, "site/product_detail/product_detail_page.html", {
         "product": product,
         "product_price_saving": product_price_saving,
         "is_product_available": is_product_available,

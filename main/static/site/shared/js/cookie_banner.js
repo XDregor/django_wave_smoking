@@ -3,22 +3,34 @@
     const closeButton = document.getElementById("cclose");
     const acceptedKey = "cookieConsentAccepted";
     const dateKey = "cookieConsentDate";
-    const maxAge = 30 * 24 * 60 * 60 * 1000;
+    const dayKey = "cookieConsentDay";
+    const fallbackCookieLifetime = 365 * 24 * 60 * 60 * 1000;
 
     if (!banner || !closeButton) return;
+
+    function getLocalDay(timestamp = Date.now()) {
+      const date = new Date(timestamp);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
 
     function getStoredConsent() {
       try {
         return {
           accepted: localStorage.getItem(acceptedKey) === "true",
           date: Number(localStorage.getItem(dateKey) || 0),
+          day: localStorage.getItem(dayKey) || "",
         };
       } catch (_) {
         const accepted = document.cookie.includes(`${acceptedKey}=true`);
-        const match = document.cookie.match(new RegExp(`${dateKey}=([^;]+)`));
+        const dateMatch = document.cookie.match(new RegExp(`${dateKey}=([^;]+)`));
+        const dayMatch = document.cookie.match(new RegExp(`${dayKey}=([^;]+)`));
         return {
           accepted,
-          date: Number(match?.[1] || 0),
+          date: Number(dateMatch?.[1] || 0),
+          day: dayMatch?.[1] || "",
         };
       }
     }
@@ -28,16 +40,20 @@
       try {
         localStorage.setItem(acceptedKey, "true");
         localStorage.setItem(dateKey, `${timestamp}`);
+        localStorage.setItem(dayKey, getLocalDay(timestamp));
       } catch (_) {
-        const expires = new Date(timestamp + maxAge).toUTCString();
+        const expires = new Date(timestamp + fallbackCookieLifetime).toUTCString();
         document.cookie = `${acceptedKey}=true; expires=${expires}; path=/; SameSite=Lax`;
         document.cookie = `${dateKey}=${timestamp}; expires=${expires}; path=/; SameSite=Lax`;
+        document.cookie = `${dayKey}=${getLocalDay(timestamp)}; expires=${expires}; path=/; SameSite=Lax`;
       }
     }
 
     function shouldShowConsent() {
       const consent = getStoredConsent();
-      return !consent.accepted || !consent.date || Date.now() - consent.date > maxAge;
+      if (!consent.accepted || !consent.date) return true;
+      const acceptedDay = consent.day || getLocalDay(consent.date);
+      return acceptedDay !== getLocalDay();
     }
 
     function showBanner() {

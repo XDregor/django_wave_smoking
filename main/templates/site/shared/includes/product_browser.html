@@ -1,0 +1,88 @@
+<div class="catalog_layout_container product_browser" data-product-browser>
+  <main class="catalog_main_content">
+    {% if not controls_external %}
+      <div class="catalog_toolbar_container">
+        {% include 'site/shared/includes/product_browser_controls.html' %}
+      </div>
+    {% endif %}
+
+    <div class="catalog_grid_container" id="catalog_grid_container_id"></div>
+
+    <template id="productCardTemplates">
+      {% for product in products %}
+        {% include 'site/shared/includes/product_card.html' with product=product %}
+      {% endfor %}
+    </template>
+
+    <div class="catalog_empty_state_container" id="catalog_empty_state_id">
+      <div class="catalog_empty_icon_wrapper" id="catalog_empty_icon_no_products_id">
+        <svg class="catalog_empty_svg_icon" viewBox="0 0 120 120" fill="none" aria-hidden="true"><circle cx="52" cy="50" r="26" stroke="rgba(255,255,255,.25)" stroke-width="3"/><line x1="70" y1="68" x2="90" y2="88" stroke="rgba(255,255,255,.25)" stroke-width="3" stroke-linecap="round"/></svg>
+      </div>
+      <div class="catalog_empty_icon_wrapper" id="catalog_empty_icon_no_results_id" style="display: none">
+        <svg class="catalog_empty_svg_icon" viewBox="0 0 120 120" fill="none" aria-hidden="true"><circle cx="52" cy="50" r="26" stroke="rgba(255,255,255,.25)" stroke-width="3"/><line x1="70" y1="68" x2="90" y2="88" stroke="rgba(255,255,255,.25)" stroke-width="3" stroke-linecap="round"/></svg>
+      </div>
+      <h3 id="emptyTitle">Товары не найдены</h3>
+      <button class="catalog_empty_reset_button" id="catalog_empty_reset_button_id" type="button" style="display: none">Сбросить фильтры</button>
+    </div>
+
+    {% include 'site/shared/includes/pagination.html' with pagination_id='pagination' pagination_label='Навигация по товарам' %}
+  </main>
+</div>
+
+<div class="filter_drawer_overlay_component" id="filter_drawer_overlay_id"></div>
+<button class="filter_drawer_panel_arrow_button" id="filter_drawer_arrow_id" type="button" title="Закрыть фильтры" aria-label="Закрыть фильтры">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+</button>
+<aside class="filter_drawer_panel" id="filter_drawer_panel_id" aria-label="Фильтры и сортировка">
+  <div class="filter_drawer_panel_header_block">
+    <span class="filter_drawer_panel_title_text">Фильтры и сортировка</span>
+    <button class="filter_drawer_panel_reset_button" id="filter_drawer_reset_button_id" type="button" title="Сбросить фильтры" aria-label="Сбросить фильтры">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+    </button>
+  </div>
+
+  <div class="filter_drawer_blocks_container">
+    <div class="filter_block_component filter_block_static_variant filter_block_open_state" id="filter_block_category_id">
+      <div class="filter_block_header_element"><span class="filter_block_title_text">Категория</span></div>
+      <div class="filter_block_body_container"><div class="filter_block_body_inner_wrapper"><div class="filter_block_body_content_area"><div class="filter_chips_container" id="filter_category_chips_container_id"></div></div></div></div>
+    </div>
+
+    <div class="filter_block_component filter_block_static_variant filter_block_open_state" id="filter_block_price_id">
+      <div class="filter_block_header_element"><span class="filter_block_title_text">Цена, грн</span></div>
+      <div class="filter_block_body_container"><div class="filter_block_body_inner_wrapper"><div class="filter_block_body_content_area">
+        <div class="filter_price_inputs_container">
+          <input type="number" class="filter_price_input_field" id="filter_price_min_input_id" value="0" min="0" max="9999" aria-label="Минимальная цена"/>
+          <span class="filter_price_separator">-</span>
+          <input type="number" class="filter_price_input_field" id="filter_price_max_input_id" value="5000" min="0" max="9999" aria-label="Максимальная цена"/>
+        </div>
+        <div class="filter_range_slider_wrapper">
+          <div class="filter_range_slider_track_line"><div class="filter_range_slider_fill_line" id="filter_range_fill_line_id"></div></div>
+          <input type="range" class="filter_range_slider filter_range_slider_slider_min" id="filter_range_min_slider_id" min="0" max="5000" value="0" step="50" aria-label="Минимальная цена"/>
+          <input type="range" class="filter_range_slider filter_range_slider_slider_max" id="filter_range_max_slider_id" min="0" max="5000" value="5000" step="50" aria-label="Максимальная цена"/>
+        </div>
+      </div></div></div>
+    </div>
+
+    <div class="filter_block_component filter_block_open_state" id="filter_block_sort_id">
+      <div class="filter_block_header_element"><span class="filter_block_title_text">Сортировка</span><span class="filter_block_arrow_wrapper"><svg class="filter_block_arrow_icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+      <div class="filter_block_body_container"><div class="filter_block_body_inner_wrapper"><div class="filter_block_body_content_area">
+        <div class="sort_options_container" id="sort_options_container_id">
+          <button class="sort_option_button active" type="button" data_sort_option_key="recommended"><span class="sort_option_button_label_text">Рекомендуемые</span></button>
+          <button class="sort_option_button" type="button" data_sort_option_key="hit"><span class="sort_option_button_label_text">Хиты</span></button>
+          <button class="sort_option_button" type="button" data_sort_option_key="new"><span class="sort_option_button_label_text">Новинки</span></button>
+          <button class="sort_option_button" type="button" data_sort_option_key="sale"><span class="sort_option_button_label_text">Скидки</span></button>
+          <button class="sort_option_button" type="button" data_sort_option_key="price_asc"><span class="sort_option_button_label_text">Сначала дешевле</span></button>
+          <button class="sort_option_button" type="button" data_sort_option_key="price_desc"><span class="sort_option_button_label_text">Сначала дороже</span></button>
+          <button class="sort_option_button" type="button" data_sort_option_key="discount_pct"><span class="sort_option_button_label_text">Размер скидки</span></button>
+        </div>
+      </div></div></div>
+    </div>
+
+    <div class="filter_block_component" id="filter_block_brand_id">
+      <div class="filter_block_header_element"><span class="filter_block_title_text">Бренд</span><span class="filter_block_arrow_wrapper"><svg class="filter_block_arrow_icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+      <div class="filter_block_body_container"><div class="filter_block_body_inner_wrapper"><div class="filter_block_body_content_area"><div class="filter_checkboxes_container" id="filter_brand_checkboxes_id"></div></div></div></div>
+    </div>
+
+    <div id="filter_variant_blocks_container_id"></div>
+  </div>
+</aside>

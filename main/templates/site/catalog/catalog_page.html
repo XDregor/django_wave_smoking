@@ -10,10 +10,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="{% static 'site/shared/css/theme.css' %}" />
     <link rel="icon" type="image/png" href="{% static 'site/shared/img/mini_logo.png' %}" />
-    <link rel="stylesheet" href="{% static 'site/shared/css/product_card.css' %}?v=compact-square-1" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/product_card.css' %}?v=product-card-7" />
     
     {% include 'site/shared/includes/badges.html' %}
-      <link rel="stylesheet" href="{% static 'site/catalog/css/page.css' %}?v=structure1" />
+      <link rel="stylesheet" href="{% static 'site/catalog/css/catalog_page.css' %}?v=home-catalog-5" />
   </head>
   <body{% if catalog_search_mode %} class="catalog_search_mode"{% endif %}>
     {% include 'site/shared/header.html' %}
@@ -275,7 +275,7 @@
     {{ products_json|json_script:"productsData" }}
     {{ categories_json|json_script:"categoriesData" }}
 
-    <script src="{% static 'site/shared/js/product_card.js' %}?v=compact-square-1"></script>
-    <script src="{% static 'site/catalog/js/page.js' %}?v=structure1"></script>
+    <script src="{% static 'site/shared/js/product_card.js' %}?v=product-card-7"></script>
+    <script src="{% static 'site/catalog/js/catalog_page.js' %}?v=home-catalog-4"></script>
   </body>
 </html>

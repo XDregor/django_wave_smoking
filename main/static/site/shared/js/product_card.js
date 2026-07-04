@@ -58,6 +58,26 @@
     if (url) window.location.href = url;
   }
 
+  function selectColorSwatch(button) {
+    const card = button.closest(".product_card_component");
+    const image = card?.querySelector(".product_card_image_element");
+    if (!card || !image) return;
+
+    card.querySelectorAll("[data-product-card-color-swatch]").forEach((swatch) => {
+      const selected = swatch === button;
+      swatch.classList.toggle("is-selected", selected);
+      swatch.setAttribute("aria-pressed", String(selected));
+    });
+
+    const nextSource = button.getAttribute("data-product-card-color-image") || image.getAttribute("data-product-card-default-image");
+    if (!nextSource || image.getAttribute("src") === nextSource) return;
+    image.classList.add("is-changing");
+    window.setTimeout(() => {
+      image.setAttribute("src", nextSource);
+      image.classList.remove("is-changing");
+    }, 120);
+  }
+
   async function handleCartAction(button) {
     const card = button.closest(".product_card_component");
     if (!card || button.disabled) return;
@@ -108,6 +128,14 @@
   }
 
   document.addEventListener("click", (event) => {
+    const colorSwatch = event.target.closest("[data-product-card-color-swatch]");
+    if (colorSwatch) {
+      event.preventDefault();
+      event.stopPropagation();
+      selectColorSwatch(colorSwatch);
+      return;
+    }
+
     const likeButton = event.target.closest(".product_card_like_button");
     if (likeButton) {
       event.preventDefault();

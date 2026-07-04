@@ -1,0 +1,30 @@
+<!doctype html>
+{% load static %}
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WAVE - результаты поиска</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/theme.css' %}" />
+    <link rel="icon" type="image/png" href="{% static 'site/shared/img/mini_logo.png' %}" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/product_card.css' %}?v=product-card-7" />
+    {% include 'site/shared/includes/badges.html' %}
+    <link rel="stylesheet" href="{% static 'site/catalog/css/catalog_page.css' %}?v=home-catalog-5" />
+  </head>
+  <body class="catalog_search_mode">
+    {% include 'site/shared/header.html' %}
+    <section class="catalog_search_summary" id="catalog_search_summary_id" aria-live="polite">
+      <h1 class="catalog_search_summary_title" id="catalog_search_summary_title_id"></h1>
+      <p class="catalog_search_summary_text" id="catalog_search_summary_text_id"></p>
+    </section>
+    {% include 'site/shared/includes/product_browser.html' %}
+    {% include 'site/shared/includes/scroll_to_top.html' %}
+    {{ products_json|json_script:"productsData" }}
+    {{ categories_json|json_script:"categoriesData" }}
+    <script src="{% static 'site/shared/js/product_card.js' %}?v=product-card-7"></script>
+    <script src="{% static 'site/catalog/js/catalog_page.js' %}?v=home-catalog-4"></script>
+  </body>
+</html>

@@ -515,7 +515,7 @@ class AdaptiveAccountButton {
           this.navItems = [...document.querySelectorAll(".navigation_item")];
           this.activeTrigger = null;
           this.closeTimeoutId = null;
-          this.catalogUrl = "/catalog/";
+          this.catalogUrl = "/#products";
 
           if (!this.menu || !this.menuContainer || !this.header || !this.navItems.length) {
             return;
@@ -2385,4 +2385,21 @@ class AdaptiveAccountButton {
           shopPanelController?.refreshFavorites?.();
           shopPanelController?.refreshCart?.();
         }, 120);
+      });
+
+      document.addEventListener("click", (event) => {
+        const link = event.target.closest("[data-product-browser-link]");
+        if (!link || window.location.pathname !== "/") return;
+
+        const target = document.getElementById("products");
+        if (!target) return;
+        event.preventDefault();
+
+        const sort = link.getAttribute("data-product-browser-sort");
+        if (sort) {
+          const sortButton = document.querySelector(`[data_sort_option_key="${sort}"]`);
+          sortButton?.click();
+        }
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        window.history.replaceState({}, "", sort ? `/?sort=${sort}#products` : "/#products");
       });

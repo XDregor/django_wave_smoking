@@ -39,7 +39,7 @@
           <nav class="header_navigation" aria-label="Главная навигация">
             <ul class="navigation_primary_list">
               <li class="navigation_item navigation_item_label_new navigation_item_dropdown navigation_item_catalog navigation_item_accent" data-mega-menu-trigger data-mega-menu-section="collections">
-                <a href="/catalog/" aria-haspopup="true" aria-expanded="false">Каталог</a>
+                <a href="{% url 'main:home' %}#products" data-product-browser-link aria-haspopup="true" aria-expanded="false">Каталог</a>
                 <span class="notification_badge notification_badge_new">new</span>
               </li>
 
@@ -48,7 +48,7 @@
               </li>
 
               <li class="navigation_item navigation_item_sale navigation_item_dropdown" data-mega-menu-trigger data-mega-menu-section="navigation_item_sale">
-                <a href="/catalog/" aria-haspopup="true" aria-expanded="false">Скидки</a>
+                <a href="{% url 'main:home' %}?sort=sale#products" data-product-browser-link data-product-browser-sort="sale" aria-haspopup="true" aria-expanded="false">Скидки</a>
                 <span class="notification_badge notification_badge_percent">%</span>
               </li>
 
@@ -164,11 +164,11 @@
                 </span>
               </div>
               <div class="mobile_menu_submenu">
-                <a class="mobile_menu_submenu_link" href="/catalog/"><i class="fa-solid fa-microchip"></i> POD-системы</a>
-                <a class="mobile_menu_submenu_link" href="/catalog/"><i class="fa-solid fa-wind"></i> Одноразовые</a>
-                <a class="mobile_menu_submenu_link" href="/catalog/"><i class="fa-solid fa-flask"></i> Жидкости</a>
-                <a class="mobile_menu_submenu_link" href="/catalog/"><i class="fa-solid fa-gear"></i> Комплектующие</a>
-                <a class="mobile_menu_submenu_link" href="/catalog/"><i class="fa-solid fa-layer-group"></i> Бренды</a>
+                <a class="mobile_menu_submenu_link" href="{% url 'main:home' %}#products"><i class="fa-solid fa-microchip"></i> POD-системы</a>
+                <a class="mobile_menu_submenu_link" href="{% url 'main:home' %}#products"><i class="fa-solid fa-wind"></i> Одноразовые</a>
+                <a class="mobile_menu_submenu_link" href="{% url 'main:home' %}#products"><i class="fa-solid fa-flask"></i> Жидкости</a>
+                <a class="mobile_menu_submenu_link" href="{% url 'main:home' %}#products"><i class="fa-solid fa-gear"></i> Комплектующие</a>
+                <a class="mobile_menu_submenu_link" href="{% url 'main:home' %}#products"><i class="fa-solid fa-layer-group"></i> Бренды</a>
               </div>
             </div>
 
@@ -181,9 +181,9 @@
                 </span>
               </div>
               <div class="mobile_menu_submenu">
-                <a class="mobile_menu_submenu_link" href="/catalog/"><i class="fa-solid fa-fire"></i> Горячие предложения</a>
-                <a class="mobile_menu_submenu_link" href="/catalog/"><i class="fa-solid fa-tag"></i> До -50%</a>
-                <a class="mobile_menu_submenu_link" href="/catalog/"><i class="fa-solid fa-star"></i> Хиты продаж</a>
+                <a class="mobile_menu_submenu_link" href="{% url 'main:home' %}?sort=sale#products"><i class="fa-solid fa-fire"></i> Горячие предложения</a>
+                <a class="mobile_menu_submenu_link" href="{% url 'main:home' %}?sort=sale#products"><i class="fa-solid fa-tag"></i> До -50%</a>
+                <a class="mobile_menu_submenu_link" href="{% url 'main:home' %}?sort=hit#products"><i class="fa-solid fa-star"></i> Хиты продаж</a>
               </div>
             </div>
 

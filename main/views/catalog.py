@@ -2,40 +2,16 @@ from .shared import *
 
 @ensure_csrf_cookie
 def catalog(request):
+    catalog_search_query = request.GET.get("q", "").strip()
     products = list(
         with_product_card_review_stats(Product.objects.filter(available=True))
         .select_related("category", "brand")
         .prefetch_related(available_variant_prefetch, product_sku_prefetch)
     )
-    liked_product_ids = get_liked_product_ids(request)
-    mark_liked_products(products, liked_product_ids)
+    product_browser_context = build_product_browser_context(request, products)
 
-    products_data = []
-    for p in products:
-        item = serialize_product(p, liked_product_ids)
-        item.update({
-            "category_id": p.category_id,
-            "category_name": p.category.name if p.category else "",
-            "brand_id": p.brand_id,
-            "brand_slug": p.brand.slug if p.brand else "",
-            "brand": p.brand.name if p.brand else "",
-            "stock": p.stock,
-            "created": p.created.isoformat() if p.created else "",
-        })
-        products_data.append(item)
-
-    categories_data = [
-        {"id": category.id, "name": category.name, "slug": category.slug}
-        for category in Category.objects.all()
-    ]
-
-    catalog_search_query = request.GET.get("q", "").strip()
-
-    return render(request, "site/catalog/index.html", {
-        "products": products,
-        "products_json": products_data,
-        "categories_json": categories_data,
-        "liked_product_ids": liked_product_ids,
+    return render(request, "site/catalog/catalog_search_page.html", {
+        **product_browser_context,
         "catalog_search_query": catalog_search_query,
         "catalog_search_mode": bool(catalog_search_query or request.GET.get("search")),
     })
@@ -84,33 +60,10 @@ def product_list(request, category_slug=None):
         products_queryset = products_queryset.filter(category=category)
 
     products = list(products_queryset)
-    liked_product_ids = get_liked_product_ids(request)
-    mark_liked_products(products, liked_product_ids)
+    product_browser_context = build_product_browser_context(request, products)
 
-    products_data = []
-    for p in products:
-        item = serialize_product(p, liked_product_ids)
-        item.update({
-            "category_id": p.category_id,
-            "category_name": p.category.name if p.category else "",
-            "brand_id": p.brand_id,
-            "brand_slug": p.brand.slug if p.brand else "",
-            "brand": p.brand.name if p.brand else "",
-            "stock": p.stock,
-            "created": p.created.isoformat() if p.created else "",
-        })
-        products_data.append(item)
-
-    categories_data = [
-        {"id": item.id, "name": item.name, "slug": item.slug}
-        for item in categories
-    ]
-
-    return render(request, "site/catalog/index.html", {
+    return render(request, "site/catalog/catalog_search_page.html", {
+        **product_browser_context,
         "category": category,
         "categories": categories,
-        "products": products,
-        "products_json": products_data,
-        "categories_json": categories_data,
-        "liked_product_ids": liked_product_ids,
     })

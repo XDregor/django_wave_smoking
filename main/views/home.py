@@ -5,9 +5,9 @@ def home(request):
     products = list(
         with_product_card_review_stats(Product.objects.filter(available=True))
         .select_related("brand", "category")
-        .prefetch_related(available_variant_prefetch, product_sku_prefetch)[:12]
+        .prefetch_related(available_variant_prefetch, product_sku_prefetch)
     )
-    mark_liked_products(products, get_liked_product_ids(request))
+    product_browser_context = build_product_browser_context(request, products)
     brand_carousel_items = [
         {"name": brand.name, "logo": brand.image.url, "slug": brand.slug}
         for brand in Brand.objects.filter(show_in_carousel=True)
@@ -15,8 +15,9 @@ def home(request):
         .order_by("name")
         if brand.image
     ]
+    liked_review_ids = get_liked_review_ids(request)
     home_reviews = [
-        serialize_review(review)
+        serialize_review(review, liked_review_ids)
         for review in ProductReview.objects.filter(
             is_approved=True,
             is_verified=True,
@@ -25,8 +26,8 @@ def home(request):
         .select_related("product")
         .order_by("-created")
     ]
-    return render(request, "site/home/index.html", {
-        "products": products,
+    return render(request, "site/home/home_page.html", {
+        **product_browser_context,
         "brand_carousel_items": brand_carousel_items,
         "home_reviews": home_reviews,
         "disable_header_cursor": True,

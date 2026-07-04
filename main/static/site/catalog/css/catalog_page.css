@@ -613,7 +613,7 @@
       .catalog_toolbar_container {
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: flex-end;
         gap: 10px;
         margin-bottom: 20px;
         flex-wrap: wrap;
@@ -854,8 +854,8 @@
       /* ===================== PRODUCT GRID ===================== */
       .catalog_grid_container {
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 14px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 20px;
       }
       /* Явные классы от view toggle */
       .catalog_grid_container.catalog_grid_four_columns_state {
@@ -993,10 +993,10 @@
         display: none;
         position: fixed;
         inset: 0;
-        z-index: 10000;
-        background: rgba(0, 0, 0, 0.72);
-        backdrop-filter: blur(6px);
-        -webkit-backdrop-filter: blur(6px);
+        z-index: 2147482998;
+        background: rgba(0, 0, 0, 0.68);
+        backdrop-filter: blur(9px);
+        -webkit-backdrop-filter: blur(9px);
         opacity: 0;
         transition: opacity 0.3s ease;
       }
@@ -1010,7 +1010,8 @@
         right: -380px;
         bottom: 0;
         width: 360px;
-        z-index: 11000;
+        z-index: 2147483000;
+        isolation: isolate;
         background: #0a0a0c;
         border-left: 1px solid rgba(255, 255, 255, 0.07);
         overflow-y: auto;
@@ -1034,7 +1035,7 @@
         right: -380px;
         top: 50%;
         transform: translateY(-50%) translateX(-50%);
-        z-index: 11000;
+        z-index: 2147483001;
         width: 40px;
         height: 40px;
         border-radius: 50%;
@@ -1077,6 +1078,24 @@
         margin: 0;
         padding: 0;
         line-height: 1;
+      }
+
+      body.filter_drawer_open .page_header_module,
+      body.filter_drawer_open .page_header,
+      body.filter_drawer_open .promo_banner,
+      body.filter_drawer_open .main_banner {
+        z-index: 0 !important;
+        pointer-events: none !important;
+      }
+
+      body.filter_drawer_open .page_header_module,
+      body.filter_drawer_open .main_banner {
+        filter: blur(7px);
+      }
+
+      body.filter_drawer_open .promo_banner_track,
+      body.filter_drawer_open .banner_product_card {
+        pointer-events: none !important;
       }
       @media (max-width: 600px) {
         .filter_drawer_panel {

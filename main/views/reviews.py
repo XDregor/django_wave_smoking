@@ -47,7 +47,7 @@ def reviews(request):
         }
         for product in products_for_review
     ]
-    return render(request, "site/reviews/index.html", {
+    return render(request, "site/reviews/reviews_page.html", {
         "reviews": reviews_list,
         "reviews_json": [serialize_review(review, liked_review_ids) for review in reviews_list],
         "products_for_review": products_for_review,

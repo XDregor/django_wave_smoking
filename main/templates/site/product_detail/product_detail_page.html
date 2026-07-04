@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="{% static 'site/shared/css/product_card.css' %}?v=compact-square-1" />
     <link rel="stylesheet" href="{% static 'site/shared/css/review_card.css' %}" />
     
-      <link rel="stylesheet" href="{% static 'site/product_detail/css/page.css' %}?v=structure1" />
+      <link rel="stylesheet" href="{% static 'site/product_detail/css/product_detail_page.css' %}?v=structure1" />
   </head>
   <body>
     {% include 'site/shared/header.html' %}
@@ -380,6 +380,6 @@
 
     <script src="{% static 'site/shared/js/product_card.js' %}?v=compact-square-1"></script>
     <div id="product_sku_payload" data-sku-payload="{{ sku_payload_json|default:'[]' }}" hidden></div>
-    <script src="{% static 'site/product_detail/js/page.js' %}?v=structure1"></script>
+    <script src="{% static 'site/product_detail/js/product_detail_page.js' %}?v=structure1"></script>
   </body>
 </html>

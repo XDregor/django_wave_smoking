@@ -1,4 +1,4 @@
-{% with badge=product.get_badge_data product_variants=product.display_product_variants available_variants=product.available_product_variants product_skus=product.sku_payload %}
+{% with badge=product.get_badge_data product_variants=product.display_product_variants available_variants=product.available_product_variants product_skus=product.sku_payload discount_percent=product.get_discount_percent %}
 <article
   class="product_card_component{% if product.stock <= 0 or product_variants and not available_variants %} product_card_unavailable_state{% endif %}"
   data_product_card_id="{{ product.id }}"
@@ -9,7 +9,7 @@
     <div class="product_card_skeleton_element"></div>
 
     {% if product.image %}
-      <img class="product_card_image_element" src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" />
+      <img class="product_card_image_element" src="{{ product.image.url }}" data-product-card-default-image="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" />
     {% endif %}
 
     {% if product.stock <= 0 or product_variants and not available_variants %}
@@ -39,47 +39,70 @@
   </div>
 
   <div class="product_card_info_block">
-    {% if product.brand %}
-      <div class="product_card_brand_text">{{ product.brand.name }}</div>
-    {% endif %}
+    <div class="product_card_brand_text">{% if product.brand %}{{ product.brand.name }}{% endif %}</div>
 
-    <h3 class="product_card_name_text product_card_name_link_element">
-      <a href="{% url 'main:product_detail' product.id product.slug %}">{{ product.name }}</a>
-    </h3>
+    <div class="product_card_identity_block">
+      <h3 class="product_card_name_text product_card_name_link_element">
+        <a href="{% url 'main:product_detail' product.id product.slug %}">{{ product.name }}</a>
+      </h3>
 
-    {% if product.card_review_count %}
-      <a class="product_card_rating_row" href="{% url 'main:product_detail' product.id product.slug %}#product-reviews" aria-label="Рейтинг {{ product.card_average_rating|floatformat:1 }}, отзывов: {{ product.card_review_count }}">
-        <span class="product_card_rating_value">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.7 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3-4.6-4.5 6.3-.9L12 2.7Z"/></svg>
-          {{ product.card_average_rating|floatformat:1 }}
-        </span>
-        <span class="product_card_rating_separator" aria-hidden="true"></span>
-        <span class="product_card_review_count">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z"/></svg>
-          {{ product.card_review_count }}
-        </span>
-      </a>
-    {% endif %}
+      <div class="product_card_rating_slot">
+        {% if product.card_review_count %}
+          <a class="product_card_rating_row" href="{% url 'main:product_detail' product.id product.slug %}#product-reviews" aria-label="Рейтинг {{ product.card_average_rating|floatformat:1 }}, отзывов: {{ product.card_review_count }}">
+            <span class="product_card_rating_value">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.7 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3-4.6-4.5 6.3-.9L12 2.7Z"/></svg>
+              {{ product.card_average_rating|floatformat:1 }}
+            </span>
+            <span class="product_card_rating_separator" aria-hidden="true"></span>
+            <span class="product_card_review_count">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z"/></svg>
+              {{ product.card_review_count }}
+            </span>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="product_card_color_swatches" aria-label="Доступные цвета">
+      {% for variant in product_variants %}
+        {% if variant.group_kind == 'color' and variant.color_hex %}
+          <button
+            class="product_card_color_swatch{% if forloop.first %} is-selected{% endif %}"
+            type="button"
+            style="--product-swatch-color: {{ variant.color_hex }}"
+            data-product-card-color-swatch
+            data-product-card-color-image="{{ variant.image_url }}"
+            aria-label="{{ variant.name }}"
+            aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}"
+            title="{{ variant.name }}"
+          ></button>
+        {% endif %}
+      {% endfor %}
+    </div>
 
     <div class="product_card_footer_row">
+      <div class="product_card_price_row_container">
+        <div class="product_card_price_meta_row">
+          {% if product.is_on_sale %}
+            <span class="product_card_old_price_value">{{ product.old_price|floatformat:0 }} грн</span>
+            {% if discount_percent %}<span class="product_card_discount_value">-{{ discount_percent }}%</span>{% endif %}
+          {% endif %}
+        </div>
+        <span class="product_card_price_value">{{ product.price|floatformat:0 }} грн</span>
+      </div>
+
       <button
         class="product_card_cart_button"
         type="button"
         data_product_card_cart_url="{% url 'main:api_cart_add' %}"
         {% if product.stock <= 0 or product_variants and not available_variants %}disabled aria-disabled="true" title="Нет в наличии"{% elif product_skus or product_variants %}title="Выбрать вариант" aria-label="Выбрать вариант товара"{% else %}title="Добавить в корзину" aria-label="Добавить товар в корзину"{% endif %}
       >
-        <svg class="product_card_cart_icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M3 5h2l1.8 9.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L20 8H6"/>
-          <circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/>
+        <svg class="product_card_cart_icon" width="14" height="15" viewBox="0 0 14 15" fill="none" aria-hidden="true">
+          <path d="M8.7406 0.188824C8.92374 0.0833176 9.15834 0.146368 9.26404 0.329449L10.8187 3.02183C10.8341 3.04852 10.8456 3.07697 10.8539 3.10484L10.8969 3.24742H11.264C12.3341 3.24748 13.2015 4.11484 13.2015 5.18492C13.2014 5.78977 12.9245 6.33033 12.4896 6.68589L12.4291 6.7357L12.4174 6.81187L11.9017 10.3636L11.8871 10.4339H11.1039L11.1449 10.2406L11.1469 10.2279L11.601 7.10875L11.3578 7.12047C11.3269 7.12193 11.2953 7.12242 11.264 7.12242H1.93591C1.90462 7.12241 1.87307 7.12193 1.84216 7.12047L1.599 7.10875L1.63416 7.34898L2.05212 10.2279L2.05505 10.2406L2.3949 11.8304C2.51828 12.4076 2.98997 12.8466 3.57458 12.9281C5.15421 13.1478 6.75185 13.1919 8.33923 13.0658V13.8334C6.71644 13.9579 5.08371 13.9115 3.46912 13.6869C2.56549 13.561 1.8366 12.8827 1.64587 11.9906L1.29822 10.3636L0.781616 6.81187L0.770874 6.7357L0.710327 6.68589C0.275462 6.33033 -0.00143704 5.78979 -0.00158691 5.18492C-0.00154907 4.11492 0.865952 3.24762 1.93591 3.24742H2.3031L2.34607 3.10484C2.35437 3.07706 2.36593 3.04844 2.38123 3.02183L3.93591 0.329449C4.04161 0.14637 4.27621 0.0833226 4.45935 0.188824C4.64239 0.294549 4.70548 0.529141 4.59998 0.712262L3.13611 3.24742H10.0638L8.59998 0.712262C8.49452 0.529268 8.55786 0.294665 8.7406 0.188824ZM1.93591 4.01304C1.28901 4.01324 0.764076 4.53797 0.764038 5.18492C0.764304 5.83167 1.28915 6.3566 1.93591 6.35679H11.264C11.9109 6.35673 12.4356 5.83175 12.4359 5.18492C12.4359 4.53789 11.9111 4.01311 11.264 4.01304H1.93591Z" />
+          <rect x="9.36981" y="12.8464" width="3.5257" height="0.762939" rx="0.38147" />
+          <rect x="10.7512" y="14.9907" width="3.5257" height="0.762939" rx="0.38147" transform="rotate(-90 10.7512 14.9907)" />
         </svg>
       </button>
-
-      <div class="product_card_price_row_container">
-        <span class="product_card_price_value">{{ product.price|floatformat:0 }}₴</span>
-        {% if product.is_on_sale %}
-          <span class="product_card_old_price_value">{{ product.old_price|floatformat:0 }}₴</span>
-        {% endif %}
-      </div>
     </div>
   </div>
 </article>
