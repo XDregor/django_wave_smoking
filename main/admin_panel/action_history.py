@@ -48,7 +48,7 @@ class ActionHistoryAdmin(ModelAdmin):
             "old_count": old_count,
             "action_stats": action_stats,
         }
-        return TemplateResponse(request, "admin_panel/action_history/list.html", context)
+        return TemplateResponse(request, "admin_panel/action_history/action_history_page.html", context)
 
     def cleanup_expired_entries(self):
         cutoff = timezone.now() - timedelta(days=self.retention_days)

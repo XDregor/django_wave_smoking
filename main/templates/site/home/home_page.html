@@ -14,16 +14,25 @@
 
     
     {% include 'site/shared/includes/badges.html' %}
+    <link rel="preload" as="image" type="image/webp" href="{% static 'site/shared/img/main_banner/devices-product.webp' %}" fetchpriority="high" />
+    <link rel="preload" as="image" type="image/webp" href="{% static 'site/shared/img/main_banner/devices-background.webp' %}" fetchpriority="high" />
+    <link rel="preload" as="image" type="image/webp" href="{% static 'site/shared/img/main_banner/devices-rock-base.webp' %}" />
+    <link rel="preload" as="image" type="image/webp" href="{% static 'site/shared/img/main_banner/devices-rock-corner.webp' %}" />
+    <link rel="preload" as="image" type="image/webp" href="{% static 'site/shared/img/main_banner/ambient-smoke-vertical.webp' %}" />
+    <link rel="preload" as="image" type="image/webp" href="{% static 'site/shared/img/main_banner/ambient-smoke-floor.webp' %}" />
       <link rel="stylesheet" href="{% static 'site/catalog/css/catalog_page.css' %}?v=home-catalog-5" />
-    <link rel="stylesheet" href="{% static 'site/home/css/home_page.css' %}?v=reviews-swap-2" />
-    <link rel="stylesheet" href="{% static 'site/home/css/main_banner.css' %}?v=campaign-8" />
+    <link rel="stylesheet" href="{% static 'site/home/css/home_page.css' %}?v=preloader-2" />
+    <link rel="stylesheet" href="{% static 'site/home/css/main_banner.css' %}?v=campaign-art-51" />
   </head>
   <body>
-    {% include 'site/shared/header.html' %}
-    <!-- Preloader -->
-    <div class="page_preloader" id="page_preloader">
-      <div class="preloader_spinner"></div>
+    <div class="page_preloader" id="page_preloader" role="status" aria-live="polite" aria-label="Загрузка страницы">
+      <div class="preloader_visual" aria-hidden="true">
+        <span class="preloader_orbit"></span>
+        <span class="preloader_core"><i></i></span>
+      </div>
     </div>
+
+    {% include 'site/shared/header.html' %}
 
     <!-- Mouse animation -->
     <div class="cursor_dot cursor_dot_small" id="smallCircle"></div>
@@ -209,7 +218,9 @@
               <button class="reviews_slider_nav_dot" data-dot="2" type="button" aria-label="Перейти к отзыву 3"></button>
             </div>
             <a class="reviews_cta_button" href="{% url 'main:reviews' %}">
-              Все отзывы
+              <span class="reviews_cta_copy">
+                <strong>Все отзывы</strong>
+              </span>
               <span class="reviews_cta_arrow" aria-hidden="true">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
               </span>
@@ -236,7 +247,7 @@
     {{ categories_json|json_script:"categoriesData" }}
     <script src="{% static 'site/shared/js/product_card.js' %}?v=product-card-7"></script>
     <script src="{% static 'site/catalog/js/catalog_page.js' %}?v=home-catalog-4"></script>
-    <script src="{% static 'site/home/js/main_banner.js' %}?v=campaign-10"></script>
-    <script src="{% static 'site/home/js/home_page.js' %}?v=reviews-swap-2"></script>
+    <script src="{% static 'site/home/js/main_banner.js' %}?v=campaign-art-23"></script>
+    <script src="{% static 'site/home/js/home_page.js' %}?v=preloader-2"></script>
   </body>
 </html>

@@ -12,9 +12,14 @@ ENV/
 # Django local data
 db.sqlite3
 db.sqlite3-journal
+db.sqlite3-shm
+db.sqlite3-wal
 /media/
 /products/
 /staticfiles/
+
+# Local banner source assets
+/main/static/site/shared/img/main_banner/
 
 # Environment and secrets
 .env
@@ -28,21 +33,34 @@ db.sqlite3-journal
 .coverage
 .coverage.*
 .pytest_cache/
+.hypothesis/
+.tox/
+.nox/
 htmlcov/
+coverage.xml
 
 # Type checkers and linters
 .mypy_cache/
 .ruff_cache/
 .pyre/
+.pytype/
+.pyright/
 
 # Build artifacts
 build/
 dist/
 *.egg-info/
+node_modules/
+npm-debug.log*
 
 # IDE and OS files
 .idea/
 .vscode/*
 !.vscode/tasks.json
+.fleet/
+*.swp
+*.swo
+*~
 .DS_Store
 Thumbs.db
+Desktop.ini

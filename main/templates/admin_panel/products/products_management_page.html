@@ -8,7 +8,7 @@
   {{ block.super }}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{% static 'admin_panel/products/css/list.css' %}?v=products19" />
+  <link rel="stylesheet" href="{% static 'admin_panel/products/css/products_management_page.css' %}?v=products19" />
 {% endblock %}
 
 {% block content %}
@@ -125,5 +125,5 @@
 
 {% block extrahead %}
   {{ block.super }}
-  <script src="{% static 'admin_panel/products/js/list.js' %}?v=products13" defer></script>
+  <script src="{% static 'admin_panel/products/js/products_management_page.js' %}?v=products13" defer></script>
 {% endblock %}

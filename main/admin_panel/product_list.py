@@ -20,7 +20,7 @@ class ProductListAdminMixin:
             "bulk_publish_url": reverse("admin:main_product_products_bulk_publish"),
             "bulk_delete_url": reverse("admin:main_product_products_bulk_delete"),
         }
-        return TemplateResponse(request, "admin_panel/products/list.html", context)
+        return TemplateResponse(request, "admin_panel/products/products_management_page.html", context)
 
     def get_products_bulk_ids(self, request):
         try:

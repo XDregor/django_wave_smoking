@@ -1,7 +1,42 @@
+/*
+ * MAIN BANNER: карта визуальных слоев
+ *
+ * Общий фон:
+ * - ambient-smoke-vertical.webp -> .wave_campaign_smoke--vertical
+ * - ambient-smoke-floor.webp    -> .wave_campaign_smoke--floor
+ *
+ * 1-й слайд, devices:
+ * - devices-background.webp     -> .wave_campaign_backdrop_image
+ * - devices-product.webp        -> #mainBannerPrimaryVisual
+ * - devices-rock-base.webp      -> [data-back-decor="0"]
+ * - devices-rock-corner.webp    -> [data-back-decor="1"]
+ *
+ * 2-й слайд, cartridges:
+ * - cartridges-background.webp     -> .wave_campaign_backdrop_image
+ * - cartridges-product.webp        -> #mainBannerPrimaryVisual
+ * - cartridges-corner-right.webp   -> [data-back-decor="0"]
+ * - cartridges-mint-splash.webp    -> [data-back-decor="1"]
+ * - cartridges-branches-left.webp  -> [data-back-decor="3"]
+ * - cartridges-soft-smoke.webp     -> [data-front-decor="1"]
+ *
+ * 3-й слайд, tastes:
+ * - tastes-background.jpg       -> .wave_campaign_backdrop_image
+ * - tastes-product.webp         -> #mainBannerPrimaryVisual
+ * - tastes-corner-left.webp     -> [data-back-decor="0"]
+ * - tastes-splash-bottom.webp   -> [data-back-decor="1"]
+ * - tastes-corner-right.webp    -> [data-back-decor="2"]
+ */
+
+/* Главный контейнер баннера и переменные фиксированного артборда. */
 .wave_campaign_hero {
   --campaign-accent: var(--accent, #c7ff2f);
+  --campaign-artboard-width: 100%;
+  --campaign-artboard-height: 100%;
+  --campaign-artboard-inline-gap: 0px;
+  --campaign-artboard-block-gap: 0px;
   position: relative;
   isolation: isolate;
+  container-type: size;
   width: 100%;
   height: calc(100dvh - var(--header-height, 90px) - var(--info-line-height, 32px));
   min-height: 0;
@@ -11,15 +46,31 @@
   transition: background-color 500ms ease;
 }
 
-.wave_campaign_hero[data-scene="cartridges"] { background-color: #0c0b08; }
-.wave_campaign_hero[data-scene="tastes"] { background-color: #10080a; }
+/* 2-й слайд: размеры главного изображения товара и цвет сцены. */
+.wave_campaign_hero[data-scene="cartridges"] {
+  --cartridges-primary-inset: -7% -1% auto auto;
+  --cartridges-primary-width: 66%;
+  --cartridges-primary-height: 110%;
+  background-color: #0c0b08;
+}
+/* 3-й слайд: размеры главного изображения товара и цвет сцены. */
+.wave_campaign_hero[data-scene="tastes"] {
+  --taste-primary-inset: -2% 2% auto auto;
+  --taste-primary-width: 48%;
+  --taste-primary-height: 90%;
+  background-color: #10080a;
+}
 
+/* Единая модель размеров для всех внутренних элементов баннера. */
 .wave_campaign_hero *,
 .wave_campaign_hero *::before,
 .wave_campaign_hero *::after {
   box-sizing: border-box;
 }
 
+/* ========== ФОН И АТМОСФЕРА ========== */
+
+/* Контейнер сменяемого фонового изображения и общей дымки. */
 .wave_campaign_backdrop {
   position: absolute;
   z-index: -1;
@@ -28,35 +79,51 @@
   pointer-events: none;
 }
 
+/* Затемняющий слой поверх фоновой фотографии для читаемости текста. */
 .wave_campaign_backdrop::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(5, 6, 5, 0.68);
+  background: rgba(5, 6, 5, 0.54);
 }
 
+/* Фоновое изображение текущего слайда. */
 .wave_campaign_backdrop_image {
   position: absolute;
-  top: -18%;
-  right: -8%;
-  width: 70%;
-  height: 136%;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  opacity: 0.22;
-  filter: blur(54px) saturate(0.85);
-  transform: scale(1.12);
-  transition: opacity 350ms ease, filter 500ms ease;
+  opacity: 0.34;
+  filter: saturate(0.86) contrast(1.08);
+  transform: scale(1.04);
+  transition: opacity 300ms ease, transform 520ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
+/* До декодирования первой сцены фон и декорации остаются скрыты. */
+.wave_campaign_hero:not(.is-ready) .wave_campaign_backdrop_image,
+.wave_campaign_hero:not(.is-ready) .wave_campaign_smoke,
+.wave_campaign_hero:not(.is-ready) .wave_campaign_decor_shell {
+  opacity: 0 !important;
+}
+
+/* Индивидуальная видимость фоновой фотографии для каждой сцены. */
+.wave_campaign_hero[data-scene="devices"] .wave_campaign_backdrop_image { opacity: 0.3; }
+.wave_campaign_hero[data-scene="cartridges"] .wave_campaign_backdrop_image { opacity: 0.1; }
+.wave_campaign_hero[data-scene="tastes"] .wave_campaign_backdrop_image { opacity: 0.32; }
+
+/* Базовый стиль двух общих дымовых изображений. */
 .wave_campaign_smoke {
   position: absolute;
   z-index: 2;
   display: block;
   pointer-events: none;
-  mix-blend-mode: screen;
+  mix-blend-mode: normal;
   will-change: transform;
+  transition: opacity 520ms ease;
 }
 
+/* Вертикальная дымка вдоль левого края: ambient-smoke-vertical.webp. */
 .wave_campaign_smoke--vertical {
   top: -40%;
   left: -9%;
@@ -67,6 +134,7 @@
   animation: wave-campaign-smoke-vertical 16s ease-in-out infinite alternate;
 }
 
+/* Нижняя дымка по ширине баннера: ambient-smoke-floor.webp. */
 .wave_campaign_smoke--floor {
   right: -8%;
   bottom: -30%;
@@ -77,9 +145,248 @@
   animation: wave-campaign-smoke-floor 18s ease-in-out infinite alternate;
 }
 
+/* ========== ФИКСИРОВАННЫЙ АРТБОРД И ДЕКОРАЦИИ ========== */
+
+/* Общая координатная область декоративных изображений. */
+.wave_campaign_scene_art {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--campaign-artboard-width);
+  height: var(--campaign-artboard-height);
+  translate: -50% -50%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* Сохраняет композицию 2:1 и вычисляет компенсацию до краев баннера. */
+@supports (width: 1cqw) {
+  .wave_campaign_hero {
+    --campaign-artboard-width: min(100cqw, 200cqh);
+    --campaign-artboard-height: min(50cqw, 100cqh);
+    --campaign-artboard-inline-gap: max(0px, calc((100cqw - var(--campaign-artboard-width)) / 2));
+    --campaign-artboard-block-gap: max(0px, calc((100cqh - var(--campaign-artboard-height)) / 2));
+  }
+}
+
+/* Задний и передний декоративные слои относительно товара и текста. */
+.wave_campaign_scene_art--back { z-index: 1; }
+.wave_campaign_scene_art--front { z-index: 4; }
+
+/* Оболочка отдельной декорации: позиция задается правилами сцены ниже. */
+.wave_campaign_decor_shell {
+  position: absolute;
+  display: block;
+  opacity: 0;
+  transform: translate3d(0, 0, 0) scale(1);
+  transition:
+    opacity 520ms ease,
+    transform 680ms cubic-bezier(0.23, 1, 0.32, 1);
+  will-change: transform, opacity;
+}
+
+/* Неиспользуемые в текущей сцене слоты полностью исключаются из отрисовки. */
+.wave_campaign_decor_shell[hidden] { display: none; }
+
+/* Мгновенная скрытая перестановка слотов перед появлением новой сцены. */
+.wave_campaign_hero.is-scene-resetting .wave_campaign_decor_shell {
+  transition: none !important;
+}
+
+/* Само изображение внутри декоративного слота и его постоянное плавание. */
+.wave_campaign_decor_shell img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  animation: wave-campaign-decor-float 10s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* Направления ухода универсальных слотов при смене слайда. */
+[data-back-decor="0"] { --decor-exit-x: 0; --decor-exit-y: 90px; }
+[data-back-decor="1"] { --decor-exit-x: 110px; --decor-exit-y: -42px; }
+[data-back-decor="2"] { --decor-exit-x: -90px; --decor-exit-y: -36px; }
+[data-back-decor="3"] { --decor-exit-x: -110px; --decor-exit-y: 54px; }
+[data-front-decor="0"] { --decor-exit-x: 145px; --decor-exit-y: -55px; }
+[data-front-decor="1"] { --decor-exit-x: -125px; --decor-exit-y: 70px; }
+
+/* Разная скорость плавания не дает декорациям двигаться синхронно. */
+[data-back-decor="1"] img { animation-duration: 13s; animation-direction: alternate-reverse; }
+[data-back-decor="2"] img { animation-duration: 15s; }
+[data-back-decor="3"] img { animation-duration: 14s; }
+[data-front-decor="0"] img { animation-duration: 8s; }
+[data-front-decor="1"] img { animation-duration: 11s; animation-direction: alternate-reverse; }
+
+/* ========== 1-Й СЛАЙД: УСТРОЙСТВА ========== */
+
+/* Нижняя каменная основа справа: devices-rock-base.webp. */
+.wave_campaign_hero[data-scene="devices"] [data-back-decor="0"] {
+  right: calc(6% - var(--campaign-artboard-inline-gap));
+  bottom: calc(-25% - var(--campaign-artboard-block-gap));
+  width: 56%;
+  opacity: 0.92;
+}
+
+/* Угловая каменная декорация слева сверху: devices-rock-corner.webp. */
+.wave_campaign_hero[data-scene="devices"] [data-back-decor="1"] {
+  --decor-exit-x: -120px;
+  --decor-exit-y: -42px;
+  top: calc(-25% - var(--campaign-artboard-block-gap));
+  right: auto;
+  bottom: auto;
+  left: calc(-7% - var(--campaign-artboard-inline-gap));
+  width: 34%;
+  opacity: 0.78;
+  filter: blur(0.4px);
+}
+
+/* Поворот угловой каменной декорации на 180 градусов. */
+.wave_campaign_hero[data-scene="devices"] [data-back-decor="1"] img {
+  transform: rotate(180deg);
+  animation-name: wave-campaign-decor-float-rotated;
+}
+
+/* Резервный передний слот справа; сейчас изображение в него не назначено. */
+.wave_campaign_hero[data-scene="devices"] [data-front-decor="0"] {
+  top: 6%;
+  right: calc(-2% - var(--campaign-artboard-inline-gap));
+  width: 12%;
+  opacity: 0.7;
+  filter: blur(1.4px);
+}
+
+/* Резервный передний слот снизу; сейчас изображение в него не назначено. */
+.wave_campaign_hero[data-scene="devices"] [data-front-decor="1"] {
+  right: 45%;
+  bottom: calc(-4% - var(--campaign-artboard-block-gap));
+  width: 11%;
+  opacity: 0.44;
+  filter: blur(3px);
+}
+
+/* ========== 2-Й СЛАЙД: КАРТРИДЖИ ========== */
+
+/* Крупная декорация справа сверху: cartridges-corner-right.webp. */
+.wave_campaign_hero[data-scene="cartridges"] [data-back-decor="0"] {
+  --decor-exit-x: 180px;
+  --decor-exit-y: -72px;
+  top: calc(-2% - var(--campaign-artboard-block-gap));
+  right: calc(-1% - var(--campaign-artboard-inline-gap));
+  width: 80%;
+  opacity: 0.7;
+}
+
+/* Мятный всплеск под главным товаром: cartridges-mint-splash.webp. */
+.wave_campaign_hero[data-scene="cartridges"] [data-back-decor="1"] {
+  --decor-exit-x: 0;
+  --decor-exit-y: 140px;
+  --cartridges-splash-opacity: 1;
+  z-index: 4;
+  right: 8%;
+  bottom: -40%;
+  width: 39%;
+  opacity: 0.6;
+  filter: var(--cartridges-splash-filter);
+}
+
+/* Появление мятного всплеска снизу после смены сцены. */
+.wave_campaign_hero[data-scene="cartridges"]:not(.is-switching) [data-back-decor="1"] {
+  animation: wave-campaign-cartridges-splash-enter 720ms cubic-bezier(0.23, 1, 0.32, 1) 180ms both;
+}
+
+/* Вертикальное плавание мятного всплеска. */
+.wave_campaign_hero[data-scene="cartridges"] [data-back-decor="1"] img {
+  animation-name: wave-campaign-cartridges-splash-float;
+  animation-direction: alternate;
+}
+
+/* Ветки вдоль левого нижнего края: cartridges-branches-left.webp. */
+.wave_campaign_hero[data-scene="cartridges"] [data-back-decor="3"] {
+  --decor-exit-x: -180px;
+  --decor-exit-y: 34px;
+  right: auto;
+  bottom: calc(-5% - var(--campaign-artboard-block-gap));
+  left: calc(-5% - var(--campaign-artboard-inline-gap));
+  width: 100%;
+  opacity: 0.8;
+  filter: brightness(0.78) blur(1.5px);
+}
+
+/* Поворот веток для нужного направления композиции. */
+.wave_campaign_hero[data-scene="cartridges"] [data-back-decor="3"] img {
+  transform: rotate(180deg);
+  animation-name: wave-campaign-decor-float-rotated;
+}
+
+/* Мягкий дым слева сверху: cartridges-soft-smoke.webp. */
+.wave_campaign_hero[data-scene="cartridges"] [data-front-decor="1"] {
+  --decor-exit-x: 0;
+  --decor-exit-y: -120px;
+  --cartridges-smoke-opacity: 0.2;
+  top: calc(-12% - var(--campaign-artboard-block-gap));
+  right: 55%;
+  width: 20%;
+  opacity: var(--cartridges-smoke-opacity);
+}
+
+/* Появление мягкого дыма сверху после смены сцены. */
+.wave_campaign_hero[data-scene="cartridges"]:not(.is-switching) [data-front-decor="1"] {
+  animation: wave-campaign-cartridges-smoke-enter 680ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+/* ========== 3-Й СЛАЙД: ВКУСЫ ========== */
+
+/* Фруктовая декорация в левом нижнем углу: tastes-corner-left.webp. */
+.wave_campaign_hero[data-scene="tastes"] [data-back-decor="0"] {
+  right: auto;
+  bottom: calc(-1% - var(--campaign-artboard-block-gap));
+  left: calc(-6% - var(--campaign-artboard-inline-gap));
+  width: 50%;
+  opacity: 0.65;
+  mix-blend-mode: normal;
+}
+
+/* Жидкий всплеск под главным товаром: tastes-splash-bottom.webp. */
+.wave_campaign_hero[data-scene="tastes"] [data-back-decor="1"] {
+  --decor-exit-x: 0;
+  --decor-exit-y: 130px;
+  --taste-splash-opacity: 1;
+  right: 15%;
+  bottom: -9%;
+  width: 35%;
+  opacity: var(--taste-splash-opacity);
+  filter: saturate(0.9) brightness(0.86);
+}
+
+/* Фруктовая декорация в правом верхнем углу: tastes-corner-right.webp. */
+.wave_campaign_hero[data-scene="tastes"] [data-back-decor="2"] {
+  --decor-exit-x: 180px;
+  --decor-exit-y: -28px;
+  top: calc(-3% - var(--campaign-artboard-block-gap));
+  right: calc(-8% - var(--campaign-artboard-inline-gap));
+  width: 45%;
+  opacity: 1;
+  mix-blend-mode: normal;
+}
+
+/* Появление нижнего всплеска после смены сцены. */
+.wave_campaign_hero[data-scene="tastes"]:not(.is-switching) [data-back-decor="1"] {
+  animation: wave-campaign-taste-splash-enter 720ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+/* Вертикальное плавание нижнего всплеска. */
+.wave_campaign_hero[data-scene="tastes"] [data-back-decor="1"] img {
+  animation-name: wave-campaign-taste-splash-float;
+  animation-direction: alternate;
+}
+
+/* ========== ТЕКСТОВЫЙ КОНТЕНТ ========== */
+
+/* Внешняя безопасная область текста поверх всей сцены. */
 .wave_campaign_frame {
   position: relative;
-  z-index: 3;
+  z-index: 5;
   display: grid;
   grid-template-rows: minmax(0, 1fr);
   width: min(100%, 1640px);
@@ -88,14 +395,16 @@
   padding: 36px max(var(--site-pad), 32px) 24px;
 }
 
+/* Выравнивает текст относительно фиксированного артборда. */
 .wave_campaign_content {
-  display: grid;
-  grid-template-columns: minmax(400px, 0.82fr) minmax(520px, 1.18fr);
+  display: flex;
   align-items: center;
-  gap: 16px;
+  width: var(--campaign-artboard-width);
+  height: var(--campaign-artboard-height);
   min-height: 0;
 }
 
+/* Группа заголовка, описания и основной кнопки. */
 .wave_campaign_copy {
   position: relative;
   z-index: 5;
@@ -103,14 +412,16 @@
   padding: 24px 0 38px;
   opacity: 0;
   transform: translateY(18px);
-  transition: opacity 520ms ease, transform 720ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 420ms ease, transform 620ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
+/* Финальное положение текста после начального появления баннера. */
 .wave_campaign_hero.is-ready .wave_campaign_copy {
   opacity: 1;
   transform: translateY(0);
 }
 
+/* Главный заголовок текущего слайда. */
 .wave_campaign_title {
   max-width: 680px;
   margin: 0;
@@ -123,19 +434,23 @@
   text-wrap: balance;
 }
 
+/* Акцентная строка внутри заголовка. */
 .wave_campaign_title span {
   color: rgba(255, 255, 255, 0.34);
   font-weight: 600;
 }
 
+/* Уменьшенный заголовок второго слайда для длинной фразы. */
 .wave_campaign_hero[data-scene="cartridges"] .wave_campaign_title {
   font-size: 60px;
 }
 
+/* Запрещает перенос фразы «Без компромиссов». */
 .wave_campaign_hero[data-scene="cartridges"] .wave_campaign_title span {
   white-space: nowrap;
 }
 
+/* Описание текущего слайда под заголовком. */
 .wave_campaign_description {
   max-width: 520px;
   margin: 26px 0 0;
@@ -144,6 +459,7 @@
   line-height: 1.6;
 }
 
+/* Контейнер основной кнопки действия. */
 .wave_campaign_actions {
   display: flex;
   align-items: center;
@@ -151,6 +467,7 @@
   margin-top: 34px;
 }
 
+/* Общая геометрия и интерактивность кнопок баннера. */
 .wave_campaign_cta {
   display: inline-flex;
   align-items: center;
@@ -165,6 +482,7 @@
   transition: color 200ms ease, background-color 200ms ease, border-color 200ms ease, transform 200ms ease;
 }
 
+/* Основная продающая кнопка с фирменным акцентом. */
 .wave_campaign_cta--primary {
   gap: 16px;
   min-width: 212px;
@@ -175,6 +493,7 @@
   background: var(--campaign-accent);
 }
 
+/* Стрелка внутри основной кнопки. */
 .wave_campaign_cta--primary svg {
   width: 18px;
   height: 18px;
@@ -185,38 +504,52 @@
   stroke-linejoin: round;
 }
 
+/* Плавное движение стрелки отдельно от кнопки. */
 .wave_campaign_cta--primary svg { transition: transform 200ms ease; }
 
+/* Hover-состояние основной кнопки. */
 .wave_campaign_cta--primary:hover {
   border-color: #fff;
   background: #fff;
   transform: translateY(-2px);
 }
 
+/* Сдвиг стрелки при наведении. */
 .wave_campaign_cta--primary:hover svg { transform: translateX(4px); }
 
+/* Тактильная реакция кнопки на нажатие. */
 .wave_campaign_cta:active { transform: scale(0.98); }
 
+/* Доступный фокус при управлении клавиатурой. */
 .wave_campaign_cta:focus-visible {
   outline: 2px solid var(--campaign-accent);
   outline-offset: 4px;
 }
 
+/* ========== ГЛАВНОЕ ИЗОБРАЖЕНИЕ ТОВАРА ========== */
+
+/* Фиксированная сцена, в которой находится главное изображение товара. */
 .wave_campaign_stage {
-  position: relative;
-  align-self: stretch;
-  min-width: 0;
-  min-height: 0;
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  left: 50%;
+  width: var(--campaign-artboard-width);
+  height: var(--campaign-artboard-height);
+  translate: -50% -50%;
+  pointer-events: none;
   opacity: 0;
   transform: translateX(28px);
-  transition: opacity 560ms ease 80ms, transform 800ms cubic-bezier(0.16, 1, 0.3, 1) 80ms;
+  transition: opacity 460ms ease 50ms, transform 680ms cubic-bezier(0.23, 1, 0.32, 1) 50ms;
 }
 
+/* Финальное положение сцены после начального появления баннера. */
 .wave_campaign_hero.is-ready .wave_campaign_stage {
   opacity: 1;
   transform: translateX(0);
 }
 
+/* Общие правила изображений товара. */
 .wave_campaign_visual {
   position: absolute;
   display: block;
@@ -226,13 +559,15 @@
   will-change: opacity, transform;
 }
 
+/* Базовая позиция devices-product.webp на первом слайде. */
 .wave_campaign_visual--primary {
-  inset: 1% -4% 0 0;
-  width: 100%;
-  height: 100%;
+  inset: -5% -2% auto auto;
+  width: 66%;
+  height: 110%;
   transform: translate3d(0, 0, 0) rotate(-1deg);
 }
 
+/* Резервное вторичное изображение товара; сейчас не используется. */
 .wave_campaign_visual--secondary {
   z-index: -1;
   right: 0;
@@ -244,17 +579,39 @@
   filter: blur(0.4px) drop-shadow(0 24px 30px rgba(0, 0, 0, 0.4));
 }
 
+/* Полностью скрывает пустой вторичный слот. */
 .wave_campaign_visual--secondary[hidden] { display: none; }
 
-.wave_campaign_hero[data-scene="cartridges"] .wave_campaign_visual--primary {
-  inset: 3% -1% 1% 2%;
+/* Позиция cartridges-product.webp на втором слайде. */
+.wave_campaign_hero[data-scene="cartridges"] #mainBannerPrimaryVisual {
+  z-index: 2;
+  inset: var(--cartridges-primary-inset);
+  width: var(--cartridges-primary-width);
+  height: var(--cartridges-primary-height);
 }
 
-.wave_campaign_hero[data-scene="tastes"] .wave_campaign_visual--primary {
-  inset: -2% 4% 0 9%;
-  width: 88%;
+/* Позиция и отражение tastes-product.webp на третьем слайде. */
+.wave_campaign_hero[data-scene="tastes"] #mainBannerPrimaryVisual {
+  inset: var(--taste-primary-inset);
+  width: var(--taste-primary-width);
+  height: var(--taste-primary-height);
+  transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
 }
 
+/* Быстрое исчезновение товара во время смены слайда. */
+.wave_campaign_hero.is-switching #mainBannerPrimaryVisual {
+  transition: opacity 200ms ease;
+}
+
+/* Отдельное появление главного товара третьего слайда. */
+.wave_campaign_hero[data-scene="tastes"]:not(.is-switching) #mainBannerPrimaryVisual {
+  animation: wave-campaign-taste-primary-enter 640ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+/* ========== НАВИГАЦИЯ ПО СЛАЙДАМ ========== */
+
+/* Группа круглых индикаторов в правом нижнем углу. */
 .wave_campaign_dots {
   position: absolute;
   z-index: 10;
@@ -272,8 +629,26 @@
   backdrop-filter: blur(14px);
 }
 
+/* Световой мост между старой и новой точкой при переключении. */
+.wave_campaign_dot_morph {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 8px;
+  background: var(--campaign-accent);
+  box-shadow: 0 0 14px rgba(199, 255, 47, 0.48);
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* Отдельная кнопка выбора слайда. */
 .wave_campaign_dot {
   position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -288,12 +663,14 @@
   transition: color 220ms ease, transform 220ms ease;
 }
 
+/* Увеличенная невидимая зона нажатия вокруг точки. */
 .wave_campaign_dot::before {
   content: "";
   position: absolute;
   inset: -7px;
 }
 
+/* Центральная видимая точка. */
 .wave_campaign_dot span {
   position: relative;
   z-index: 2;
@@ -305,6 +682,7 @@
   transition: width 220ms ease, height 220ms ease, color 220ms ease, box-shadow 220ms ease;
 }
 
+/* Кольцо таймера вокруг активной точки. */
 .wave_campaign_dot svg {
   position: absolute;
   inset: 0;
@@ -319,79 +697,205 @@
   opacity: 0;
 }
 
+/* Геометрия линии прогресса внутри кольца таймера. */
 .wave_campaign_dot svg circle {
   stroke-dasharray: 63;
   stroke-dashoffset: 63;
 }
 
+/* Hover-состояние кнопки слайда. */
 .wave_campaign_dot:hover {
   color: rgba(255, 255, 255, 0.72);
   transform: scale(1.12);
 }
 
+/* Размер активной кнопки слайда. */
 .wave_campaign_dot.is-active {
   color: var(--campaign-accent);
 }
 
+/* Акцентный центр активной точки. */
 .wave_campaign_dot.is-active span {
   width: 8px;
   height: 8px;
   box-shadow: 0 0 0 4px rgba(199, 255, 47, 0.08), 0 0 14px rgba(199, 255, 47, 0.38);
 }
 
+/* Показывает кольцо таймера только активной точки. */
 .wave_campaign_dot.is-active svg {
   opacity: 1;
 }
 
+/* Запускает таймер автоматического перехода. */
 .wave_campaign_dot.is-active svg circle {
-  animation: wave-campaign-dot-progress 7s linear forwards;
+  animation: wave-campaign-dot-progress var(--campaign-slide-duration, 7000ms) linear forwards;
 }
 
-.wave_campaign_hero.is-paused .wave_campaign_dot.is-active svg circle {
-  animation-play-state: paused;
+/* Ставит визуальный таймер на паузу вместе с баннером. */
+/* Во время начального reveal и ручной паузы кольцо ждёт в нулевой позиции. */
+.wave_campaign_hero.is-timer-waiting .wave_campaign_dot.is-active svg circle {
+  animation: none;
+  stroke-dashoffset: 63;
 }
 
+/* Реакция точки на нажатие. */
 .wave_campaign_dot:active { transform: scale(0.94); }
 
+/* Доступный фокус точки при управлении клавиатурой. */
 .wave_campaign_dot:focus-visible {
   outline: 2px solid var(--campaign-accent);
   outline-offset: 3px;
 }
 
+/* ========== ПЕРЕХОД МЕЖДУ СЛАЙДАМИ ========== */
+
+/* Уход текста перед подменой данных слайда. */
 .wave_campaign_hero.is-switching .wave_campaign_copy {
   opacity: 0;
-  transform: translateY(10px);
-  transition-duration: 200ms;
-}
-
-.wave_campaign_hero.is-switching .wave_campaign_stage {
-  opacity: 0;
-  transform: translateX(20px) scale(0.985);
-  transition-duration: 200ms;
+  transform: translate3d(-14px, 5px, 0) scale(0.992);
+  transition-duration: 220ms;
   transition-delay: 0ms;
 }
 
+/* Уход сцены с главным товаром. */
+.wave_campaign_hero.is-switching .wave_campaign_stage {
+  opacity: 0;
+  transform: translate3d(28px, 0, 0) scale(0.975);
+  transition-duration: 240ms;
+  transition-delay: 0ms;
+}
+
+/* Уход фоновой фотографии перед заменой. */
+.wave_campaign_hero.is-switching .wave_campaign_backdrop_image {
+  opacity: 0.04;
+  transform: scale(1.08);
+}
+
+/* Уход всех декоративных изображений по их индивидуальным направлениям. */
+.wave_campaign_hero.is-switching .wave_campaign_decor_shell {
+  opacity: 0 !important;
+  transform: translate3d(var(--decor-exit-x), var(--decor-exit-y), 0) scale(0.86) rotate(4deg);
+  transition-duration: 260ms;
+  transition-delay: 0ms;
+}
+
+/* tastes-corner-left.webp всегда входит и уходит через левый край. */
+.wave_campaign_hero[data-scene="tastes"].is-switching [data-back-decor="0"] {
+  transform: translate3d(-110%, 0, 0) scale(0.9);
+  transition-property: opacity, transform;
+  transition-duration: 180ms, 260ms;
+  transition-timing-function: ease, cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* tastes-corner-right.webp всегда входит и уходит через правый край. */
+.wave_campaign_hero[data-scene="tastes"].is-switching [data-back-decor="2"] {
+  transform: translate3d(110%, 0, 0) scale(0.9);
+  transition-property: opacity, transform;
+  transition-duration: 180ms, 260ms;
+  transition-timing-function: ease, cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* ========== АНИМАЦИИ ========== */
+
+/* Медленное движение вертикальной общей дымки. */
 @keyframes wave-campaign-smoke-vertical {
   from { transform: translate3d(-2%, 3%, 0) rotate(-2deg); }
   to { transform: translate3d(4%, -3%, 0) rotate(2deg); }
 }
 
+/* Медленное движение нижней общей дымки. */
 @keyframes wave-campaign-smoke-floor {
   from { transform: translate3d(-2%, 2%, 0) scale(1.03); }
   to { transform: translate3d(2%, -2%, 0) scale(1.08); }
 }
 
+/* Базовое плавание декоративных изображений. */
+@keyframes wave-campaign-decor-float {
+  from { transform: translate3d(-4px, 5px, 0) rotate(-1.2deg) scale(0.99); }
+  to { transform: translate3d(6px, -7px, 0) rotate(1.4deg) scale(1.02); }
+}
+
+/* Плавание изображений, развернутых на 180 градусов. */
+@keyframes wave-campaign-decor-float-rotated {
+  from { transform: translate3d(-4px, 5px, 0) rotate(178.8deg) scale(0.99); }
+  to { transform: translate3d(6px, -7px, 0) rotate(181.4deg) scale(1.02); }
+}
+
+/* Появление нижнего всплеска третьего слайда. */
+@keyframes wave-campaign-taste-splash-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 130px, 0) scale(0.94);
+  }
+  to {
+    opacity: var(--taste-splash-opacity);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+/* Плавание нижнего всплеска третьего слайда. */
+@keyframes wave-campaign-taste-splash-float {
+  from { transform: translate3d(0, 5px, 0) scale(0.995); }
+  to { transform: translate3d(0, -8px, 0) scale(1.005); }
+}
+
+/* Появление мятного всплеска второго слайда. */
+@keyframes wave-campaign-cartridges-splash-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 140px, 0) scale(0.94);
+  }
+  to {
+    opacity: var(--cartridges-splash-opacity);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+/* Плавание мятного всплеска второго слайда. */
+@keyframes wave-campaign-cartridges-splash-float {
+  from { transform: translate3d(0, 7px, 0) scale(0.995); }
+  to { transform: translate3d(0, -9px, 0) scale(1.005); }
+}
+
+/* Появление мягкого дыма второго слайда сверху. */
+@keyframes wave-campaign-cartridges-smoke-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -120px, 0) scale(0.96);
+  }
+  to {
+    opacity: var(--cartridges-smoke-opacity);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+/* Появление главного товара третьего слайда без размытия. */
+@keyframes wave-campaign-taste-primary-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0) scaleX(-1) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scaleX(-1) scale(1);
+  }
+}
+
+/* Заполнение кольца таймера активной точки. */
 @keyframes wave-campaign-dot-progress {
   from { stroke-dashoffset: 63; }
   to { stroke-dashoffset: 0; }
 }
 
+/* ========== АДАПТИВНОСТЬ ========== */
+
+/* Небольшие ноутбуки и планшеты в альбомной ориентации. */
 @media (max-width: 1200px) {
-  .wave_campaign_content { grid-template-columns: minmax(360px, 0.9fr) minmax(440px, 1.1fr); }
   .wave_campaign_title { font-size: 56px; }
   .wave_campaign_hero[data-scene="cartridges"] .wave_campaign_title { font-size: 48px; }
 }
 
+/* Низкие десктопные окна: сокращает вертикальные отступы. */
 @media (min-width: 901px) and (max-height: 800px) {
   .wave_campaign_frame {
     padding-top: 20px;
@@ -407,6 +911,7 @@
   .wave_campaign_dots { bottom: 20px; }
 }
 
+/* Планшеты и узкие окна. */
 @media (max-width: 900px) {
   .wave_campaign_hero {
     height: calc(100dvh - var(--header-height, 64px) - var(--info-line-height, 30px));
@@ -420,8 +925,6 @@
   }
 
   .wave_campaign_content {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
     align-items: start;
   }
 
@@ -433,13 +936,11 @@
   .wave_campaign_title { font-size: 54px; }
   .wave_campaign_hero[data-scene="cartridges"] .wave_campaign_title { font-size: 48px; }
   .wave_campaign_description { max-width: 500px; }
-  .wave_campaign_stage { min-height: 0; }
-  .wave_campaign_visual--primary { inset: -8% -8% -2% 22%; width: 86%; }
-  .wave_campaign_hero[data-scene="tastes"] .wave_campaign_visual--primary { inset: -8% 2% 0 24%; width: 72%; }
-  .wave_campaign_backdrop_image { top: 18%; right: -18%; width: 100%; height: 95%; }
+  .wave_campaign_backdrop_image { inset: 0; width: 100%; height: 100%; }
   .wave_campaign_dots { right: max(var(--site-pad), 22px); }
 }
 
+/* Мобильные устройства. */
 @media (max-width: 640px) {
   .wave_campaign_hero { min-height: 0; }
 
@@ -450,7 +951,7 @@
     padding: 18px 18px 68px;
   }
 
-  .wave_campaign_content { grid-template-rows: auto minmax(0, 1fr); }
+  .wave_campaign_content { align-items: flex-start; }
 
   .wave_campaign_copy {
     max-width: none;
@@ -474,15 +975,7 @@
   .wave_campaign_cta { font-size: 12px; }
   .wave_campaign_cta--primary { min-width: 178px; min-height: 46px; padding-inline: 15px; }
 
-  .wave_campaign_stage { min-height: 0; }
-  .wave_campaign_visual--primary { inset: -3% -20% -2% 2%; width: 112%; }
-  .wave_campaign_hero[data-scene="cartridges"] .wave_campaign_visual--primary { inset: -3% -17% -2% 0; }
-  .wave_campaign_hero[data-scene="tastes"] .wave_campaign_visual--primary { inset: -4% -2% 0 12%; width: 84%; }
   .wave_campaign_visual--secondary { right: -6%; bottom: 4%; width: 42%; height: 46%; }
-  .wave_campaign_backdrop_image { top: 30%; right: -30%; width: 135%; height: 70%; opacity: 0.17; }
-  .wave_campaign_smoke--vertical { left: -34%; width: 90%; opacity: 0.08; }
-  .wave_campaign_smoke--floor { bottom: -8%; height: 48%; opacity: 0.14; }
-
   .wave_campaign_dots {
     right: 18px;
     bottom: 18px;
@@ -490,6 +983,7 @@
   }
 }
 
+/* Низкие мобильные экраны. */
 @media (max-width: 640px) and (max-height: 760px) {
   .wave_campaign_copy { padding-top: 12px; }
   .wave_campaign_title { font-size: 34px; }
@@ -500,12 +994,14 @@
   .wave_campaign_dots { bottom: 12px; }
 }
 
+/* Самые узкие мобильные экраны. */
 @media (max-width: 390px) {
   .wave_campaign_title { font-size: 36px; }
   .wave_campaign_hero[data-scene="cartridges"] .wave_campaign_title { font-size: 31px; }
   .wave_campaign_cta--primary { min-width: 166px; }
 }
 
+/* Уменьшенное движение для системной настройки accessibility. */
 @media (prefers-reduced-motion: reduce) {
   .wave_campaign_hero *,
   .wave_campaign_hero *::before,

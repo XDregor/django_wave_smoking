@@ -72,7 +72,7 @@ class ProductReviewAdmin(BusinessAdminMixin, ModelAdmin):
             "delete_url": reverse("admin:main_productreview_delete"),
             "helpful_adjustment_url": reverse("admin:main_productreview_set_helpful_adjustment"),
         }
-        return TemplateResponse(request, "admin_panel/reviews/list.html", context)
+        return TemplateResponse(request, "admin_panel/reviews/reviews_page.html", context)
 
     def get_review_action_id(self, request):
         try:

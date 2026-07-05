@@ -30,7 +30,7 @@ class ProductSkuAdminMixin:
             "product_list_url": reverse("admin:main_product_changelist"),
             "quick_add_url": reverse("admin:main_product_add_sku_quick_add"),
         }
-        return TemplateResponse(request, "admin_panel/products/form.html", context)
+        return TemplateResponse(request, "admin_panel/products/product_editor_page.html", context)
 
     def edit_sku_view(self, request, product_id):
         product = get_object_or_404(
@@ -73,7 +73,7 @@ class ProductSkuAdminMixin:
             "edit_product": product,
             "edit_product_payload": self.serialize_sku_edit_product(product),
         }
-        return TemplateResponse(request, "admin_panel/products/form.html", context)
+        return TemplateResponse(request, "admin_panel/products/product_editor_page.html", context)
 
     def media_url(self, file_field):
         if not file_field:

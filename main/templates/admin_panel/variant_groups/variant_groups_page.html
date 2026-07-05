@@ -8,7 +8,7 @@
   {{ block.super }}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{% static 'admin_panel/variant_groups/css/list.css' %}?v=variant-groups9" />
+  <link rel="stylesheet" href="{% static 'admin_panel/variant_groups/css/variant_groups_page.css' %}?v=variant-groups9" />
 {% endblock %}
 
 {% block content %}
@@ -159,5 +159,5 @@
 
 {% block extrahead %}
   {{ block.super }}
-  <script src="{% static 'admin_panel/variant_groups/js/list.js' %}?v=variant-groups6" defer></script>
+  <script src="{% static 'admin_panel/variant_groups/js/variant_groups_page.js' %}?v=variant-groups6" defer></script>
 {% endblock %}

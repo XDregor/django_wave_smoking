@@ -40,7 +40,7 @@ class BrandAdmin(BusinessAdminMixin, ModelAdmin):
             "delete_url": reverse("admin:main_brand_delete"),
             "toggle_carousel_url": reverse("admin:main_brand_toggle_carousel"),
         }
-        return TemplateResponse(request, "admin_panel/brands/list.html", context)
+        return TemplateResponse(request, "admin_panel/brands/brands_page.html", context)
 
     def get_brand_action_id(self, request):
         try:

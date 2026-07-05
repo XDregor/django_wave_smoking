@@ -33,7 +33,7 @@ class CategoryAdmin(BusinessAdminMixin, ModelAdmin):
             "save_url": reverse("admin:main_category_save"),
             "delete_url": reverse("admin:main_category_delete"),
         }
-        return TemplateResponse(request, "admin_panel/categories/list.html", context)
+        return TemplateResponse(request, "admin_panel/categories/categories_page.html", context)
 
     def categories_save_view(self, request):
         if request.method != "POST":

@@ -8,7 +8,7 @@
   {{ block.super }}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{% static 'admin_panel/products/css/form.css' %}?v=wizard20" />
+  <link rel="stylesheet" href="{% static 'admin_panel/products/css/product_editor_page.css' %}?v=wizard20" />
 {% endblock %}
 
 {% block content %}
@@ -497,7 +497,7 @@
     data-product-id="{{ edit_product.pk|default:'' }}"
     hidden
   ></div>
-  <script src="{% static 'admin_panel/products/js/config.js' %}?v=structure1"></script>
-  <script src="{% static 'admin_panel/products/js/form.js' %}?v=wizard15"></script>
-  <script src="{% static 'admin_panel/products/js/variants.js' %}?v=variants3"></script>
+  <script src="{% static 'admin_panel/products/js/product_editor_config.js' %}?v=structure1"></script>
+  <script src="{% static 'admin_panel/products/js/product_editor_page.js' %}?v=wizard15"></script>
+  <script src="{% static 'admin_panel/products/js/product_variants_editor.js' %}?v=variants3"></script>
 {% endblock %}

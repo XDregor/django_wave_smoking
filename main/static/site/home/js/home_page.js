@@ -2,22 +2,39 @@
       (function () {
         const preloader = document.getElementById("page_preloader");
         if (!preloader) return;
-        window.addEventListener("load", function () {
-          setTimeout(() => {
+        const mainBanner = document.getElementById("mainBanner");
+        const startedAt = performance.now();
+        const minimumVisibleTime = 650;
+        const fallbackTimeout = 6000;
+        let pageReady = document.readyState === "complete";
+        let bannerReady = !mainBanner || mainBanner.classList.contains("is-ready");
+        let isHidden = false;
+
+        function hidePreloader(force = false) {
+          if (isHidden || (!force && (!pageReady || !bannerReady))) return;
+          isHidden = true;
+          const remainingTime = Math.max(0, minimumVisibleTime - (performance.now() - startedAt));
+          window.setTimeout(() => {
             preloader.classList.add("hidden");
-            setTimeout(() => {
+            preloader.setAttribute("aria-hidden", "true");
+            window.setTimeout(() => {
               preloader.style.display = "none";
-            }, 500);
-          }, 500);
-        });
-        if (document.readyState === "complete") {
-          setTimeout(() => {
-            preloader.classList.add("hidden");
-            setTimeout(() => {
-              preloader.style.display = "none";
-            }, 500);
-          }, 300);
+            }, 460);
+          }, remainingTime);
         }
+
+        window.addEventListener("load", () => {
+          pageReady = true;
+          hidePreloader();
+        }, { once: true });
+
+        window.addEventListener("wave:main-banner-ready", () => {
+          bannerReady = true;
+          hidePreloader();
+        }, { once: true });
+
+        hidePreloader();
+        window.setTimeout(() => hidePreloader(true), fallbackTimeout);
       })();
 
       // ===== MOUSE ANIMATION =====

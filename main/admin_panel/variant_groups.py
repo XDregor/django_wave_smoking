@@ -54,7 +54,7 @@ class VariantGroupAdmin(BusinessAdminMixin, ModelAdmin):
             "save_url": reverse("admin:main_variantgroup_save"),
             "delete_url": reverse("admin:main_variantgroup_delete"),
         }
-        return TemplateResponse(request, "admin_panel/variant_groups/list.html", context)
+        return TemplateResponse(request, "admin_panel/variant_groups/variant_groups_page.html", context)
 
     def variant_groups_save_view(self, request):
         if request.method != "POST":

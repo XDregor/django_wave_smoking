@@ -12,7 +12,7 @@ class ProductMediaAdminMixin:
             "title": "Медиа товаров",
             "media_products_payload": [self.serialize_media_product(product) for product in products],
         }
-        return TemplateResponse(request, "admin_panel/media/list.html", context)
+        return TemplateResponse(request, "admin_panel/media/media_library_page.html", context)
 
     def get_media_product_code(self, product):
         return f"654{str(product.id).zfill(4)}"
@@ -75,7 +75,7 @@ class ProductMediaAdminMixin:
             "has_product_variants": bool(product_variants),
             "media_list_url": reverse("admin:main_product_media_list"),
         }
-        return TemplateResponse(request, "admin_panel/media/detail.html", context)
+        return TemplateResponse(request, "admin_panel/media/product_media_page.html", context)
 
     def save_product_media(self, product, post_data, files):
         product_update_fields = []

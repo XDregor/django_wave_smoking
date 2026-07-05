@@ -8,12 +8,12 @@
 {% block extrastyle %}
     {{ block.super }}
     {{ form.media }}
-    <link rel="stylesheet" href="{% static 'admin_panel/shared/css/login.css' %}?v=login3" />
+    <link rel="stylesheet" href="{% static 'admin_panel/shared/css/admin_login_page.css' %}?v=login3" />
 {% endblock %}
 
 {% block extrahead %}
     {{ block.super }}
-    <script src="{% static 'admin_panel/shared/js/login.js' %}?v=login3" defer></script>
+    <script src="{% static 'admin_panel/shared/js/admin_login_page.js' %}?v=login3" defer></script>
 {% endblock %}
 
 {% block base %}

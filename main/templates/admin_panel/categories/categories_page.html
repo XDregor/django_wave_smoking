@@ -8,7 +8,7 @@
   {{ block.super }}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{% static 'admin_panel/categories/css/list.css' %}?v=categories3" />
+  <link rel="stylesheet" href="{% static 'admin_panel/categories/css/categories_page.css' %}?v=categories3" />
 {% endblock %}
 
 {% block content %}
@@ -108,5 +108,5 @@
 
 {% block extrahead %}
   {{ block.super }}
-  <script src="{% static 'admin_panel/categories/js/list.js' %}?v=categories1" defer></script>
+  <script src="{% static 'admin_panel/categories/js/categories_page.js' %}?v=categories1" defer></script>
 {% endblock %}

@@ -3,19 +3,35 @@
   class="main_banner wave_campaign_hero"
   id="mainBanner"
   aria-labelledby="mainBannerTitle"
-  data-smoke-vertical="{% static 'site/shared/img/MainBanner/20da17b9-776a-468d-a4f9-7dfd40c627c0.png' %}"
-  data-smoke-floor="{% static 'site/shared/img/MainBanner/69fccd66-0adf-4da4-b944-e62537d85b60.png' %}"
-  data-devices="{% static 'site/shared/img/MainBanner/ChatGPT Image 3 июл. 2026 г., 22_09_58.png' %}"
-  data-cartridges="{% static 'site/shared/img/MainBanner/ChatGPT Image 3 июл. 2026 г., 22_02_00.png' %}"
-  data-cartridge-single="{% static 'site/shared/img/MainBanner/f6bf120b-9106-4dbd-aec5-a51eb62b912b.png' %}"
-  data-cartridge-backdrop="{% static 'site/shared/img/MainBanner/8295fbc5-1409-461c-bea5-7393dfdf2e91.png' %}"
-  data-tastes="{% static 'site/shared/img/MainBanner/ChatGPT Image 3 июл. 2026 г., 22_02_13.png' %}"
-  data-taste-secondary="{% static 'site/shared/img/MainBanner/3fb518c6-cb94-412d-b06b-fd1dd45cb5b2.png' %}"
+  data-smoke-vertical="{% static 'site/shared/img/main_banner/ambient-smoke-vertical.webp' %}"
+  data-smoke-floor="{% static 'site/shared/img/main_banner/ambient-smoke-floor.webp' %}"
+  data-devices-product="{% static 'site/shared/img/main_banner/devices-product.webp' %}"
+  data-cartridges-product="{% static 'site/shared/img/main_banner/cartridges-product.webp' %}"
+  data-tastes-product="{% static 'site/shared/img/main_banner/tastes-product.webp' %}"
+  data-devices-background="{% static 'site/shared/img/main_banner/devices-background.webp' %}"
+  data-devices-rock-base="{% static 'site/shared/img/main_banner/devices-rock-base.webp' %}"
+  data-devices-rock-corner="{% static 'site/shared/img/main_banner/devices-rock-corner.webp' %}"
+  data-cartridges-background="{% static 'site/shared/img/main_banner/cartridges-background.webp' %}"
+  data-cartridges-corner-right="{% static 'site/shared/img/main_banner/cartridges-corner-right.webp' %}"
+  data-cartridges-branches-left="{% static 'site/shared/img/main_banner/cartridges-branches-left.webp' %}"
+  data-cartridges-mint-splash="{% static 'site/shared/img/main_banner/cartridges-mint-splash.webp' %}"
+  data-cartridges-soft-smoke="{% static 'site/shared/img/main_banner/cartridges-soft-smoke.webp' %}"
+  data-tastes-background="{% static 'site/shared/img/main_banner/tastes-background.jpg' %}"
+  data-tastes-corner-left="{% static 'site/shared/img/main_banner/tastes-corner-left.webp' %}"
+  data-tastes-corner-right="{% static 'site/shared/img/main_banner/tastes-corner-right.webp' %}"
+  data-tastes-splash-bottom="{% static 'site/shared/img/main_banner/tastes-splash-bottom.webp' %}"
 >
   <div class="wave_campaign_backdrop" aria-hidden="true">
-    <img class="wave_campaign_backdrop_image" id="mainBannerBackdrop" alt="" />
-    <img class="wave_campaign_smoke wave_campaign_smoke--vertical" id="mainBannerSmokeVertical" alt="" />
-    <img class="wave_campaign_smoke wave_campaign_smoke--floor" id="mainBannerSmokeFloor" alt="" />
+    <img class="wave_campaign_backdrop_image" id="mainBannerBackdrop" alt="" decoding="async" />
+    <img class="wave_campaign_smoke wave_campaign_smoke--vertical" id="mainBannerSmokeVertical" alt="" decoding="async" />
+    <img class="wave_campaign_smoke wave_campaign_smoke--floor" id="mainBannerSmokeFloor" alt="" decoding="async" />
+  </div>
+
+  <div class="wave_campaign_scene_art wave_campaign_scene_art--back" id="mainBannerBackArt" aria-hidden="true">
+    <span class="wave_campaign_decor_shell" data-back-decor="0"><img alt="" decoding="async" /></span>
+    <span class="wave_campaign_decor_shell" data-back-decor="1"><img alt="" decoding="async" /></span>
+    <span class="wave_campaign_decor_shell" data-back-decor="2"><img alt="" decoding="async" /></span>
+    <span class="wave_campaign_decor_shell" data-back-decor="3"><img alt="" decoding="async" /></span>
   </div>
 
   <div class="wave_campaign_frame">
@@ -35,11 +51,18 @@
         </div>
       </div>
 
-      <div class="wave_campaign_stage" id="mainBannerVisual" aria-live="polite">
-        <img class="wave_campaign_visual wave_campaign_visual--primary" id="mainBannerPrimaryVisual" alt="Устройства для вейпинга" />
-        <img class="wave_campaign_visual wave_campaign_visual--secondary" id="mainBannerSecondaryVisual" alt="" hidden />
-      </div>
     </div>
   </div>
-  <nav class="wave_campaign_dots" id="mainBannerDots" aria-label="Сцены баннера"></nav>
+
+  <div class="wave_campaign_stage" id="mainBannerVisual" aria-live="polite">
+        <img class="wave_campaign_visual wave_campaign_visual--primary" id="mainBannerPrimaryVisual" alt="Устройства для вейпинга" decoding="async" />
+        <img class="wave_campaign_visual wave_campaign_visual--secondary" id="mainBannerSecondaryVisual" alt="" decoding="async" hidden />
+  </div>
+  <div class="wave_campaign_scene_art wave_campaign_scene_art--front" id="mainBannerFrontArt" aria-hidden="true">
+    <span class="wave_campaign_decor_shell" data-front-decor="0"><img alt="" decoding="async" /></span>
+    <span class="wave_campaign_decor_shell" data-front-decor="1"><img alt="" decoding="async" /></span>
+  </div>
+  <nav class="wave_campaign_dots" id="mainBannerDots" aria-label="Сцены баннера">
+    <span class="wave_campaign_dot_morph" id="mainBannerDotMorph" aria-hidden="true"></span>
+  </nav>
 </section>
