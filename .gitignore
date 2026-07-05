@@ -18,9 +18,6 @@ db.sqlite3-wal
 /products/
 /staticfiles/
 
-# Local banner source assets
-/main/static/site/shared/img/main_banner/
-
 # Environment and secrets
 .env
 .env.*
