@@ -969,6 +969,7 @@
     line-height: 1.5;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
 
   .wave_campaign_actions { margin-top: 22px; }
@@ -988,7 +989,7 @@
   .wave_campaign_copy { padding-top: 12px; }
   .wave_campaign_title { font-size: 34px; }
   .wave_campaign_hero[data-scene="cartridges"] .wave_campaign_title { font-size: 29px; }
-  .wave_campaign_description { margin-top: 12px; -webkit-line-clamp: 2; }
+  .wave_campaign_description { margin-top: 12px; -webkit-line-clamp: 2; line-clamp: 2; }
   .wave_campaign_actions { margin-top: 16px; }
   .wave_campaign_cta--primary { min-height: 42px; }
   .wave_campaign_dots { bottom: 12px; }

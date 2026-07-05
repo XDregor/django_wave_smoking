@@ -2790,6 +2790,7 @@
     font-size: 14px;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
   .main_banner_cta { min-height: 44px; margin-top: 20px; padding-inline: 18px; font-size: 13px; }
 
