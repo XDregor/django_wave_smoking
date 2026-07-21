@@ -3,11 +3,36 @@
       const skuAdminProductListUrl = skuAdminConfig.productListUrl || "/admin/main/product/";
       const skuAdminQuickAddUrl = skuAdminConfig.quickAddUrl || "";
       const skuAdminMode = skuAdminConfig.mode || "create";
+      const skuAdminInitialStep = Math.min(6, Math.max(1, Number(skuAdminConfig.initialStep) || 1));
+      const recommendationProductCatalog = Array.isArray(skuAdminConfig.recommendationProductCatalog)
+        ? skuAdminConfig.recommendationProductCatalog
+        : [];
       const skuEditProduct = skuAdminConfig.editProduct && typeof skuAdminConfig.editProduct === "object"
         ? skuAdminConfig.editProduct
         : null;
       const skuAdminStorageKey = `wave_admin_product_sku_state_v1:${skuAdminMode}:${skuAdminConfig.productId || "new"}`;
+      const MAX_KEY_CHARACTERISTICS = 5;
+      const MAX_ALSO_CHOSEN_PRODUCTS = 5;
+      let selectedRecommendationProductIds = Array.isArray(skuEditProduct?.alsoChosenProductIds)
+        ? skuEditProduct.alsoChosenProductIds.map(String).slice(0, MAX_ALSO_CHOSEN_PRODUCTS)
+        : [];
+      const CHARACTERISTIC_ICON_OPTIONS = [
+        { value: "sliders", label: "Параметры" },
+        { value: "bloom", label: "Растение" },
+        { value: "sprout", label: "Листья" },
+        { value: "info", label: "Общее" },
+        { value: "spark", label: "Особенность" },
+        { value: "bolt", label: "Мощность" },
+        { value: "drop", label: "Жидкость" },
+        { value: "leaf", label: "Состав" },
+        { value: "flask", label: "Формула" },
+        { value: "battery", label: "Аккумулятор" },
+        { value: "ruler", label: "Размер" },
+        { value: "shield", label: "Защита" },
+      ];
       let skuAdminRestoringState = false;
+      let draggedCharacteristicRow = null;
+      let characteristicRowSequence = 0;
       const skuUploadState = {
         mainImage: null,
         extraImages: [],
@@ -71,10 +96,11 @@
 
       function getSkuAdminSavedChars() {
         return Array.from(document.querySelectorAll("#charRows .char-row")).map((row) => {
-          const inputs = row.querySelectorAll("input");
           return {
-            key: inputs[0]?.value || "",
-            value: inputs[1]?.value || "",
+            key: row.querySelector(".char-name-input")?.value || "",
+            value: row.querySelector(".char-value-input")?.value || "",
+            isKey: Boolean(row.querySelector(".char-key-input")?.checked),
+            icon: row.querySelector(".char-icon-input")?.value || "info",
           };
         });
       }
@@ -97,6 +123,80 @@
         }));
       }
 
+      function skuAdminVariantImageKeys(group, variant) {
+        const groupIds = [
+          group?.id,
+          group?.catalogGroupId,
+          group?.catalog_group_id,
+        ].filter((value) => value !== undefined && value !== null && String(value) !== "").map(String);
+        const variantIds = [
+          variant?.id,
+          variant?.catalogOptionId,
+          variant?.catalog_option_id,
+        ].filter((value) => value !== undefined && value !== null && String(value) !== "").map(String);
+        const keys = [];
+        groupIds.forEach((groupId) => {
+          variantIds.forEach((variantId) => keys.push(`${groupId}::${variantId}`));
+        });
+        if (group?.name && variant?.name) {
+          keys.push(`name::${String(group.name).trim().toLocaleLowerCase()}::${String(variant.name).trim().toLocaleLowerCase()}`);
+        }
+        return keys;
+      }
+
+      function mergeSkuAdminSavedGroupsWithEditImages(groups) {
+        if (!skuEditProduct || !Array.isArray(groups) || !Array.isArray(skuEditProduct.groups)) return groups;
+
+        const imageByKey = new Map();
+        const imageGroupKeys = new Set();
+        skuEditProduct.groups.forEach((group) => {
+          if (group?.hasImages) {
+            [group.id, group.catalogGroupId, group.catalog_group_id, group.name]
+              .filter((value) => value !== undefined && value !== null && String(value) !== "")
+              .forEach((value) => imageGroupKeys.add(String(value).trim().toLocaleLowerCase()));
+          }
+          (group?.variants || group?.values || []).forEach((variant) => {
+            const imageUrl = variant?.imageUrl || variant?.image_url || "";
+            if (!imageUrl) return;
+            skuAdminVariantImageKeys(group, variant).forEach((key) => imageByKey.set(key, {
+              imageUrl,
+              imageOrder: variant.imageOrder ?? variant.image_order,
+            }));
+          });
+        });
+
+        const savedHasImageGroup = groups.some((group) => group?.hasImages);
+        return groups.map((group) => {
+          const groupCopy = { ...group };
+          const groupKeys = [groupCopy.id, groupCopy.catalogGroupId, groupCopy.catalog_group_id, groupCopy.name]
+            .filter((value) => value !== undefined && value !== null && String(value) !== "")
+            .map((value) => String(value).trim().toLocaleLowerCase());
+          if (!savedHasImageGroup && groupKeys.some((key) => imageGroupKeys.has(key))) {
+            groupCopy.hasImages = true;
+          }
+          groupCopy.variants = (groupCopy.variants || groupCopy.values || []).map((variant, variantIndex) => {
+            const variantCopy = { ...variant };
+            const matchedImage = skuAdminVariantImageKeys(groupCopy, variantCopy)
+              .map((key) => imageByKey.get(key))
+              .find(Boolean);
+            if (matchedImage) {
+              variantCopy.imageUrl = matchedImage.imageUrl;
+              delete variantCopy.image_url;
+            } else if (skuAdminMode === "edit") {
+              variantCopy.imageUrl = "";
+              delete variantCopy.image_url;
+            }
+            if (matchedImage && !Number.isFinite(Number(variantCopy.imageOrder ?? variantCopy.image_order))) {
+              variantCopy.imageOrder = Number.isFinite(Number(matchedImage.imageOrder))
+                ? Number(matchedImage.imageOrder)
+                : variantIndex;
+            }
+            return variantCopy;
+          });
+          return groupCopy;
+        });
+      }
+
       function collectSkuAdminState() {
         return {
           savedAt: Date.now(),
@@ -111,6 +211,7 @@
           status: document.getElementById("statusSelect")?.value || "published",
           likesAdjustment: normalizeLikesAdjustment(document.getElementById("productLikesAdjustment")?.value),
           badgeCodes: Array.from(document.querySelectorAll("#badgeGroup .badge-opt.selected")).map((button) => button.dataset.badge).filter(Boolean),
+          alsoChosenProductIds: [...selectedRecommendationProductIds],
           descriptionHtml: sanitizeRteHtml(document.getElementById("rteBody")?.innerHTML || ""),
           chars: getSkuAdminSavedChars(),
           groups: getSkuAdminSavedGroups(),
@@ -137,7 +238,7 @@
 
       function restoreSkuAdminState() {
         const saved = readSkuAdminState();
-        if (!saved || !saved.savedAt) return;
+        if (!saved || !saved.savedAt) return false;
         skuAdminRestoringState = true;
         try {
           const name = document.getElementById("productName");
@@ -149,11 +250,14 @@
           document.querySelectorAll("#badgeGroup .badge-opt").forEach((button) => {
             setBadgeSelected(button, Array.isArray(saved.badgeCodes) && saved.badgeCodes.includes(button.dataset.badge));
           });
+          if (Array.isArray(saved.alsoChosenProductIds)) {
+            selectedRecommendationProductIds = saved.alsoChosenProductIds.map(String);
+          }
           const rte = document.getElementById("rteBody");
           if (rte && typeof saved.descriptionHtml === "string") rte.innerHTML = sanitizeRteHtml(saved.descriptionHtml);
           if (Array.isArray(saved.chars)) setEditCharacteristics(saved.chars);
           if (Array.isArray(saved.groups) && window.loadVariantGroups) {
-            window.loadVariantGroups(saved.groups);
+            window.loadVariantGroups(mergeSkuAdminSavedGroupsWithEditImages(saved.groups));
           }
           if (saved.rootPricing || Array.isArray(saved.skus)) {
             applyEditSkuTreeState({ rootPricing: saved.rootPricing || {}, skus: saved.skus || [] });
@@ -164,7 +268,8 @@
           setCollapsibleState("charBlock", "charToggle", Boolean(saved.charsOpen));
           setCollapsibleState("videoBlock", "videoToggle", Boolean(saved.videoOpen));
 
-          const targetStep = Math.min(totalSteps, Math.max(1, Number(saved.currentStep) || 1));
+          const savedStep = Math.min(totalSteps, Math.max(1, Number(saved.currentStep) || 1));
+          const targetStep = skuAdminInitialStep > 1 ? skuAdminInitialStep : savedStep;
           unlockedUpTo.val = Math.min(totalSteps, Math.max(unlockedUpTo.val, Number(saved.unlockedUpTo) || targetStep));
           for (let step = 1; step <= unlockedUpTo.val; step += 1) unlockPill(step);
           validateStep(1);
@@ -173,6 +278,14 @@
         } finally {
           skuAdminRestoringState = false;
         }
+        return true;
+      }
+
+      function openConfiguredInitialStep() {
+        if (skuAdminInitialStep <= 1) return;
+        unlockedUpTo.val = Math.max(unlockedUpTo.val, skuAdminInitialStep);
+        for (let step = 1; step <= unlockedUpTo.val; step += 1) unlockPill(step);
+        showStep(skuAdminInitialStep);
       }
 
       // ── QUICK-ADD (category / brand) ───────────────
@@ -556,20 +669,10 @@
         if (!rows || !Array.isArray(chars)) return;
         rows.innerHTML = "";
         chars.forEach((item) => {
-          const row = document.createElement("div");
-          row.className = "char-row";
-          row.innerHTML = `
-            <input type="text" placeholder="РҐР°СЂР°РєС‚РµСЂРёСЃС‚РёРєР°">
-            <input type="text" placeholder="Р—РЅР°С‡РµРЅРёРµ">
-            <button class="char-del" onclick="delChar(this)">
-              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
-            </button>`;
-          const inputs = row.querySelectorAll("input");
-          inputs[0].value = item.key || "";
-          inputs[1].value = item.value || "";
-          rows.appendChild(row);
+          rows.appendChild(createCharacteristicRow(item));
         });
         updateCharEmpty();
+        updateKeyCharacteristicState();
       }
 
       function skuEditNodeStateFromPrices(price, oldPrice, quantity, available) {
@@ -648,6 +751,110 @@
         for (let i = 1; i <= totalSteps; i += 1) unlockPill(i);
         validateStep(1);
         validateStep(2);
+      }
+
+      function getRecommendationProductById(productId) {
+        return recommendationProductCatalog.find((product) => String(product.id) === String(productId));
+      }
+
+      function formatAdminProductPrice(value) {
+        const number = Number(value) || 0;
+        return `${number.toLocaleString("ru-RU", { maximumFractionDigits: 0 })} грн`;
+      }
+
+      function renderRecommendationProducts() {
+        const selectedContainer = document.getElementById("adminRelatedProductsSelected");
+        const catalogContainer = document.getElementById("adminRelatedProductsCatalog");
+        const counter = document.getElementById("adminRelatedProductsCounter");
+        const searchInput = document.getElementById("adminRelatedProductsSearch");
+        if (!selectedContainer || !catalogContainer) return;
+
+        const selectedSet = new Set(selectedRecommendationProductIds.map(String));
+        const search = (searchInput?.value || "").trim().toLocaleLowerCase();
+        const selectedProducts = selectedRecommendationProductIds.map(getRecommendationProductById).filter(Boolean);
+
+        if (counter) counter.textContent = `${selectedProducts.length} / ${MAX_ALSO_CHOSEN_PRODUCTS}`;
+
+        selectedContainer.innerHTML = selectedProducts.length
+          ? selectedProducts.map((product, index) => `
+              <div class="admin-related-products__selected-item" data-product-id="${finalEscape(product.id)}">
+                <span class="admin-related-products__order">${index + 1}</span>
+                <span class="admin-related-products__selected-name">${finalEscape(product.name)}</span>
+                <button type="button" data-related-move="up" ${index === 0 ? "disabled" : ""} aria-label="Поднять товар">↑</button>
+                <button type="button" data-related-move="down" ${index === selectedProducts.length - 1 ? "disabled" : ""} aria-label="Опустить товар">↓</button>
+                <button type="button" data-related-remove aria-label="Убрать товар">×</button>
+              </div>
+            `).join("")
+          : `<div class="admin-related-products__empty">Сопутствующие товары пока не выбраны.</div>`;
+
+        const visibleProducts = recommendationProductCatalog
+          .filter((product) => !selectedSet.has(String(product.id)))
+          .filter((product) => {
+            if (!search) return true;
+            return [product.name, product.brand, product.category]
+              .some((value) => String(value || "").toLocaleLowerCase().includes(search));
+          })
+          .slice(0, 24);
+
+        catalogContainer.innerHTML = visibleProducts.length
+          ? visibleProducts.map((product) => `
+              <button class="admin-related-products__card" type="button" data-related-add="${finalEscape(product.id)}">
+                <span class="admin-related-products__image">
+                  ${product.image ? `<img src="${finalEscape(product.image)}" alt="">` : `<span>${finalEscape((product.name || "?").slice(0, 1))}</span>`}
+                </span>
+                <span class="admin-related-products__meta">
+                  <strong>${finalEscape(product.name)}</strong>
+                  <small>${finalEscape([product.brand, product.category].filter(Boolean).join(" · ") || "Без категории")}</small>
+                </span>
+                <span class="admin-related-products__price">${finalEscape(formatAdminProductPrice(product.price))}</span>
+              </button>
+            `).join("")
+          : `<div class="admin-related-products__empty">Подходящие товары не найдены.</div>`;
+      }
+
+      function initRecommendationProducts() {
+        const root = document.getElementById("adminRelatedProducts");
+        const searchInput = document.getElementById("adminRelatedProductsSearch");
+        if (!root) return;
+
+        root.addEventListener("click", (event) => {
+          const addButton = event.target.closest("[data-related-add]");
+          const item = event.target.closest("[data-product-id]");
+          const productId = addButton?.dataset.relatedAdd || item?.dataset.productId;
+          if (!productId) return;
+
+          if (addButton) {
+            if (selectedRecommendationProductIds.length >= MAX_ALSO_CHOSEN_PRODUCTS) return;
+            selectedRecommendationProductIds.push(String(productId));
+          } else if (event.target.closest("[data-related-remove]")) {
+            selectedRecommendationProductIds = selectedRecommendationProductIds.filter((id) => id !== String(productId));
+          } else if (event.target.closest("[data-related-move='up']")) {
+            const index = selectedRecommendationProductIds.indexOf(String(productId));
+            if (index > 0) {
+              [selectedRecommendationProductIds[index - 1], selectedRecommendationProductIds[index]] = [
+                selectedRecommendationProductIds[index],
+                selectedRecommendationProductIds[index - 1],
+              ];
+            }
+          } else if (event.target.closest("[data-related-move='down']")) {
+            const index = selectedRecommendationProductIds.indexOf(String(productId));
+            if (index >= 0 && index < selectedRecommendationProductIds.length - 1) {
+              [selectedRecommendationProductIds[index + 1], selectedRecommendationProductIds[index]] = [
+                selectedRecommendationProductIds[index],
+                selectedRecommendationProductIds[index + 1],
+              ];
+            }
+          }
+
+          selectedRecommendationProductIds = [...new Set(selectedRecommendationProductIds.map(String))]
+            .slice(0, MAX_ALSO_CHOSEN_PRODUCTS);
+          renderRecommendationProducts();
+          updateFinalReview();
+          scheduleSkuAdminStateSave();
+        });
+
+        searchInput?.addEventListener("input", renderRecommendationProducts);
+        renderRecommendationProducts();
       }
 
       document.addEventListener("DOMContentLoaded", function () {
@@ -731,19 +938,23 @@
           }
         });
 
+        initCharacteristicSorting();
         updateCharEmpty();
+        updateKeyCharacteristicState();
         setupRTE();
 
         // ── Инициализация вариантов ─────────────────
         initVariantGroups();
         applyEditProductData();
         skuTreeInit();
-        restoreSkuAdminState();
+        const restoredState = restoreSkuAdminState();
+        initRecommendationProducts();
+        if (!restoredState) openConfiguredInitialStep();
 
         document.querySelector(".wave-admin-product-sku")?.addEventListener("input", scheduleSkuAdminStateSave);
         document.querySelector(".wave-admin-product-sku")?.addEventListener("change", scheduleSkuAdminStateSave);
         document.querySelector(".wave-admin-product-sku")?.addEventListener("click", (event) => {
-          if (event.target.closest(".badge-opt, .char-del, .expand-trigger, .input-add-btn, .custom-select-option, #addGroupBtn, .vg-combobox-option, .variant-chip, .variant-group-actions, .variant-group-del, .variant-img-toggle, .variant-photo-del, .sku-tree-widget")) {
+          if (event.target.closest(".badge-opt, .char-del, .char-key-toggle, .expand-trigger, .input-add-btn, .custom-select-option, #addGroupBtn, .vg-combobox-option, .variant-chip, .variant-group-actions, .variant-group-del, .variant-img-toggle, .variant-photo-del, .sku-tree-widget, #adminRelatedProducts")) {
             window.setTimeout(scheduleSkuAdminStateSave, 0);
           }
         });
@@ -786,24 +997,347 @@
       }
 
       // ── CHARACTERISTICS ────────────────────────────
-      function addChar() {
-        const rows = document.getElementById("charRows");
+      function createCharacteristicRow(item = {}) {
         const row = document.createElement("div");
         row.className = "char-row";
         row.innerHTML = `
-            <input type="text" placeholder="Характеристика">
-            <input type="text" placeholder="Значение">
-            <button class="char-del" onclick="delChar(this)">
-              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
-            </button>`;
+          <button class="char-drag-handle" type="button" draggable="true" title="Изменить порядок" aria-label="Изменить порядок характеристики">
+            <svg width="14" height="18" viewBox="0 0 14 18" fill="currentColor" aria-hidden="true">
+              <circle cx="4" cy="3" r="1.25"></circle><circle cx="10" cy="3" r="1.25"></circle>
+              <circle cx="4" cy="9" r="1.25"></circle><circle cx="10" cy="9" r="1.25"></circle>
+              <circle cx="4" cy="15" r="1.25"></circle><circle cx="10" cy="15" r="1.25"></circle>
+            </svg>
+          </button>
+          <div class="char-field char-name-field">
+            <label>Название</label>
+            <div class="char-name-combobox">
+              <div class="char-name-input-wrap">
+                <input class="char-name-input" type="text" autocomplete="off" placeholder="Найти или добавить" role="combobox" aria-autocomplete="list" aria-expanded="false">
+                <span class="char-name-chevron" aria-hidden="true"></span>
+              </div>
+              <div class="char-name-dropdown" role="listbox"></div>
+            </div>
+          </div>
+          <div class="char-field char-value-field">
+            <label>Значение</label>
+            <input class="char-value-input" type="text" placeholder="Например, 30 Вт">
+          </div>
+          <div class="char-field char-icon-field">
+            <label>Иконка</label>
+            <div class="char-icon-picker">
+              <input class="char-icon-input" type="hidden" value="info">
+              <button class="char-icon-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+                <span class="char-icon-trigger-preview" aria-hidden="true"></span>
+                <span class="char-icon-trigger-label">Общее</span>
+                <span class="char-icon-trigger-chevron" aria-hidden="true"></span>
+              </button>
+              <div class="char-icon-dropdown" role="listbox"></div>
+            </div>
+          </div>
+          <label class="char-key-toggle">
+            <input class="char-key-input" type="checkbox">
+            <span class="char-key-box" aria-hidden="true">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 4 4L19 6"></path></svg>
+            </span>
+            <span>Ключевая</span>
+          </label>
+          <button class="char-del" type="button" onclick="delChar(this)" title="Удалить характеристику" aria-label="Удалить характеристику">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+          </button>`;
+
+        row.querySelector(".char-name-input").value = item.key || "";
+        row.querySelector(".char-value-input").value = item.value || "";
+        row.querySelector(".char-key-input").checked = Boolean(item.isKey ?? item.is_key);
+        row.querySelector(".char-icon-input").value = item.icon || "info";
+        setupCharacteristicNameCombobox(row);
+        setupCharacteristicIconPicker(row);
+
+        const dragHandle = row.querySelector(".char-drag-handle");
+        dragHandle.addEventListener("dragstart", (event) => {
+          draggedCharacteristicRow = row;
+          row.classList.add("is-dragging");
+          event.dataTransfer.effectAllowed = "move";
+          event.dataTransfer.setData("text/plain", "characteristic");
+        });
+        dragHandle.addEventListener("dragend", finishCharacteristicDrag);
+        dragHandle.addEventListener("keydown", (event) => {
+          if (!event.altKey || !["ArrowUp", "ArrowDown"].includes(event.key)) return;
+          event.preventDefault();
+          const sibling = event.key === "ArrowUp" ? row.previousElementSibling : row.nextElementSibling;
+          if (!sibling) return;
+          if (event.key === "ArrowUp") row.parentElement.insertBefore(row, sibling);
+          else row.parentElement.insertBefore(sibling, row);
+          scheduleSkuAdminStateSave();
+        });
+        row.querySelector(".char-key-input").addEventListener("change", updateKeyCharacteristicState);
+        return row;
+      }
+
+      function characteristicIconMarkup(icon) {
+        const paths = {
+          info: '<circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path>',
+          sliders: '<path d="M4 7h10"></path><path d="M18 7h2"></path><circle cx="16" cy="7" r="2"></circle><path d="M4 12h3"></path><path d="M11 12h9"></path><circle cx="9" cy="12" r="2"></circle><path d="M4 17h12"></path><path d="M20 17h0"></path><circle cx="18" cy="17" r="2"></circle>',
+          bloom: '<path d="M12 3.2c1.1 1.9 1.7 4.1 1.7 6.3 0 .6 0 1.1-.1 1.7.4-.5.8-1 1.3-1.5 1.5-1.5 3.4-2.5 5.4-2.9-.4 2-1.4 3.9-2.9 5.4-.5.5-1 .9-1.6 1.3.3 0 .6-.1.9-.1 2 0 3.8.7 5.4 1.8-1.6 1.1-3.4 1.8-5.4 1.8-.8 0-1.6-.1-2.3-.3.2.2.3.5.5.8.7 1.2.9 2.5.8 3.8-1.2-.5-2.2-1.4-2.9-2.6-.2-.3-.4-.7-.5-1V22h-1.2v-4.3c-.1.3-.3.7-.5 1-.7 1.2-1.7 2.1-2.9 2.6-.1-1.3.1-2.6.8-3.8.2-.3.3-.5.5-.8-.7.2-1.5.3-2.3.3-2 0-3.8-.7-5.4-1.8 1.6-1.1 3.4-1.8 5.4-1.8.3 0 .6 0 .9.1-.6-.4-1.1-.8-1.6-1.3-1.5-1.5-2.5-3.4-2.9-5.4 2 .4 3.9 1.4 5.4 2.9.5.5.9 1 1.3 1.5-.1-.6-.1-1.1-.1-1.7 0-2.2.6-4.4 1.7-6.3Z"></path>',
+          sprout: '<path d="M12 21V9M12 9C12 5 9 3 5 3c0 4 3 6 7 6ZM12 13c0-3.5 2.5-5.5 6-5.5-.3 3.2-2.7 5.5-6 5.5Z"></path>',
+          spark: '<path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z"></path><path d="m18.5 15 .8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z"></path>',
+          bolt: '<path d="m13 2-8 12h7l-1 8 8-12h-7l1-8Z"></path>',
+          drop: '<path d="M12 3s6 6.4 6 11a6 6 0 0 1-12 0c0-4.6 6-11 6-11Z"></path>',
+          leaf: '<path d="M20 4c-7 0-12 3.5-12 9 0 3 2 5 5 5 5.5 0 7-7 7-14Z"></path><path d="M4 20c3-5 7-8 12-10"></path>',
+          flask: '<path d="M9 3h6M10 3v5l-5 9a3 3 0 0 0 2.6 4h8.8a3 3 0 0 0 2.6-4l-5-9V3"></path><path d="M8 14h8"></path>',
+          battery: '<rect x="3" y="7" width="16" height="10" rx="2"></rect><path d="M21 10v4M7 10v4M10 10v4"></path>',
+          ruler: '<path d="m4 17 13-13 3 3L7 20l-3-3Z"></path><path d="m13 8 3 3M10 11l2 2M7 14l3 3"></path>',
+          shield: '<path d="M12 3 5 6v5c0 4.6 2.8 8.1 7 10 4.2-1.9 7-5.4 7-10V6l-7-3Z"></path><path d="m9 12 2 2 4-4"></path>',
+        };
+        return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[icon] || paths.info}</svg>`;
+      }
+
+      function setupCharacteristicIconPicker(row) {
+        const picker = row.querySelector(".char-icon-picker");
+        const input = row.querySelector(".char-icon-input");
+        const trigger = row.querySelector(".char-icon-trigger");
+        const preview = row.querySelector(".char-icon-trigger-preview");
+        const label = row.querySelector(".char-icon-trigger-label");
+        const dropdown = row.querySelector(".char-icon-dropdown");
+        if (!picker || !input || !trigger || !preview || !label || !dropdown) return;
+
+        function closePicker() {
+          picker.classList.remove("open");
+          dropdown.classList.remove("open");
+          trigger.setAttribute("aria-expanded", "false");
+        }
+
+        function selectIcon(icon, notify = true) {
+          const option = CHARACTERISTIC_ICON_OPTIONS.find((item) => item.value === icon) || CHARACTERISTIC_ICON_OPTIONS[0];
+          input.value = option.value;
+          preview.innerHTML = characteristicIconMarkup(option.value);
+          label.textContent = option.label;
+          dropdown.querySelectorAll(".char-icon-option").forEach((button) => {
+            const selected = button.dataset.icon === option.value;
+            button.classList.toggle("is-selected", selected);
+            button.setAttribute("aria-selected", String(selected));
+          });
+          if (notify) input.dispatchEvent(new Event("change", { bubbles: true }));
+          closePicker();
+        }
+
+        CHARACTERISTIC_ICON_OPTIONS.forEach((option) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "char-icon-option";
+          button.dataset.icon = option.value;
+          button.setAttribute("role", "option");
+          button.innerHTML = `<span class="char-icon-option-preview">${characteristicIconMarkup(option.value)}</span><span>${option.label}</span>`;
+          button.addEventListener("mousedown", (event) => {
+            event.preventDefault();
+            selectIcon(option.value);
+          });
+          dropdown.appendChild(button);
+        });
+
+        trigger.addEventListener("click", () => {
+          const shouldOpen = !dropdown.classList.contains("open");
+          picker.classList.toggle("open", shouldOpen);
+          dropdown.classList.toggle("open", shouldOpen);
+          trigger.setAttribute("aria-expanded", String(shouldOpen));
+        });
+        trigger.addEventListener("keydown", (event) => {
+          if (event.key !== "Escape") return;
+          closePicker();
+        });
+        picker.addEventListener("focusout", () => {
+          window.setTimeout(() => {
+            if (!picker.contains(document.activeElement)) closePicker();
+          }, 0);
+        });
+        selectIcon(input.value, false);
+      }
+
+      function getCharacteristicNameCatalog(currentInput) {
+        const values = [
+          ...Array.from(document.querySelectorAll("#characteristicNameSuggestions option"), (option) => option.value),
+          ...Array.from(document.querySelectorAll("#charRows .char-name-input"), (input) => input === currentInput ? "" : input.value),
+        ];
+        const seen = new Set();
+        return values
+          .map((value) => String(value || "").trim())
+          .filter((value) => {
+            const normalized = value.toLocaleLowerCase();
+            if (!value || seen.has(normalized)) return false;
+            seen.add(normalized);
+            return true;
+          })
+          .sort((left, right) => left.localeCompare(right, "ru"));
+      }
+
+      function rememberCharacteristicName(value) {
+        const catalog = document.getElementById("characteristicNameSuggestions");
+        const cleanValue = String(value || "").trim();
+        if (!catalog || !cleanValue) return;
+        const exists = Array.from(catalog.options).some(
+          (option) => option.value.toLocaleLowerCase() === cleanValue.toLocaleLowerCase()
+        );
+        if (!exists) catalog.appendChild(new Option("", cleanValue));
+      }
+
+      function setupCharacteristicNameCombobox(row) {
+        const input = row.querySelector(".char-name-input");
+        const combobox = row.querySelector(".char-name-combobox");
+        const dropdown = row.querySelector(".char-name-dropdown");
+        if (!input || !combobox || !dropdown) return;
+
+        const dropdownId = `characteristicNameDropdown${++characteristicRowSequence}`;
+        dropdown.id = dropdownId;
+        input.setAttribute("aria-controls", dropdownId);
+        let activeIndex = -1;
+
+        function closeDropdown() {
+          dropdown.classList.remove("open");
+          combobox.classList.remove("open");
+          input.setAttribute("aria-expanded", "false");
+          input.removeAttribute("aria-activedescendant");
+          activeIndex = -1;
+        }
+
+        function commitValue(value, shouldRemember = false) {
+          const cleanValue = String(value || "").trim();
+          if (!cleanValue) return;
+          input.value = cleanValue;
+          if (shouldRemember) rememberCharacteristicName(cleanValue);
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+          closeDropdown();
+        }
+
+        function setActiveOption(index) {
+          const options = Array.from(dropdown.querySelectorAll(".char-name-option:not(.is-empty)"));
+          if (!options.length) return;
+          activeIndex = (index + options.length) % options.length;
+          options.forEach((option, optionIndex) => option.classList.toggle("is-active", optionIndex === activeIndex));
+          const activeOption = options[activeIndex];
+          input.setAttribute("aria-activedescendant", activeOption.id);
+          activeOption.scrollIntoView({ block: "nearest" });
+        }
+
+        function appendOption(label, value, className, shouldRemember = false) {
+          const option = document.createElement("button");
+          option.type = "button";
+          option.className = `char-name-option ${className || ""}`.trim();
+          option.id = `${dropdownId}Option${dropdown.querySelectorAll(".char-name-option").length}`;
+          option.setAttribute("role", "option");
+          const icon = document.createElement("span");
+          icon.className = "char-name-option-icon";
+          icon.textContent = shouldRemember ? "+" : "A";
+          const text = document.createElement("span");
+          text.textContent = label;
+          option.append(icon, text);
+          option.addEventListener("mousedown", (event) => {
+            event.preventDefault();
+            commitValue(value, shouldRemember);
+          });
+          dropdown.appendChild(option);
+        }
+
+        function renderDropdown() {
+          const query = input.value.trim();
+          const normalizedQuery = query.toLocaleLowerCase();
+          const catalog = getCharacteristicNameCatalog(input);
+          const matches = catalog.filter((name) => name.toLocaleLowerCase().includes(normalizedQuery));
+          const exactMatch = catalog.some((name) => name.toLocaleLowerCase() === normalizedQuery);
+          dropdown.innerHTML = "";
+          activeIndex = -1;
+
+          const label = document.createElement("div");
+          label.className = "char-name-dropdown-label";
+          label.textContent = normalizedQuery ? "Результаты поиска" : "Сохранённые названия";
+          dropdown.appendChild(label);
+
+          matches.slice(0, 10).forEach((name) => appendOption(name, name));
+          if (!matches.length) {
+            const empty = document.createElement("div");
+            empty.className = "char-name-option is-empty";
+            empty.textContent = query ? "Совпадений не найдено" : "Сохранённых названий пока нет";
+            dropdown.appendChild(empty);
+          }
+          if (query && !exactMatch) {
+            appendOption(`Добавить «${query}»`, query, "is-new", true);
+          }
+
+          dropdown.classList.add("open");
+          combobox.classList.add("open");
+          input.setAttribute("aria-expanded", "true");
+        }
+
+        input.addEventListener("focus", renderDropdown);
+        input.addEventListener("input", renderDropdown);
+        input.addEventListener("blur", () => window.setTimeout(closeDropdown, 80));
+        input.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            closeDropdown();
+            return;
+          }
+          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            if (!dropdown.classList.contains("open")) renderDropdown();
+            setActiveOption(activeIndex + (event.key === "ArrowDown" ? 1 : -1));
+            return;
+          }
+          if (event.key !== "Enter") return;
+          event.preventDefault();
+          const options = Array.from(dropdown.querySelectorAll(".char-name-option:not(.is-empty)"));
+          if (activeIndex >= 0 && options[activeIndex]) {
+            options[activeIndex].dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+          } else if (input.value.trim()) {
+            commitValue(input.value, !getCharacteristicNameCatalog(input).some(
+              (name) => name.toLocaleLowerCase() === input.value.trim().toLocaleLowerCase()
+            ));
+          }
+        });
+      }
+
+      function initCharacteristicSorting() {
+        const rows = document.getElementById("charRows");
+        if (!rows || rows.dataset.sortingReady === "true") return;
+        rows.dataset.sortingReady = "true";
+        rows.addEventListener("dragover", (event) => {
+          if (!draggedCharacteristicRow) return;
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "move";
+          const targetRows = Array.from(rows.querySelectorAll(".char-row:not(.is-dragging)"));
+          const insertBefore = targetRows.find((targetRow) => {
+            const rect = targetRow.getBoundingClientRect();
+            return event.clientY < rect.top + rect.height / 2;
+          });
+          rows.insertBefore(draggedCharacteristicRow, insertBefore || null);
+        });
+        rows.addEventListener("drop", (event) => {
+          if (!draggedCharacteristicRow) return;
+          event.preventDefault();
+          finishCharacteristicDrag();
+        });
+      }
+
+      function finishCharacteristicDrag() {
+        if (!draggedCharacteristicRow) return;
+        draggedCharacteristicRow.classList.remove("is-dragging");
+        draggedCharacteristicRow = null;
+        scheduleSkuAdminStateSave();
+      }
+
+      function addChar() {
+        const rows = document.getElementById("charRows");
+        const row = createCharacteristicRow();
         rows.appendChild(row);
-        row.querySelector("input").focus();
+        row.querySelector(".char-name-input").focus();
         updateCharEmpty();
+        updateKeyCharacteristicState();
+        scheduleSkuAdminStateSave();
       }
 
       function delChar(btn) {
         btn.closest(".char-row").remove();
         updateCharEmpty();
+        updateKeyCharacteristicState();
+        scheduleSkuAdminStateSave();
       }
 
       function updateCharEmpty() {
@@ -814,6 +1348,19 @@
         } else {
           empty.style.display = "none";
         }
+      }
+
+      function updateKeyCharacteristicState() {
+        const checkboxes = Array.from(document.querySelectorAll("#charRows .char-key-input"));
+        const selectedCount = checkboxes.filter((checkbox) => checkbox.checked).length;
+        const limitReached = selectedCount >= MAX_KEY_CHARACTERISTICS;
+        const counter = document.getElementById("charKeyCount");
+        if (counter) counter.textContent = `${selectedCount} / ${MAX_KEY_CHARACTERISTICS}`;
+        checkboxes.forEach((checkbox) => {
+          const disabled = limitReached && !checkbox.checked;
+          checkbox.disabled = disabled;
+          checkbox.closest(".char-key-toggle")?.classList.toggle("is-disabled", disabled);
+        });
       }
 
       // ── RTE ─────────────────────────────────────────
@@ -1942,10 +2489,11 @@
       function finalGetCharacteristics() {
         return Array.from(document.querySelectorAll("#charRows .char-row"))
           .map((row) => {
-            const inputs = row.querySelectorAll("input");
             return {
-              key: (inputs[0]?.value || "").trim(),
-              value: (inputs[1]?.value || "").trim(),
+              key: (row.querySelector(".char-name-input")?.value || "").trim(),
+              value: (row.querySelector(".char-value-input")?.value || "").trim(),
+              isKey: Boolean(row.querySelector(".char-key-input")?.checked),
+              icon: row.querySelector(".char-icon-input")?.value || "info",
             };
           })
           .filter((item) => item.key || item.value);
@@ -2014,6 +2562,7 @@
         if (!data.skus.length) problems.push("Создайте финальные SKU.");
         if (data.skus.some((sku) => sku.price === null)) problems.push("Укажите цену для каждого финального SKU.");
         if (data.chars.some((item) => !item.key || !item.value)) problems.push("Заполните название и значение каждой характеристики.");
+        if (data.chars.filter((item) => item.isKey).length > MAX_KEY_CHARACTERISTICS) problems.push("Выберите не более пяти ключевых характеристик.");
         return problems;
       }
 
@@ -2059,6 +2608,7 @@
           chars: finalGetCharacteristics(),
           media: finalGetMedia(),
           groups: skuTreeGetGroups(),
+          alsoChosenProducts: selectedRecommendationProductIds.map(getRecommendationProductById).filter(Boolean),
           skus,
         };
         const problems = finalReadiness(data);
@@ -2072,6 +2622,9 @@
         const variantsHtml = data.groups.length
           ? `<div class="final-list">${data.groups.map((group) => `<div class="final-line"><span class="final-key">${finalEscape(group.name)}</span><span class="final-value">${finalEscape(group.values.map((value) => value.name).join(", ") || "Нет значений")}</span></div>`).join("")}</div>`
           : `<div class="final-muted">Группы вариантов не созданы.</div>`;
+        const alsoChosenHtml = data.alsoChosenProducts.length
+          ? `<div class="final-list">${data.alsoChosenProducts.map((product, index) => `<div class="final-line"><span class="final-key">${index + 1}</span><span class="final-value">${finalEscape(product.name)}</span></div>`).join("")}</div>`
+          : `<div class="final-muted">Сопутствующие товары не выбраны.</div>`;
         const readyHtml = problems.length
           ? `<div class="final-ready"><div class="final-ready-title">Нужно исправить</div><ul class="final-problems">${problems.map((problem) => `<li>${finalEscape(problem)}</li>`).join("")}</ul></div>`
           : `<div class="final-ready ok"><div class="final-ready-title">Товар готов к публикации</div><div class="final-muted">Все обязательные данные заполнены.</div></div>`;
@@ -2103,6 +2656,10 @@
             ${variantsHtml}
           </section>
           <section class="final-section">
+            <div class="final-section-title">Сопутствующие товары</div>
+            ${alsoChosenHtml}
+          </section>
+          <section class="final-section">
             <div class="final-section-title">Матрица цен</div>
             ${finalBuildPriceTable(data.groups, data.skus)}
           </section>
@@ -2127,6 +2684,7 @@
           descriptionHtml: sanitizeRteHtml(descriptionEl?.innerHTML || ""),
           descriptionText: descriptionEl?.innerText.trim() || "",
           chars: finalGetCharacteristics(),
+          alsoChosenProductIds: [...selectedRecommendationProductIds],
           groups: skuTreeGetGroups(),
           rootPricing: finalRootPricing(),
           skus,
@@ -2193,7 +2751,17 @@
             },
             body: buildSkuAdminFormData(payload),
           });
-          const result = await response.json();
+          const responseText = await response.text();
+          let result = {};
+          try {
+            result = responseText ? JSON.parse(responseText) : {};
+          } catch (parseError) {
+            throw new Error(
+              response.ok
+                ? "Сервер вернул некорректный ответ."
+                : `Ошибка сервера ${response.status}. Перезапустите Django и повторите попытку.`
+            );
+          }
           if (!response.ok || !result.success) {
             throw new Error(result.message || "Не удалось сохранить товар.");
           }

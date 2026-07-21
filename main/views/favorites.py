@@ -9,7 +9,7 @@ def api_favorites(request):
     products = (
         Product.objects.filter(id__in=liked_ids, available=True)
         .select_related("category", "brand")
-        .prefetch_related(available_variant_prefetch, product_sku_prefetch)
+        .prefetch_related(available_variant_prefetch, product_sku_prefetch, product_specification_prefetch)
         .order_by("name")
     )
     return JsonResponse({

@@ -1,15 +1,23 @@
-{% with badge=product.get_badge_data product_variants=product.display_product_variants available_variants=product.available_product_variants product_skus=product.sku_payload discount_percent=product.get_discount_percent %}
+{% with badge=product.get_badge_data product_variants=product.display_product_variants available_variants=product.available_product_variants product_skus=product.sku_payload discount_percent=product.get_discount_percent key_specifications=product.key_specifications %}
 <article
   class="product_card_component{% if product.stock <= 0 or product_variants and not available_variants %} product_card_unavailable_state{% endif %}"
-  data_product_card_id="{{ product.id }}"
-  data_product_card_url="{% url 'main:product_detail' product.id product.slug %}"
-  data_product_card_requires_selection="{% if product_skus or product_variants %}true{% else %}false{% endif %}"
+  data-product-card-id="{{ product.id }}"
+  data-product-card-url="{% url 'main:product_detail' product.id product.slug %}"
+  data-product-card-requires-selection="{% if product_skus or product_variants %}true{% else %}false{% endif %}"
 >
   <div class="product_card_media_container">
     <div class="product_card_skeleton_element"></div>
 
     {% if product.image %}
-      <img class="product_card_image_element" src="{{ product.image.url }}" data-product-card-default-image="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" />
+      <img
+        class="product_card_image_element"
+        src="{{ product.image.url }}"
+        data-product-card-default-image="{{ product.image.url }}"
+        alt="{{ product.name }}"
+        loading="lazy"
+        decoding="async"
+        fetchpriority="low"
+      />
     {% endif %}
 
     {% if product.stock <= 0 or product_variants and not available_variants %}
@@ -23,26 +31,40 @@
       </span>
     {% endif %}
 
-    <button
-      class="product_card_like_button{% if product.is_liked %} active{% endif %}"
-      type="button"
-      data_product_card_like_id="{{ product.id }}"
-      data_product_card_like_url="{% url 'main:product_like' product.id %}"
-      data_product_card_liked_state="{% if product.is_liked %}true{% else %}false{% endif %}"
-      aria-label="В избранное"
-    >
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-      </svg>
-      <span class="product_card_like_count_text">{{ product.display_likes|default:0 }}</span>
-    </button>
+    <div class="product_card_media_actions">
+      {% if key_specifications %}
+        <button
+          class="product_card_specs_toggle_button"
+          type="button"
+          data-product-card-specs-toggle
+          aria-label="Показать ключевые характеристики"
+          aria-controls="product_card_component-specs-{{ product.id }}"
+          aria-expanded="false"
+        >
+          {% include 'site/shared/includes/specification_icon.html' with specification_icon='bloom' specification_icon_class='product_card_specs_toggle_icon' %}
+        </button>
+      {% endif %}
+      <button
+        class="product_card_like_button{% if product.is_liked %} is-active{% endif %}"
+        type="button"
+        data-product-card-like-id="{{ product.id }}"
+        data-product-card-like-url="{% url 'main:product_like' product.id %}"
+        data-product-card-liked-state="{% if product.is_liked %}true{% else %}false{% endif %}"
+        aria-label="В избранное"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        <span class="product_card_like_count_text">{{ product.display_likes|default:0 }}</span>
+      </button>
+    </div>
   </div>
 
   <div class="product_card_info_block">
     <div class="product_card_brand_text">{% if product.brand %}{{ product.brand.name }}{% endif %}</div>
 
     <div class="product_card_identity_block">
-      <h3 class="product_card_name_text product_card_name_link_element">
+      <h3 class="product_card_name_text">
         <a href="{% url 'main:product_detail' product.id product.slug %}">{{ product.name }}</a>
       </h3>
 
@@ -94,7 +116,7 @@
       <button
         class="product_card_cart_button"
         type="button"
-        data_product_card_cart_url="{% url 'main:api_cart_add' %}"
+        data-product-card-cart-url="{% url 'main:api_cart_add' %}"
         {% if product.stock <= 0 or product_variants and not available_variants %}disabled aria-disabled="true" title="Нет в наличии"{% elif product_skus or product_variants %}title="Выбрать вариант" aria-label="Выбрать вариант товара"{% else %}title="Добавить в корзину" aria-label="Добавить товар в корзину"{% endif %}
       >
         <svg class="product_card_cart_icon" width="14" height="15" viewBox="0 0 14 15" fill="none" aria-hidden="true">
@@ -105,5 +127,24 @@
       </button>
     </div>
   </div>
+
+  {% if key_specifications %}
+    <div class="product_card_specs_panel" id="product_card_component-specs-{{ product.id }}" aria-hidden="true">
+      <div class="product_card_specs_panel_inner">
+        <div class="product_card_specs_panel_label">Главное о товаре</div>
+        <dl class="product_card_specs_list">
+          {% for specification in key_specifications %}
+            <div class="product_card_specs_row" style="--product-spec-index: {{ forloop.counter0 }}">
+              <span class="product_card_specs_icon_wrap">
+                {% include 'site/shared/includes/specification_icon.html' with specification_icon=specification.icon specification_icon_class='product_card_spec_icon' %}
+              </span>
+              <dt>{{ specification.name }}</dt>
+              <dd>{{ specification.value }}</dd>
+            </div>
+          {% endfor %}
+        </dl>
+      </div>
+    </div>
+  {% endif %}
 </article>
 {% endwith %}

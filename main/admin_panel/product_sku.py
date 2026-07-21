@@ -1,4 +1,11 @@
+import logging
+
+from django.core.files.storage import default_storage
+
 from .shared import *
+
+
+logger = logging.getLogger(__name__)
 
 class ProductSkuAdminMixin:
     def add_sku_view(self, request):
@@ -11,6 +18,8 @@ class ProductSkuAdminMixin:
             "content_title": "Добавление товара",
             "categories": Category.objects.order_by("name"),
             "brands": Brand.objects.order_by("name"),
+            "specification_name_catalog": self.get_specification_name_catalog(),
+            "recommendation_product_catalog": self.get_recommendation_product_catalog(),
             "variant_catalog": [
                 {
                     "id": str(group.pk),
@@ -29,6 +38,7 @@ class ProductSkuAdminMixin:
             ],
             "product_list_url": reverse("admin:main_product_changelist"),
             "quick_add_url": reverse("admin:main_product_add_sku_quick_add"),
+            "initial_step": 1,
         }
         return TemplateResponse(request, "admin_panel/products/product_editor_page.html", context)
 
@@ -39,6 +49,7 @@ class ProductSkuAdminMixin:
                 "specifications",
                 "product_variants__variant__group",
                 "skus__options__group",
+                "also_chosen_relations",
             ),
             pk=product_id,
         )
@@ -51,6 +62,8 @@ class ProductSkuAdminMixin:
             "content_title": "Редактирование товара",
             "categories": Category.objects.order_by("name"),
             "brands": Brand.objects.order_by("name"),
+            "specification_name_catalog": self.get_specification_name_catalog(),
+            "recommendation_product_catalog": self.get_recommendation_product_catalog(product),
             "variant_catalog": [
                 {
                     "id": str(group.pk),
@@ -72,6 +85,7 @@ class ProductSkuAdminMixin:
             "sku_admin_mode": "edit",
             "edit_product": product,
             "edit_product_payload": self.serialize_sku_edit_product(product),
+            "initial_step": 6 if request.GET.get("step") == "6" else 1,
         }
         return TemplateResponse(request, "admin_panel/products/product_editor_page.html", context)
 
@@ -79,9 +93,54 @@ class ProductSkuAdminMixin:
         if not file_field:
             return ""
         try:
+            if getattr(file_field, "name", "") and not default_storage.exists(file_field.name):
+                return ""
             return file_field.url
         except ValueError:
             return ""
+
+    def get_specification_name_catalog(self):
+        result = []
+        seen = set()
+        names = ProductSpecification.objects.exclude(name="").order_by("name").values_list("name", flat=True)
+        for name in names:
+            clean_name = str(name).strip()
+            normalized_name = clean_name.casefold()
+            if clean_name and normalized_name not in seen:
+                seen.add(normalized_name)
+                result.append(clean_name)
+        return result
+
+    def get_recommendation_product_catalog(self, current_product=None):
+        current_product_id = current_product.pk if current_product else None
+        products = Product.objects.select_related("brand", "category").order_by("name", "id")
+        if current_product_id:
+            products = products.exclude(pk=current_product_id)
+        result = []
+        for product in products:
+            result.append({
+                "id": str(product.pk),
+                "name": product.name,
+                "brand": product.brand.name if product.brand_id else "",
+                "category": product.category.name if product.category_id else "",
+                "price": float(product.price or 0),
+                "image": self.media_url(product.image),
+                "available": bool(product.available),
+            })
+        return result
+
+    @staticmethod
+    def sku_characteristic_is_key(item):
+        value = item.get("isKey", item.get("is_key", False))
+        if isinstance(value, bool):
+            return value
+        return str(value).strip().lower() in {"1", "true", "yes", "on"}
+
+    @staticmethod
+    def sku_characteristic_icon(item):
+        icon = str(item.get("icon") or ProductSpecification.ICON_INFO).strip()
+        valid_icons = {value for value, _label in ProductSpecification.ICON_CHOICES}
+        return icon if icon in valid_icons else ProductSpecification.ICON_INFO
 
     def serialize_sku_edit_product(self, product):
         root_price = product.sku_root_price or product.price
@@ -156,7 +215,7 @@ class ProductSkuAdminMixin:
             "likesTotal": product.display_likes,
             "descriptionHtml": product.description or "",
             "chars": [
-                {"key": item.name, "value": item.value}
+                {"key": item.name, "value": item.value, "isKey": item.is_key, "icon": item.icon}
                 for item in product.specifications.all().order_by("order", "id")
             ],
             "media": {
@@ -171,6 +230,10 @@ class ProductSkuAdminMixin:
                 "old_price": float(root_old_price) if root_old_price else None,
             },
             "skus": skus,
+            "alsoChosenProductIds": [
+                str(relation.recommended_product_id)
+                for relation in product.also_chosen_relations.all().order_by("sort_order", "id")
+            ],
         }
 
     def quick_add_sku_reference_view(self, request):
@@ -212,11 +275,11 @@ class ProductSkuAdminMixin:
         except json.JSONDecodeError:
             return JsonResponse({"success": False, "message": "Некорректные данные формы."}, status=400)
 
-        errors = self.validate_sku_payload(payload, request.FILES, product=product)
-        if errors:
-            return JsonResponse({"success": False, "message": " ".join(errors), "errors": errors}, status=400)
-
         try:
+            errors = self.validate_sku_payload(payload, request.FILES, product=product)
+            if errors:
+                return JsonResponse({"success": False, "message": " ".join(errors), "errors": errors}, status=400)
+
             with transaction.atomic():
                 if product is None:
                     product = self.create_sku_product(payload, request.FILES)
@@ -227,6 +290,15 @@ class ProductSkuAdminMixin:
         except (ObjectDoesNotExist, ValidationError, ValueError, InvalidOperation) as exc:
             message = "; ".join(exc.messages) if hasattr(exc, "messages") else str(exc)
             return JsonResponse({"success": False, "message": message}, status=400)
+        except Exception:
+            logger.exception("Unexpected product editor save error for product_id=%s", getattr(product, "pk", None))
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Внутренняя ошибка при сохранении товара. Перезапустите сервер и повторите попытку.",
+                },
+                status=500,
+            )
 
         if created:
             self.log_addition(request, product, "Товар создан через карточный мастер.")
@@ -320,7 +392,11 @@ class ProductSkuAdminMixin:
 
         specification_name_max = ProductSpecification._meta.get_field("name").max_length
         specification_value_max = ProductSpecification._meta.get_field("value").max_length
-        for item in payload.get("chars") or []:
+        characteristics = payload.get("chars") or []
+        valid_characteristic_icons = {value for value, _label in ProductSpecification.ICON_CHOICES}
+        if sum(self.sku_characteristic_is_key(item) for item in characteristics) > 5:
+            errors.append("Можно выбрать не более пяти ключевых характеристик.")
+        for item in characteristics:
             name = strip_tags(str(item.get("key") or "")).strip()
             value = strip_tags(str(item.get("value") or "")).strip()
             if not name and not value:
@@ -334,7 +410,64 @@ class ProductSkuAdminMixin:
                     f"значение до {specification_value_max} символов."
                 )
                 break
+            if str(item.get("icon") or ProductSpecification.ICON_INFO).strip() not in valid_characteristic_icons:
+                errors.append("Выбрана неизвестная иконка характеристики.")
+                break
+        errors.extend(self.validate_also_chosen_payload(payload, product=product))
         return errors
+
+    def validate_also_chosen_payload(self, payload, product=None):
+        errors = []
+        raw_ids = payload.get("alsoChosenProductIds") or []
+        if not isinstance(raw_ids, list):
+            return ["Некорректный список сопутствующих товаров."]
+        if len(raw_ids) > 5:
+            errors.append("Можно выбрать не более пяти сопутствующих товаров.")
+
+        selected_ids = []
+        seen_ids = set()
+        for raw_id in raw_ids:
+            try:
+                product_id = int(raw_id)
+            except (TypeError, ValueError):
+                errors.append("В сопутствующих товарах есть некорректный ID.")
+                break
+            if product and product_id == product.pk:
+                errors.append("Товар не может рекомендовать сам себя.")
+                break
+            if product_id in seen_ids:
+                errors.append("Сопутствующие товары не должны дублироваться.")
+                break
+            seen_ids.add(product_id)
+            selected_ids.append(product_id)
+
+        if selected_ids:
+            existing_count = Product.objects.filter(pk__in=selected_ids).count()
+            if existing_count != len(selected_ids):
+                errors.append("Некоторые сопутствующие товары не найдены.")
+        return errors
+
+    def sync_also_chosen_products(self, product, payload):
+        raw_ids = payload.get("alsoChosenProductIds") or []
+        ordered_ids = []
+        seen_ids = set()
+        for raw_id in raw_ids:
+            try:
+                product_id = int(raw_id)
+            except (TypeError, ValueError):
+                continue
+            if product_id == product.pk or product_id in seen_ids:
+                continue
+            seen_ids.add(product_id)
+            ordered_ids.append(product_id)
+
+        ProductAlsoChosen.objects.filter(product=product).delete()
+        existing_ids = set(Product.objects.filter(pk__in=ordered_ids).values_list("pk", flat=True))
+        ProductAlsoChosen.objects.bulk_create([
+            ProductAlsoChosen(product=product, recommended_product_id=product_id, sort_order=index)
+            for index, product_id in enumerate(ordered_ids)
+            if product_id in existing_ids
+        ])
 
     def create_sku_product(self, payload, files):
         category = Category.objects.get(pk=payload["category"])
@@ -380,6 +513,8 @@ class ProductSkuAdminMixin:
                     name=name or "Характеристика",
                     value=value,
                     order=index,
+                    is_key=self.sku_characteristic_is_key(item),
+                    icon=self.sku_characteristic_icon(item),
                 )
 
         option_map = self.create_variant_options(payload.get("groups") or [])
@@ -421,6 +556,7 @@ class ProductSkuAdminMixin:
             product_sku.options.set(option_ids)
 
         product.sync_from_skus()
+        self.sync_also_chosen_products(product, payload)
         return product
 
     def update_sku_product(self, product, payload, files):
@@ -478,6 +614,8 @@ class ProductSkuAdminMixin:
                     name=name or "Характеристика",
                     value=value,
                     order=index,
+                    is_key=self.sku_characteristic_is_key(item),
+                    icon=self.sku_characteristic_icon(item),
                 )
 
         ProductSKU.objects.filter(product=product).delete()
@@ -522,6 +660,7 @@ class ProductSkuAdminMixin:
             product_sku.options.set(option_ids)
 
         product.sync_from_skus()
+        self.sync_also_chosen_products(product, payload)
         return product
 
     def create_variant_options(self, groups):

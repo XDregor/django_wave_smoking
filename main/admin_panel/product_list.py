@@ -116,5 +116,5 @@ class ProductListAdminMixin:
             "description": strip_tags(product.description or ""),
             "img": image_url,
             "created_ts": int(product.created.timestamp()) if product.created else 0,
-            "edit_url": reverse("admin:main_product_edit_sku", args=(product.pk,)),
+            "edit_url": f'{reverse("admin:main_product_edit_sku", args=(product.pk,))}?step=6',
         }

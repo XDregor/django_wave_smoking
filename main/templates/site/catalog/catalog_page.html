@@ -8,54 +8,40 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="{% static 'site/shared/css/theme.css' %}" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/theme.css' %}?v=site-tokens1" />
     <link rel="icon" type="image/png" href="{% static 'site/shared/img/mini_logo.png' %}" />
-    <link rel="stylesheet" href="{% static 'site/shared/css/product_card.css' %}?v=product-card-7" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/product_card.css' %}?v=mobile-adapt1" />
     
-    {% include 'site/shared/includes/badges.html' %}
-      <link rel="stylesheet" href="{% static 'site/catalog/css/catalog_page.css' %}?v=home-catalog-5" />
+      <link rel="stylesheet" href="{% static 'site/catalog/css/catalog_page.css' %}?v=mobile-adapt1" />
   </head>
-  <body{% if catalog_search_mode %} class="catalog_search_mode"{% endif %}>
+  <body{% if catalog_search_mode %} class="is-catalog-search"{% endif %}>
     {% include 'site/shared/header.html' %}
-    <!-- Hero -->
-    <!--<section class="catalog_hero_section" id="pageTop">
-      <div class="catalog_hero_section_skeleton_element"></div>
-      <div class="catalog_hero_section_glow_element"></div>
-      <div class="catalog_hero_section_img_placeholder_element">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <rect x="3" y="3" width="18" height="18" rx="2" />
-          <circle cx="8.5" cy="8.5" r="1.5" />
-          <polyline points="21 15 16 10 5 21" />
-        </svg>
-        Загрузка...
-      </div>
-    </section>-->
-
+    <div id="site-content" class="site-content" data-site-content data-wave-page="catalog">
     <!-- Основной layout -->
-    <section class="catalog_search_summary" id="catalog_search_summary_id" aria-live="polite">
-      <h1 class="catalog_search_summary_title" id="catalog_search_summary_title_id"></h1>
-      <p class="catalog_search_summary_text" id="catalog_search_summary_text_id"></p>
+    <section class="catalog-search-summary" id="catalog-search-summary_id" aria-live="polite">
+      <h1 class="catalog-search-summary__title" id="catalog-search-summary__title_id"></h1>
+      <p class="catalog-search-summary__text" id="catalog-search-summary__text_id"></p>
     </section>
 
-    <div class="catalog_layout_container">
+    <div class="product-browser">
       <!-- Контент -->
-      <main class="catalog_main_content">
+      <main class="product-browser__content">
         <!-- Тулбар -->
-        <div class="catalog_toolbar_container">
-          <div class="catalog_toolbar_left_group">
-            <span class="catalog_result_count_text">Найдено <strong id="catalog_shown_count_id">30</strong> из <strong id="catalog_total_count_bar_id">247</strong></span>
+        <div class="product-browser__toolbar">
+          <div class="product-browser__toolbar-left">
+            <span class="product-browser__result-count">Найдено <strong id="catalog_shown_count_id">30</strong> из <strong id="catalog_total_count_bar_id">247</strong></span>
           </div>
-          <div class="catalog_toolbar_right_group">
-            <button class="catalog_filter_toggle_button" id="catalog_filter_toggle_button_id">
+          <div class="product-browser-controls">
+            <button class="product-browser-controls__filter" id="catalog_filter_toggle_button_id">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="4" y1="6" x2="20" y2="6" />
                 <line x1="8" y1="12" x2="16" y2="12" />
                 <line x1="11" y1="18" x2="13" y2="18" />
               </svg>
-              <span class="filter_button_text_span">Фильтры</span>
+              <span class="product-browser-controls__filter-text">Фильтры</span>
             </button>
             <!-- View toggle: иконки и доступные опции меняются через JS по ширине экрана -->
-            <div class="catalog_view_toggle_container" id="catalog_view_toggle_id">
+            <div class="product-browser-controls__view-toggle" id="catalog_view_toggle_id">
               <!-- Заполняется через JS при инициализации и ресайзе -->
             </div>
           </div>
@@ -63,7 +49,7 @@
 
         <!-- Сетка товаров -->
 
-        <div class="catalog_grid_container" id="catalog_grid_container_id">
+        <div class="product-browser__grid" id="catalog_grid_container_id">
           <!-- Карточки рендерятся через JS из products_json -->
         </div>
 
@@ -74,24 +60,7 @@
           {% endfor %}
         </template>
 
-        <div class="catalog_empty_state_container" id="catalog_empty_state_id">
-          <!-- Иконка: нет товаров вообще -->
-          <div class="catalog_empty_icon_wrapper" id="catalog_empty_icon_no_products_id">
-            <svg class="catalog_empty_svg_icon" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="52" cy="50" r="26" stroke="rgba(255,255,255,0.25)" stroke-width="3"/>
-              <line x1="70" y1="68" x2="90" y2="88" stroke="rgba(255,255,255,0.25)" stroke-width="3" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <!-- Иконка: фильтры не дали результат -->
-          <div class="catalog_empty_icon_wrapper" id="catalog_empty_icon_no_results_id" style="display:none">
-            <svg class="catalog_empty_svg_icon" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="52" cy="50" r="26" stroke="rgba(255,255,255,0.25)" stroke-width="3"/>
-              <line x1="70" y1="68" x2="90" y2="88" stroke="rgba(255,255,255,0.25)" stroke-width="3" stroke-linecap="round"/>
-            </svg>
-          </div>
-
-          <button class="catalog_empty_reset_button" id="catalog_empty_reset_button_id" type="button" style="display:none">Сбросить фильтры</button>
-        </div>
+        {% include 'site/shared/includes/catalog_empty_state.html' %}
 
         <!-- Пагинация -->
         {% include 'site/shared/includes/pagination.html' with pagination_id='pagination' pagination_label='Catalog pagination' %}
@@ -99,18 +68,18 @@
     </div>
 
     <!-- Мобильный/десктоп drawer -->
-    <div class="filter_drawer_overlay_component" id="filter_drawer_overlay_id"></div>
+    <div class="filter-drawer__overlay" id="filter_drawer_overlay_id"></div>
     <!-- Стрелка-закрывашка по правому краю drawer -->
-    <button class="filter_drawer_panel_arrow_button" id="filter_drawer_arrow_id" title="Закрыть фильтры">
+    <button class="filter-drawer__float-close" id="filter_drawer_arrow_id" title="Закрыть фильтры">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
     </button>
-    <div class="filter_drawer_panel" id="filter_drawer_panel_id">
-      <div class="filter_drawer_panel_header_block">
-        <div class="filter_drawer_panel_header_block_left_group">
-          <span class="filter_drawer_panel_title_text">Фильтры и сортировка</span>
+    <div class="filter-drawer" id="filter_drawer_panel_id">
+      <div class="filter-drawer__header">
+        <div class="filter-drawer__header-left">
+          <span class="filter-drawer__title">Фильтры и сортировка</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px">
-          <button class="filter_drawer_panel_reset_button" id="filter_drawer_reset_button_id" type="button" title="Сбросить все фильтры">
+          <button class="filter-drawer__reset" id="filter_drawer_reset_button_id" type="button" title="Сбросить все фильтры">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
               <path d="M3 3v5h5" />
@@ -119,16 +88,16 @@
         </div>
       </div>
 
-      <div class="filter_drawer_blocks_container">
+      <div class="filter-drawer__blocks">
         <!-- Категория -->
-        <div class="filter_block_component filter_block_static_variant filter_block_open_state" id="filter_block_category_id">
-          <div class="filter_block_header_element">
-            <span class="filter_block_title_text">Категория</span>
+        <div class="filter-panel filter-panel--static is-open" id="filter_block_category_id">
+          <div class="filter-panel__header">
+            <span class="filter-panel__title">Категория</span>
           </div>
-          <div class="filter_block_body_container">
-            <div class="filter_block_body_inner_wrapper">
-              <div class="filter_block_body_content_area">
-                <div class="filter_chips_container" id="filter_category_chips_container_id">
+          <div class="filter-panel__body">
+            <div class="filter-panel__body-inner">
+              <div class="filter-panel__content">
+                <div class="filter-chip-list" id="filter_category_chips_container_id">
                   <!-- Категории подставляются из Category -->
                 </div>
               </div>
@@ -136,27 +105,27 @@
           </div>
         </div>
         <!-- Цена -->
-        <div class="filter_block_component filter_block_static_variant filter_block_open_state" id="filter_block_price_id">
-          <div class="filter_block_header_element">
-            <span class="filter_block_title_text">Цена, ₴</span>
-            <span class="filter_block_arrow_wrapper">
-              <svg class="filter_block_arrow_icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+        <div class="filter-panel filter-panel--static is-open" id="filter_block_price_id">
+          <div class="filter-panel__header">
+            <span class="filter-panel__title">Цена, ₴</span>
+            <span class="filter-panel__arrow">
+              <svg class="filter-panel__arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
             </span>
           </div>
-          <div class="filter_block_body_container">
-            <div class="filter_block_body_inner_wrapper">
-              <div class="filter_block_body_content_area">
-                <div class="filter_price_inputs_container">
-                  <input type="number" class="filter_price_input_field" id="filter_price_min_input_id" value="0" min="0" max="9999" />
-                  <span class="filter_price_separator">—</span>
-                  <input type="number" class="filter_price_input_field" id="filter_price_max_input_id" value="5000" min="0" max="9999" />
+          <div class="filter-panel__body">
+            <div class="filter-panel__body-inner">
+              <div class="filter-panel__content">
+                <div class="price-filter">
+                  <input type="number" class="price-filter__input" id="filter_price_min_input_id" value="0" min="0" max="9999" />
+                  <span class="price-filter__separator">—</span>
+                  <input type="number" class="price-filter__input" id="filter_price_max_input_id" value="5000" min="0" max="9999" />
                 </div>
-                <div class="filter_range_slider_wrapper">
-                  <div class="filter_range_slider_track_line">
-                    <div class="filter_range_slider_fill_line" id="filter_range_fill_line_id"></div>
+                <div class="range-filter">
+                  <div class="range-filter__track">
+                    <div class="range-filter__fill" id="filter_range_fill_line_id"></div>
                   </div>
-                  <input type="range" class="filter_range_slider filter_range_slider_slider_min" id="filter_range_min_slider_id" min="0" max="5000" value="0" step="50" />
-                  <input type="range" class="filter_range_slider filter_range_slider_slider_max" id="filter_range_max_slider_id" min="0" max="5000" value="5000" step="50" />
+                  <input type="range" class="range-filter__input range-filter__input--min" id="filter_range_min_slider_id" min="0" max="5000" value="0" step="50" />
+                  <input type="range" class="range-filter__input range-filter__input--max" id="filter_range_max_slider_id" min="0" max="5000" value="5000" step="50" />
                 </div>
               </div>
             </div>
@@ -164,70 +133,70 @@
         </div>
 
         <!-- Сортировка -->
-        <div class="filter_block_component filter_block_open_state" id="filter_block_sort_id">
-          <div class="filter_block_header_element">
-            <span class="filter_block_title_text">Сортировка</span>
-            <span class="filter_block_arrow_wrapper">
-              <svg class="filter_block_arrow_icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+        <div class="filter-panel is-open" id="filter_block_sort_id">
+          <div class="filter-panel__header">
+            <span class="filter-panel__title">Сортировка</span>
+            <span class="filter-panel__arrow">
+              <svg class="filter-panel__arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
             </span>
           </div>
-          <div class="filter_block_body_container">
-            <div class="filter_block_body_inner_wrapper">
-              <div class="filter_block_body_content_area">
-                <div class="sort_options_container" id="sort_options_container_id">
-                  <button class="sort_option_button active" data_sort_option_key="recommended">
-                    <span class="sort_option_button_icon_element"
+          <div class="filter-panel__body">
+            <div class="filter-panel__body-inner">
+              <div class="filter-panel__content">
+                <div class="sort-options" id="sort_options_container_id">
+                  <button class="sort-options__button is-active" data-sort-option-key="recommended">
+                    <span class="sort-options__icon"
                       ><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2l1.5 3.2 3.5.5-2.5 2.4.6 3.5L8 10l-3.1 1.6.6-3.5L3 5.7l3.5-.5z" /></svg
                     ></span>
-                    <span class="sort_option_button_label_text">Рекомендации</span>
+                    <span class="sort-options__label">Рекомендации</span>
                   </button>
-                  <button class="sort_option_button" data_sort_option_key="hit">
-                    <span class="sort_option_button_icon_element"
+                  <button class="sort-options__button" data-sort-option-key="hit">
+                    <span class="sort-options__icon"
                       ><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2C8 2 4 5.5 4 9a4 4 0 008 0C12 5.5 8 2 8 2z" /></svg
                     ></span>
-                    <span class="sort_option_button_label_text">Хиты</span>
+                    <span class="sort-options__label">Хиты</span>
                   </button>
-                  <button class="sort_option_button" data_sort_option_key="new">
-                    <span class="sort_option_button_icon_element"
+                  <button class="sort-options__button" data-sort-option-key="new">
+                    <span class="sort-options__icon"
                       ><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="8" cy="8" r="5.5" />
                         <path d="M8 5v3l2 2" /></svg
                     ></span>
-                    <span class="sort_option_button_label_text">Новинки</span>
+                    <span class="sort-options__label">Новинки</span>
                   </button>
-                  <button class="sort_option_button" data_sort_option_key="sale">
-                    <span class="sort_option_button_icon_element"
+                  <button class="sort-options__button" data-sort-option-key="sale">
+                    <span class="sort-options__icon"
                       ><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="3" y1="13" x2="13" y2="3" />
                         <circle cx="5" cy="5" r="1.5" />
                         <circle cx="11" cy="11" r="1.5" /></svg
                     ></span>
-                    <span class="sort_option_button_label_text">Скидки</span>
+                    <span class="sort-options__label">Скидки</span>
                   </button>
-                  <button class="sort_option_button" data_sort_option_key="price_asc">
-                    <span class="sort_option_button_icon_element"
+                  <button class="sort-options__button" data-sort-option-key="price_asc">
+                    <span class="sort-options__icon"
                       ><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="8" y1="13" x2="8" y2="3" />
                         <polyline points="4 7 8 3 12 7" /></svg
                     ></span>
-                    <span class="sort_option_button_label_text">Цена от меньшего</span>
+                    <span class="sort-options__label">Цена от меньшего</span>
                   </button>
-                  <button class="sort_option_button" data_sort_option_key="price_desc">
-                    <span class="sort_option_button_icon_element"
+                  <button class="sort-options__button" data-sort-option-key="price_desc">
+                    <span class="sort-options__icon"
                       ><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="8" y1="3" x2="8" y2="13" />
                         <polyline points="4 9 8 13 12 9" /></svg
                     ></span>
-                    <span class="sort_option_button_label_text">Цена от большего</span>
+                    <span class="sort-options__label">Цена от большего</span>
                   </button>
-                  <button class="sort_option_button" data_sort_option_key="discount_pct">
-                    <span class="sort_option_button_icon_element"
+                  <button class="sort-options__button" data-sort-option-key="discount_pct">
+                    <span class="sort-options__icon"
                       ><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="3" y1="13" x2="13" y2="3" />
                         <circle cx="4.5" cy="4.5" r="1.5" />
                         <circle cx="11.5" cy="11.5" r="1.5" /></svg
                     ></span>
-                    <span class="sort_option_button_label_text">По проценту скидки</span>
+                    <span class="sort-options__label">По проценту скидки</span>
                   </button>
                 </div>
               </div>
@@ -236,25 +205,25 @@
         </div>
 
         <!-- Бренд -->
-        <div class="filter_block_component" id="filter_block_brand_id">
-          <div class="filter_block_header_element">
-            <span class="filter_block_title_text">Бренд</span>
-            <span class="filter_block_arrow_wrapper">
-              <svg class="filter_block_arrow_icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+        <div class="filter-panel" id="filter_block_brand_id">
+          <div class="filter-panel__header">
+            <span class="filter-panel__title">Бренд</span>
+            <span class="filter-panel__arrow">
+              <svg class="filter-panel__arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
             </span>
           </div>
-          <div class="filter_block_body_container">
-            <div class="filter_block_body_inner_wrapper">
-              <div class="filter_block_body_content_area">
-                <div class="filter_checkboxes_container" id="filter_brand_checkboxes_id">
-                  <label class="filter_checkbox_label_element"><input type="checkbox" /><span class="filter_checkbox_box_element"></span><span class="filter_checkbox_text_span">Vaporesso</span><span class="filter_checkbox_count_span">38</span></label>
-                  <label class="filter_checkbox_label_element"><input type="checkbox" /><span class="filter_checkbox_box_element"></span><span class="filter_checkbox_text_span">SMOK</span><span class="filter_checkbox_count_span">29</span></label>
-                  <label class="filter_checkbox_label_element"><input type="checkbox" /><span class="filter_checkbox_box_element"></span><span class="filter_checkbox_text_span">VOOPOO</span><span class="filter_checkbox_count_span">24</span></label>
-                  <label class="filter_checkbox_label_element"><input type="checkbox" /><span class="filter_checkbox_box_element"></span><span class="filter_checkbox_text_span">Uwell</span><span class="filter_checkbox_count_span">21</span></label>
-                  <label class="filter_checkbox_label_element"><input type="checkbox" /><span class="filter_checkbox_box_element"></span><span class="filter_checkbox_text_span">GeekVape</span><span class="filter_checkbox_count_span">18</span></label>
-                  <label class="filter_checkbox_label_element"><input type="checkbox" /><span class="filter_checkbox_box_element"></span><span class="filter_checkbox_text_span">OXVA</span><span class="filter_checkbox_count_span">16</span></label>
-                  <label class="filter_checkbox_label_element"><input type="checkbox" /><span class="filter_checkbox_box_element"></span><span class="filter_checkbox_text_span">Lost Mary</span><span class="filter_checkbox_count_span">12</span></label>
-                  <label class="filter_checkbox_label_element"><input type="checkbox" /><span class="filter_checkbox_box_element"></span><span class="filter_checkbox_text_span">Elfliq</span><span class="filter_checkbox_count_span">9</span></label>
+          <div class="filter-panel__body">
+            <div class="filter-panel__body-inner">
+              <div class="filter-panel__content">
+                <div class="filter-checkbox-list" id="filter_brand_checkboxes_id">
+                  <label class="filter-checkbox"><input type="checkbox" /><span class="filter-checkbox__box"></span><span class="filter-checkbox__text">Vaporesso</span><span class="filter-checkbox__count">38</span></label>
+                  <label class="filter-checkbox"><input type="checkbox" /><span class="filter-checkbox__box"></span><span class="filter-checkbox__text">SMOK</span><span class="filter-checkbox__count">29</span></label>
+                  <label class="filter-checkbox"><input type="checkbox" /><span class="filter-checkbox__box"></span><span class="filter-checkbox__text">VOOPOO</span><span class="filter-checkbox__count">24</span></label>
+                  <label class="filter-checkbox"><input type="checkbox" /><span class="filter-checkbox__box"></span><span class="filter-checkbox__text">Uwell</span><span class="filter-checkbox__count">21</span></label>
+                  <label class="filter-checkbox"><input type="checkbox" /><span class="filter-checkbox__box"></span><span class="filter-checkbox__text">GeekVape</span><span class="filter-checkbox__count">18</span></label>
+                  <label class="filter-checkbox"><input type="checkbox" /><span class="filter-checkbox__box"></span><span class="filter-checkbox__text">OXVA</span><span class="filter-checkbox__count">16</span></label>
+                  <label class="filter-checkbox"><input type="checkbox" /><span class="filter-checkbox__box"></span><span class="filter-checkbox__text">Lost Mary</span><span class="filter-checkbox__count">12</span></label>
+                  <label class="filter-checkbox"><input type="checkbox" /><span class="filter-checkbox__box"></span><span class="filter-checkbox__text">Elfliq</span><span class="filter-checkbox__count">9</span></label>
                 </div>
               </div>
             </div>
@@ -265,7 +234,7 @@
           <!-- Группы вариантов подставляются из VariantOption/ProductVariant -->
         </div>
       </div>
-      <!-- /filter_drawer_blocks_container -->
+      <!-- /filter-drawer__blocks -->
     </div>
 
     <!-- Кнопка вверх -->
@@ -275,7 +244,8 @@
     {{ products_json|json_script:"productsData" }}
     {{ categories_json|json_script:"categoriesData" }}
 
-    <script src="{% static 'site/shared/js/product_card.js' %}?v=product-card-7"></script>
-    <script src="{% static 'site/catalog/js/catalog_page.js' %}?v=home-catalog-4"></script>
+    <script src="{% static 'site/shared/js/product_card.js' %}?v=product-card-data-bem1"></script>
+    <script src="{% static 'site/catalog/js/catalog_page.js' %}?v=catalog-bem2"></script>
+    </div>
   </body>
 </html>

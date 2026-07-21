@@ -64,21 +64,21 @@ function starSvg(fill, sz) {
           };
         });
 
-        document.querySelectorAll(".summary-big").forEach(function (el) {
+        document.querySelectorAll(".reviews-summary__score").forEach(function (el) {
           el.textContent = stats.average.toFixed(1);
         });
-        document.querySelectorAll(".summary-sub").forEach(function (el) {
+        document.querySelectorAll(".reviews-summary__sub").forEach(function (el) {
           el.innerHTML = "&middot; " + stats.total + " отзывов";
         });
-        document.querySelectorAll('[data-filter="all"] .filter-badge').forEach(function (el) {
+        document.querySelectorAll('[data-filter="all"] .reviews-filters__badge').forEach(function (el) {
           el.textContent = stats.total;
         });
         [5, 4, 3, 2, 1].forEach(function (n) {
-          document.querySelectorAll('[data-filter="' + n + '"] .filter-badge').forEach(function (el) {
+          document.querySelectorAll('[data-filter="' + n + '"] .reviews-filters__badge').forEach(function (el) {
             el.textContent = stats.counts[n] || 0;
           });
         });
-        document.querySelectorAll('[data-filter="verified"] .filter-badge').forEach(function (el) {
+        document.querySelectorAll('[data-filter="verified"] .reviews-filters__badge').forEach(function (el) {
           el.textContent = stats.verified;
         });
 
@@ -112,7 +112,7 @@ function starSvg(fill, sz) {
       function renderReviews(data) {
         var el = document.getElementById("reviewsList");
         if (!data.length) {
-          el.innerHTML = '<div class="empty"><img class="empty-illustration" src="/static/site/shared/img/reviews_empty.svg" alt="" loading="lazy" decoding="async"><p class="empty-title">Отзывы не найдены</p><p class="empty-sub">Попробуйте изменить фильтр</p></div>';
+          el.innerHTML = '<div class="reviews-empty"><img class="reviews-empty__illustration" src="/static/site/shared/img/reviews_empty.svg" alt="" loading="lazy" decoding="async"><p class="reviews-empty__title">Отзывы не найдены</p><p class="reviews-empty__sub">Попробуйте изменить фильтр</p></div>';
           return;
         }
         var tagIcon = '<svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 2A1.5 1.5 0 000 3.5v4.793a1.5 1.5 0 00.44 1.06l6.75 6.75a1.5 1.5 0 002.12 0l4.794-4.794a1.5 1.5 0 000-2.12L7.353.44A1.5 1.5 0 006.293 0H1.5zm2.5 4a1 1 0 110-2 1 1 0 010 2z"/></svg>';
@@ -129,41 +129,41 @@ function starSvg(fill, sz) {
               's" data-id="' +
               r.id +
               '">' +
-              '<div class="rc-top">' +
-              '<div class="rc-avatar c1">' +
+              '<div class="review-card__top">' +
+              '<div class="review-card__avatar c1">' +
               escapeHtml(r.avatar) +
               "</div>" +
-              '<div class="rc-info">' +
-              '<div class="rc-name-row"><span class="rc-name">' +
+              '<div class="review-card__info">' +
+              '<div class="review-card__name-row"><span class="review-card__name">' +
               escapeHtml(r.name) +
               "</span>" +
-              (r.verified ? '<span class="rc-verified" title="Проверенный покупатель">' + checkIcon + "</span>" : "") +
+              (r.verified ? '<span class="review-card__verified" title="Проверенный покупатель">' + checkIcon + "</span>" : "") +
               "</div>" +
-              '<div class="rc-meta-row"><span class="rc-date">' +
+              '<div class="review-card__meta-row"><span class="review-card__date">' +
               escapeHtml(r.date) +
               "</span>" +
-              '<span class="rc-product-tag">' +
+              '<span class="review-card__product-tag">' +
               tagIcon +
               "&nbsp;" +
               escapeHtml(r.product) +
               "</span>" +
               "</div></div>" +
-              '<div class="rc-stars-block">' +
+              '<div class="review-card__stars">' +
               renderStars(r.rating, 16) +
               "</div>" +
               "</div>" +
-              '<p class="rc-text' +
+              '<p class="review-card__text' +
               (trunc ? " truncated" : "") +
               '" id="rt_' +
               r.id +
               '">' +
               escapeHtml(r.text) +
               "</p>" +
-              (trunc ? '<button class="rc-read-more" onclick="toggleText(' + r.id + ',this)">Читать полностью &rarr;</button>' : "") +
-              '<div class="rc-footer"><div class="rc-helpful"><span class="rc-helpful-label">Полезно?</span><div class="rc-vote-btns">' +
-               '<button class="rc-vote' +
-               (r.liked ? " liked" : "") +
-               '" data_review_helpful_id="' +
+              (trunc ? '<button class="review-card__read-more" onclick="toggleText(' + r.id + ',this)">Читать полностью &rarr;</button>' : "") +
+              '<div class="review-card__footer"><div class="review-card__helpful"><span class="review-card__helpful-label">Полезно?</span><div class="review-card__vote-actions">' +
+               '<button class="review-card__vote' +
+               (r.liked ? " is-liked" : "") +
+               '" data-review-helpful-id="' +
                r.id +
                '" onclick="vote(this,' +
                r.id +
@@ -208,7 +208,13 @@ function starSvg(fill, sz) {
           review.helpful = data.helpful;
           review.liked = data.liked;
         }
-        btn.classList.toggle("liked", !!data.liked);
+        btn.classList.toggle("is-liked", !!data.liked);
+        btn.classList.remove("is-vote-changing");
+        void btn.offsetWidth;
+        btn.classList.add("is-vote-changing");
+        window.setTimeout(function () {
+          btn.classList.remove("is-vote-changing");
+        }, 430);
         var counter = btn.querySelector("span");
         if (counter) counter.textContent = data.helpful;
       }
@@ -222,7 +228,7 @@ function starSvg(fill, sz) {
       function updateReviewsSidebarPosition() {
         var header = document.querySelector(".page_header");
         var isHeaderHidden = header && header.classList.contains("page_header_hidden");
-        document.documentElement.style.setProperty("--reviews-sidebar-shift", isHeaderHidden ? "-70px" : "0px");
+        document.documentElement.style.setProperty("--reviews-page__sidebar-shift", isHeaderHidden ? "-70px" : "0px");
       }
 
       window.addEventListener("scroll", updateReviewsSidebarPosition, { passive: true });
@@ -304,12 +310,12 @@ function starSvg(fill, sz) {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
       document.getElementById("filterBtns").addEventListener("click", function (e) {
-        var btn = e.target.closest(".filter-btn");
+        var btn = e.target.closest(".reviews-filters__button");
         if (!btn) return;
-        document.querySelectorAll(".filter-btn").forEach(function (b) {
-          b.classList.remove("active");
+        document.querySelectorAll(".reviews-filters__button").forEach(function (b) {
+          b.classList.remove("is-active");
         });
-        btn.classList.add("active");
+        btn.classList.add("is-active");
         activeFilter = btn.dataset.filter;
         applyFilter();
       });
@@ -366,7 +372,7 @@ function starSvg(fill, sz) {
       });
       function highlight(n) {
         starEls.forEach(function (s, i) {
-          s.classList.toggle("active", i < n);
+          s.classList.toggle("is-active", i < n);
         });
       }
 
@@ -580,11 +586,11 @@ function starSvg(fill, sz) {
         REVIEWS_DATA.unshift(data.review);
         filteredData = REVIEWS_DATA.slice();
         activeFilter = "all";
-        document.querySelectorAll(".filter-btn").forEach(function (b) {
-          b.classList.remove("active");
+        document.querySelectorAll(".reviews-filters__button").forEach(function (b) {
+          b.classList.remove("is-active");
         });
         var allBtn = document.querySelector('[data-filter="all"]');
-        if (allBtn) allBtn.classList.add("active");
+        if (allBtn) allBtn.classList.add("is-active");
         currentPage = 1;
         updateReviewSummary();
         showPage();
@@ -601,11 +607,17 @@ function starSvg(fill, sz) {
       });
 
 
-      window.addEventListener("load", function () {
+      function initReviewsPage() {
         setupProductSearch();
         document.getElementById("formText")?.addEventListener("input", validateReviewForm);
         updateReviewSummary();
         updateReviewsSidebarPosition();
         validateReviewForm();
         showPage();
-      });
+      }
+
+      if (document.readyState === "loading") {
+        window.addEventListener("load", initReviewsPage, { once: true });
+      } else {
+        initReviewsPage();
+      }

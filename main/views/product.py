@@ -1,4 +1,5 @@
 from .shared import *
+from django.http import Http404
 
 @ensure_csrf_cookie
 def product_detail(request, id, slug):
@@ -9,12 +10,14 @@ def product_detail(request, id, slug):
             "additional_images",
             "specifications",
         )
-        .filter(id=id, slug=slug, available=True)
+        .filter(id=id, available=True)
         .first()
     )
     if not product:
-        messages.info(request, "Товар больше недоступен.")
-        return redirect("main:catalog")
+        raise Http404("Product not found")
+
+    if product.slug != slug:
+        return redirect("main:product_detail", id=product.id, slug=product.slug, permanent=True)
 
     display_variants = product.display_product_variants
     sku_payload = product.sku_payload
@@ -95,7 +98,7 @@ def product_detail(request, id, slug):
             stock__gt=0,
         ))
         .select_related("category", "brand")
-        .prefetch_related(available_variant_prefetch, product_sku_prefetch)
+        .prefetch_related(available_variant_prefetch, product_sku_prefetch, product_specification_prefetch)
         .exclude(id=product.id)
         .order_by("also_chosen_for__sort_order", "also_chosen_for__id")
     )
@@ -112,7 +115,7 @@ def product_detail(request, id, slug):
             stock__gt=0,
         ))
         .select_related("category", "brand")
-        .prefetch_related(available_variant_prefetch, product_sku_prefetch)
+        .prefetch_related(available_variant_prefetch, product_sku_prefetch, product_specification_prefetch)
         .exclude(id=product.id)
     )
     related_products = [

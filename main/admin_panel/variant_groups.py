@@ -96,6 +96,8 @@ class VariantGroupAdmin(BusinessAdminMixin, ModelAdmin):
             order = 0
         if group.is_color_group:
             order = 0
+        elif group.is_flavor_group:
+            order = 1
 
         raw_options = payload.get("options") or []
         if not isinstance(raw_options, list):
@@ -209,7 +211,7 @@ class VariantGroupAdmin(BusinessAdminMixin, ModelAdmin):
             return JsonResponse({"success": False, "message": "Группа вариантов не найдена."}, status=404)
         if group.is_system_group:
             return JsonResponse(
-                {"success": False, "message": "Системную группу «Цвет» удалить нельзя."},
+                {"success": False, "message": f"Системную группу «{group.name}» удалить нельзя."},
                 status=409,
             )
         if ProductVariant.objects.filter(variant__group=group).exists() or ProductSKU.objects.filter(options__group=group).exists():
@@ -233,6 +235,7 @@ class VariantGroupAdmin(BusinessAdminMixin, ModelAdmin):
             "kind": group.kind,
             "is_system": group.is_system_group,
             "is_color": group.is_color_group,
+            "is_flavor": group.is_flavor_group,
             "options": [self.serialize_admin_variant_option(option) for option in options],
         }
 

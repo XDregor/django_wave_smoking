@@ -1,4 +1,4 @@
-.cursor_dot_component {
+.site-cursor {
     position: fixed;
     top: 0;
     left: 0;
@@ -14,19 +14,19 @@
       background-color 0.12s ease,
       border-color 0.12s ease;
   }
-  .cursor_dot_small_variant {
+  .site-cursor--small {
     width: 6px;
     height: 6px;
     background: var(--accent, #bff747);
   }
-  .cursor_dot_large_variant {
+  .site-cursor--large {
     width: 30px;
     height: 30px;
     border: 1px solid var(--accent, #bff747);
     opacity: 0.8;
     background: transparent;
   }
-  .cursor_dot_component.cursor_dot_hover_state {
+  .site-cursor--large.is-hovered {
     width: 70px;
     height: 70px;
     background: var(--accent, #bff747);
@@ -34,7 +34,7 @@
     opacity: 0.3;
   }
   @media (pointer: coarse) {
-    .cursor_dot_component {
+    .site-cursor {
       display: none;
     }
   }

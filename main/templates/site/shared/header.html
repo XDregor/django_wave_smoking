@@ -1,15 +1,17 @@
 {% load static %}
-<link rel="stylesheet" href="{% static 'site/shared/css/header.css' %}?v=structure1" />
+<link rel="stylesheet" href="{% static 'site/shared/css/header.css' %}?v=cart-low-height2" />
+<link rel="stylesheet" href="{% static 'site/shared/css/site_navigation.css' %}?v=seamless2" />
+<link rel="stylesheet" href="{% static 'site/shared/css/site_errors.css' %}?v=public-errors2" />
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap" />
 
     
     
-    <div class="page_header_module" data-header-module>
+    <div class="site-header-module" data-header-module data-mega-menu-enabled="false" data-sale-navigation-enabled="false">
       <div class="container">
-        <header class="page_header" data-header>
-          <a class="page_header_logo" href="{% url 'main:home' %}" aria-label="WAVE, главная страница">
+        <header class="site-header" data-header>
+          <a class="site-header__logo" href="{% url 'main:home' %}" aria-label="WAVE, главная страница">
             <picture>
               <source media="(max-width: 900px)" srcset="{% static 'site/shared/img/mobil_logo_wave_smoking.png' %}" />
               <img src="{% static 'site/shared/img/long_logo_wave_smoking.png' %}" alt="Wave logo" />
@@ -17,76 +19,76 @@
           </a>
 
           <!-- Mobile right actions (search + favorites + cart + burger, mobile only) -->
-          <div class="mobile_header_actions">
-            <button class="mobile_header_icon_button" id="mobileSearchBtn" aria-label="Поиск">
+          <div class="site-header__mobile-actions">
+            <button class="site-header__mobile-action" id="mobileSearchBtn" aria-label="Поиск">
               <i class="fa-solid fa-magnifying-glass"></i>
             </button>
-            <button class="mobile_header_icon_button" id="mobileFavBtn" data-shop-trigger="favorites_widget" aria-label="Избранное">
+            <button class="site-header__mobile-action" id="mobileFavBtn" data-shop-trigger="favorites_widget" aria-label="Избранное">
               <i class="fa-solid fa-heart"></i>
-              <span class="mobile_header_badge" id="mobileFavBadge">0</span>
+              <span class="site-header__mobile-badge" id="mobileFavBadge">0</span>
             </button>
-            <button class="mobile_header_icon_button" id="mobileBasketBtn" data-shop-trigger="cart_widget" aria-label="Корзина">
-              <i class="fa-solid fa-bag-shopping"></i>
-              <span class="mobile_header_badge" id="mobileBasketBadge">0</span>
+            <button class="site-header__mobile-action" id="mobileBasketBtn" data-shop-trigger="cart_widget" aria-label="Корзина">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3.3335 7.49999C3.79373 7.49999 4.16683 7.87309 4.16683 8.33332C4.16683 8.79356 3.79373 9.16666 3.3335 9.16666H2.50016V9.48811L4.19124 10.5428L4.27669 10.6038C4.46545 10.7576 4.57904 10.9884 4.5835 11.2353L4.65755 15.3662C4.82809 16.1239 5.50041 16.6667 6.2819 16.6667H13.7184C14.4999 16.6667 15.1714 16.1238 15.342 15.3662L15.4168 11.2353L15.4258 11.1304C15.4607 10.8894 15.5995 10.6735 15.8091 10.5428L17.5002 9.48811V9.16666H9.16683C8.70659 9.16666 8.3335 8.79356 8.3335 8.33332C8.3335 7.87309 8.70659 7.49999 9.16683 7.49999H18.3335C18.7937 7.49999 19.1668 7.87309 19.1668 8.33332V9.95116C19.1668 10.2387 19.0186 10.5062 18.7746 10.6584L17.0745 11.7171L17.007 15.4842C17.0061 15.5316 17.0013 15.5792 16.9924 15.6258C16.692 17.197 15.3181 18.3333 13.7184 18.3333H6.2819C4.68227 18.3333 3.30831 17.197 3.00798 15.6258C2.99907 15.5792 2.99418 15.5316 2.99333 15.4842L2.92497 11.7171L1.22575 10.6584C0.981766 10.5062 0.833496 10.2387 0.833496 9.95116V8.33332L0.837565 8.24787C0.880341 7.82777 1.23543 7.49999 1.66683 7.49999H3.3335ZM11.1696 1.66666C12.3368 1.66666 13.349 2.47429 13.6077 3.61246L13.9813 5.25552C14.0833 5.70432 13.8018 6.15125 13.353 6.25324C12.9043 6.35515 12.4581 6.0737 12.3561 5.62499L11.9826 3.98192C11.8964 3.60252 11.5587 3.33332 11.1696 3.33332H7.08838C6.58712 3.33332 6.20712 3.7696 6.25911 4.25373L6.27539 4.35139L6.27946 4.37011L7.89974 12.334C7.99146 12.7849 7.70048 13.2245 7.24951 13.3162C6.79855 13.408 6.35902 13.117 6.26725 12.666L4.64616 4.70214V4.70132C4.30474 3.144 5.49069 1.66666 7.08838 1.66666H11.1696Z" fill="currentColor"></path></svg>
+              <span class="site-header__mobile-badge" id="mobileBasketBadge">0</span>
             </button>
-            <button class="mobile_burger_button" id="burgerBtn" aria-label="Открыть меню" aria-expanded="false">
-              <span class="mobile_burger_line"></span>
-              <span class="mobile_burger_line"></span>
-              <span class="mobile_burger_line"></span>
+            <button class="site-header__burger" id="burgerBtn" aria-label="Открыть меню" aria-expanded="false">
+              <span class="site-header__burger-line"></span>
+              <span class="site-header__burger-line"></span>
+              <span class="site-header__burger-line"></span>
             </button>
           </div>
 
-          <nav class="header_navigation" aria-label="Главная навигация">
-            <ul class="navigation_primary_list">
-              <li class="navigation_item navigation_item_label_new navigation_item_dropdown navigation_item_catalog navigation_item_accent" data-mega-menu-trigger data-mega-menu-section="collections">
+          <nav class="site-header__nav" aria-label="Главная навигация">
+            <ul class="site-nav__primary-list">
+              <li class="site-nav__item site-nav__item--new site-nav__item--dropdown site-nav__item--catalog site-nav__item--accent" data-mega-menu-trigger data-mega-menu-section="collections">
                 <a href="{% url 'main:home' %}#products" data-product-browser-link aria-haspopup="true" aria-expanded="false">Каталог</a>
-                <span class="notification_badge notification_badge_new">new</span>
+                <span class="site-nav__badge site-nav__badge--new">new</span>
               </li>
 
-              <li class="navigation_item">
+              <li class="site-nav__item">
                 <a href="#" data-contacts-open>Контакты</a>
               </li>
 
-              <li class="navigation_item navigation_item_sale navigation_item_dropdown" data-mega-menu-trigger data-mega-menu-section="navigation_item_sale">
+              <li class="site-nav__item site-nav__item--sale site-nav__item--dropdown" data-sale-navigation data-mega-menu-trigger data-mega-menu-section="site-nav__item--sale">
                 <a href="{% url 'main:home' %}?sort=sale#products" data-product-browser-link data-product-browser-sort="sale" aria-haspopup="true" aria-expanded="false">Скидки</a>
-                <span class="notification_badge notification_badge_percent">%</span>
+                <span class="site-nav__badge site-nav__badge--percent">%</span>
               </li>
 
-              <li class="navigation_item">
+              <li class="site-nav__item">
                 <a href="#" data-delivery-open>Доставка</a>
               </li>
 
-              <li class="navigation_item">
+              <li class="site-nav__item">
                 <a href="{% url 'main:reviews' %}">Отзывы</a>
               </li>
             </ul>
 
-            <div class="header_actions_wrapper">
-              <ul class="navigation_secondary_list">
-                <li class="search_widget_container" data-header-search>
-                  <div class="search_widget" data-search-shell>
-                    <button class="search_widget_toggle" type="button" aria-label="Открыть поиск" data-search-open>
-                      <svg class="search_widget_icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" height="25" width="25">
+            <div class="site-header__actions">
+              <ul class="site-nav__secondary-list">
+                <li class="header-search" data-header-search>
+                  <div class="header-search__shell" data-search-shell>
+                    <button class="header-search__toggle" type="button" aria-label="Открыть поиск" data-search-open>
+                      <svg class="header-search__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" height="25" width="25">
                         <path stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" stroke="currentColor" d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"></path>
                         <path stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" stroke="currentColor" d="M22 22L20 20"></path>
                       </svg>
                     </button>
 
-                    <div class="search_widget_panel">
-                      <div class="search_input_container">
-                        <input type="text" placeholder="Поиск..." class="search_input_field" data-search-input />
-                        <div class="search_input_underline"></div>
+                    <div class="header-search__panel">
+                      <div class="header-search__input-wrap">
+                        <input id="headerSearchInput" name="search" type="text" placeholder="Поиск..." class="header-search__input" data-search-input />
+                        <div class="header-search__underline"></div>
                       </div>
 
-                      <button class="search_panel_close" type="button" aria-label="Закрыть поиск" data-search-close>
+                      <button class="header-search__close" type="button" aria-label="Закрыть поиск" data-search-close>
                         <i class="fa-solid fa-times"></i>
                       </button>
                     </div>
                   </div>
-                  <div class="search_results_dropdown" data-search-results aria-live="polite"></div>
+                  <div class="header-search-results" data-search-results aria-live="polite"></div>
                 </li>
 
-                <li class="account_button" data-account-button>
+                <li class="account_button" data-account-button data-client-card-open tabindex="0" role="button" aria-haspopup="dialog" aria-controls="clientCardModal">
                   <div class="account_button_content">
                     <div class="account_button_text_wrapper">
                       <div class="account_button_text_line account_button_text_original">
@@ -122,11 +124,7 @@
                 <li class="cart_widget_container">
                   <div class="cart_widget" id="basketBtn" data-shop-trigger="cart_widget">
                     <button class="cart_widget_toggle" type="button" aria-label="Корзина">
-                      <svg viewBox="0 0 25 24" class="cart_widget_icon">
-                        <path d="M3.546 17.992 1.77 8.224l2.46-.448 1.776 9.769a.25.25 0 0 0 .246.205h11.496a.25.25 0 0 0 .246-.205l1.776-9.769 2.46.448-1.776 9.768a2.75 2.75 0 0 1-2.706 2.258H6.252a2.75 2.75 0 0 1-2.706-2.258Z"></path>
-                        <path d="M0 8c0-.69.56-1.25 1.25-1.25h21.5a1.25 1.25 0 1 1 0 2.5H1.25C.56 9.25 0 8.69 0 8Z"></path>
-                        <path d="M14.265.989a1.25 1.25 0 0 1 1.746.276l3.785 5.21a1.25 1.25 0 0 1-2.023 1.469l-3.784-5.21A1.25 1.25 0 0 1 14.265.99ZM9.451.98a1.25 1.25 0 0 0-1.743.296l-3.727 5.25a1.25 1.25 0 0 0 2.038 1.448l3.728-5.25A1.25 1.25 0 0 0 9.45.98Z"></path>
-                      </svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" class="cart_widget_icon" aria-hidden="true"><path d="M3.3335 7.49999C3.79373 7.49999 4.16683 7.87309 4.16683 8.33332C4.16683 8.79356 3.79373 9.16666 3.3335 9.16666H2.50016V9.48811L4.19124 10.5428L4.27669 10.6038C4.46545 10.7576 4.57904 10.9884 4.5835 11.2353L4.65755 15.3662C4.82809 16.1239 5.50041 16.6667 6.2819 16.6667H13.7184C14.4999 16.6667 15.1714 16.1238 15.342 15.3662L15.4168 11.2353L15.4258 11.1304C15.4607 10.8894 15.5995 10.6735 15.8091 10.5428L17.5002 9.48811V9.16666H9.16683C8.70659 9.16666 8.3335 8.79356 8.3335 8.33332C8.3335 7.87309 8.70659 7.49999 9.16683 7.49999H18.3335C18.7937 7.49999 19.1668 7.87309 19.1668 8.33332V9.95116C19.1668 10.2387 19.0186 10.5062 18.7746 10.6584L17.0745 11.7171L17.007 15.4842C17.0061 15.5316 17.0013 15.5792 16.9924 15.6258C16.692 17.197 15.3181 18.3333 13.7184 18.3333H6.2819C4.68227 18.3333 3.30831 17.197 3.00798 15.6258C2.99907 15.5792 2.99418 15.5316 2.99333 15.4842L2.92497 11.7171L1.22575 10.6584C0.981766 10.5062 0.833496 10.2387 0.833496 9.95116V8.33332L0.837565 8.24787C0.880341 7.82777 1.23543 7.49999 1.66683 7.49999H3.3335ZM11.1696 1.66666C12.3368 1.66666 13.349 2.47429 13.6077 3.61246L13.9813 5.25552C14.0833 5.70432 13.8018 6.15125 13.353 6.25324C12.9043 6.35515 12.4581 6.0737 12.3561 5.62499L11.9826 3.98192C11.8964 3.60252 11.5587 3.33332 11.1696 3.33332H7.08838C6.58712 3.33332 6.20712 3.7696 6.25911 4.25373L6.27539 4.35139L6.27946 4.37011L7.89974 12.334C7.99146 12.7849 7.70048 13.2245 7.24951 13.3162C6.79855 13.408 6.35902 13.117 6.26725 12.666L4.64616 4.70214V4.70132C4.30474 3.144 5.49069 1.66666 7.08838 1.66666H11.1696Z" fill="currentColor"></path></svg>
                     </button>
                     <div class="cart_widget_counter" id="basketCounter">0</div>
                   </div>
@@ -134,7 +132,7 @@
 
                 <li class="shop_panel_trigger_item">
                   <div class="shop_panel" id="universalDropdown" data-shop-panel>
-                    <div class="navigation_dropdown_arrow"></div>
+                    <div class="shop-panel__arrow"></div>
                     <div class="shop_panel_header">
                       <h4 class="shop_panel_title" id="dropdownTitle">Избранные товары</h4>
                     </div>
@@ -150,59 +148,59 @@
       </div>
 
       <!-- ===== MOBILE MENU DRAWER ===== -->
-      <div class="mobile_menu_overlay" id="mobileMenu" role="dialog" aria-modal="true" aria-label="Навигационное меню">
-        <div class="mobile_menu_overlay_bg" id="mobileMenuOverlay"></div>
-        <div class="mobile_menu_drawer">
+      <div class="mobile-menu" id="mobileMenu" role="dialog" aria-modal="true" aria-label="Навигационное меню">
+        <div class="mobile-menu__backdrop" id="mobileMenuOverlay"></div>
+        <div class="mobile-menu__drawer">
           <!-- Drawer nav -->
-          <nav class="mobile_menu_navigation">
+          <nav class="mobile-menu__nav">
             <!-- Категории (accordion) -->
-            <div class="mobile_menu_item" id="mobileAccCategories">
-              <div class="mobile_menu_link mobile_menu_link_accent" data-accordion="categories">
+            <div class="mobile-menu__item" id="mobileAccCategories">
+              <div class="mobile-menu__link mobile-menu__link--accent" data-accordion="categories">
                 <span>Категории</span>
-                <span class="mobile_menu_link_arrow">
+                <span class="mobile-menu__link-arrow">
                   <svg viewBox="0 0 15 15" width="14px" height="14px"><path fill-rule="evenodd" clip-rule="evenodd" d="m4.842 14.7 6.868-6.526a.929.929 0 0 0 0-1.349L4.842.3C4.42-.1 3.755-.1 3.334.3a1.07 1.07 0 0 0 0 1.554L9.087 7.32a.247.247 0 0 1 0 .361l-5.753 5.466a1.07 1.07 0 0 0 0 1.554 1.096 1.096 0 0 0 1.508 0Z" fill="currentColor" /></svg>
                 </span>
               </div>
-              <div class="mobile_menu_submenu">
-                <a class="mobile_menu_submenu_link" href="{% url 'main:home' %}#products"><i class="fa-solid fa-microchip"></i> POD-системы</a>
-                <a class="mobile_menu_submenu_link" href="{% url 'main:home' %}#products"><i class="fa-solid fa-wind"></i> Одноразовые</a>
-                <a class="mobile_menu_submenu_link" href="{% url 'main:home' %}#products"><i class="fa-solid fa-flask"></i> Жидкости</a>
-                <a class="mobile_menu_submenu_link" href="{% url 'main:home' %}#products"><i class="fa-solid fa-gear"></i> Комплектующие</a>
-                <a class="mobile_menu_submenu_link" href="{% url 'main:home' %}#products"><i class="fa-solid fa-layer-group"></i> Бренды</a>
+              <div class="mobile-menu__submenu">
+                <a class="mobile-menu__submenu-link" href="{% url 'main:home' %}#products"><i class="fa-solid fa-microchip"></i> POD-системы</a>
+                <a class="mobile-menu__submenu-link" href="{% url 'main:home' %}#products"><i class="fa-solid fa-wind"></i> Одноразовые</a>
+                <a class="mobile-menu__submenu-link" href="{% url 'main:home' %}#products"><i class="fa-solid fa-flask"></i> Жидкости</a>
+                <a class="mobile-menu__submenu-link" href="{% url 'main:home' %}#products"><i class="fa-solid fa-gear"></i> Комплектующие</a>
+                <a class="mobile-menu__submenu-link" href="{% url 'main:home' %}#products"><i class="fa-solid fa-layer-group"></i> Бренды</a>
               </div>
             </div>
 
             <!-- Скидки (accordion) -->
-            <div class="mobile_menu_item" id="mobileAccSale">
-              <div class="mobile_menu_link mobile_menu_link_danger" data-accordion="navigation_item_sale">
+            <div class="mobile-menu__item" id="mobileAccSale" data-sale-navigation>
+              <div class="mobile-menu__link mobile-menu__link--danger" data-accordion="site-nav__item--sale">
                 <span>Скидки</span>
-                <span class="mobile_menu_link_arrow">
+                <span class="mobile-menu__link-arrow">
                   <svg viewBox="0 0 15 15" width="14px" height="14px"><path fill-rule="evenodd" clip-rule="evenodd" d="m4.842 14.7 6.868-6.526a.929.929 0 0 0 0-1.349L4.842.3C4.42-.1 3.755-.1 3.334.3a1.07 1.07 0 0 0 0 1.554L9.087 7.32a.247.247 0 0 1 0 .361l-5.753 5.466a1.07 1.07 0 0 0 0 1.554 1.096 1.096 0 0 0 1.508 0Z" fill="currentColor" /></svg>
                 </span>
               </div>
-              <div class="mobile_menu_submenu">
-                <a class="mobile_menu_submenu_link" href="{% url 'main:home' %}?sort=sale#products"><i class="fa-solid fa-fire"></i> Горячие предложения</a>
-                <a class="mobile_menu_submenu_link" href="{% url 'main:home' %}?sort=sale#products"><i class="fa-solid fa-tag"></i> До -50%</a>
-                <a class="mobile_menu_submenu_link" href="{% url 'main:home' %}?sort=hit#products"><i class="fa-solid fa-star"></i> Хиты продаж</a>
+              <div class="mobile-menu__submenu">
+                <a class="mobile-menu__submenu-link" href="{% url 'main:home' %}?sort=sale#products"><i class="fa-solid fa-fire"></i> Горячие предложения</a>
+                <a class="mobile-menu__submenu-link" href="{% url 'main:home' %}?sort=sale#products"><i class="fa-solid fa-tag"></i> До -50%</a>
+                <a class="mobile-menu__submenu-link" href="{% url 'main:home' %}?sort=hit#products"><i class="fa-solid fa-star"></i> Хиты продаж</a>
               </div>
             </div>
 
             <!-- Простые ссылки -->
-            <div class="mobile_menu_item">
-              <a class="mobile_menu_link" href="#" data-contacts-open><span>Контакты</span></a>
+            <div class="mobile-menu__item">
+              <a class="mobile-menu__link" href="#" data-contacts-open><span>Контакты</span></a>
             </div>
-            <div class="mobile_menu_item">
-              <a class="mobile_menu_link" href="#" data-delivery-open><span>Доставка</span></a>
+            <div class="mobile-menu__item">
+              <a class="mobile-menu__link" href="#" data-delivery-open><span>Доставка</span></a>
             </div>
-            <div class="mobile_menu_item">
-              <a class="mobile_menu_link" href="{% url 'main:reviews' %}"><span>Отзывы</span></a>
+            <div class="mobile-menu__item">
+              <a class="mobile-menu__link" href="{% url 'main:reviews' %}"><span>Отзывы</span></a>
             </div>
           </nav>
 
           <!-- Drawer footer actions -->
-          <div class="mobile_menu_drawer_footer">
+          <div class="mobile-menu__footer">
             <!-- Карта клиента -->
-            <a class="mobile_menu_account_button" href="/account">
+            <a class="mobile-menu__account-button" href="#" data-client-card-open>
               <!-- Иконка в таблетке -->
               <div class="mmab_icon">
                 <svg viewBox="0 0 24 24" width="20px" height="20px">
@@ -221,18 +219,15 @@
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M19.286 0v13.333H18V0h1.286zm-2.572 0v13.333H15.43V0h1.285zm-2.571 0v13.333h-1.286V0h1.286zM9.857 0v13.333H8.571V0h1.286zM7.286 0v13.333H5.829V0h1.457zM4.714 0v13.333H3.257V0h1.457zm-3 0v16H0V0h1.714zm27 0v13.333h-.857V0h.857zm-2.571 0v13.333h-.857V0h.857zm-2.572 0v13.333h-1.285V0h1.285zm9 0v16h-1.285V0h1.285z" fill="#000000" />
               </svg>
             </a>
-            <div class="mobile_menu_secondary_row">
-              <button class="mobile_menu_icon_button" id="mobileMenuFavBtn" data-shop-trigger="favorites_widget">
+            <div class="mobile-menu__secondary-row">
+              <button class="mobile-menu__icon-button" id="mobileMenuFavBtn" data-shop-trigger="favorites_widget">
                 <svg viewBox="0 0 24 24" width="20px" height="20px" style="flex-shrink: 0">
                   <path d="M16.43 4c-2.148 0-3.568 1.173-4.273 1.95C11.453 5.172 10.032 4 7.884 4 4.952 4 3 6.726 3 9.78c0 2.285 1.152 6.736 8.869 10.877a.61.61 0 0 0 .577 0c7.717-4.14 8.869-8.592 8.869-10.877 0-3.125-2.01-5.78-4.884-5.78Zm-4.273 15.424C8.451 17.386 4.221 13.99 4.221 9.78c0-2.342 1.406-4.559 3.663-4.559 1.712 0 3.128 1.05 3.755 2.038a.61.61 0 0 0 1.038-.002c.013-.02 1.285-2.036 3.754-2.036 2.273 0 3.663 2.239 3.663 4.559 0 4.21-4.23 7.606-7.937 9.644Z" fill="currentColor" />
                 </svg>
                 Избранное
               </button>
-              <button class="mobile_menu_icon_button" id="mobileMenuBasketBtn" data-shop-trigger="cart_widget">
-                <svg viewBox="0 0 24 24" width="20px" height="20px" style="flex-shrink: 0">
-                  <path d="M19.74 9.477v-2.61l-2.625-1.314L14.563 3 12 3.641 9.437 3 6.885 5.553 4.261 6.866v2.61L3 12l1.26 2.523v2.61l2.625 1.314L9.437 21 12 20.359l2.563.641 2.552-2.553 2.624-1.313v-2.61L21 12l-1.26-2.523Zm-1.191 4.765v2.155l-2.053 1.027-2.297 2.256L12 19.13l-2.2.55-2.142-2.145-2.208-1.139v-2.154L4.331 12l1.12-2.242V7.602l2.053-1.027L9.802 4.32l2.2.55 2.198-.55 2.143 2.144 2.208 1.14v2.155L19.669 12l-1.12 2.242Z" fill="currentColor" />
-                  <path d="m8.167 15.024 6.857-6.857.808.809-6.857 6.857-.808-.809Zm1.547-3.595c.945 0 1.715-.77 1.715-1.715 0-.945-.77-1.714-1.715-1.714C8.77 8 8 8.77 8 9.714c0 .945.77 1.715 1.714 1.715Zm0-2.286a.571.571 0 1 1 0 1.142.571.571 0 0 1 0-1.142Zm4.572 3.428c-.945 0-1.715.77-1.715 1.715 0 .945.77 1.714 1.715 1.714.945 0 1.714-.77 1.714-1.714 0-.945-.77-1.715-1.714-1.715Zm0 2.286a.571.571 0 1 1 0-1.143.571.571 0 0 1 0 1.143Z" fill="currentColor" />
-                </svg>
+              <button class="mobile-menu__icon-button" id="mobileMenuBasketBtn" data-shop-trigger="cart_widget">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" style="flex-shrink: 0"><path d="M3.3335 7.49999C3.79373 7.49999 4.16683 7.87309 4.16683 8.33332C4.16683 8.79356 3.79373 9.16666 3.3335 9.16666H2.50016V9.48811L4.19124 10.5428L4.27669 10.6038C4.46545 10.7576 4.57904 10.9884 4.5835 11.2353L4.65755 15.3662C4.82809 16.1239 5.50041 16.6667 6.2819 16.6667H13.7184C14.4999 16.6667 15.1714 16.1238 15.342 15.3662L15.4168 11.2353L15.4258 11.1304C15.4607 10.8894 15.5995 10.6735 15.8091 10.5428L17.5002 9.48811V9.16666H9.16683C8.70659 9.16666 8.3335 8.79356 8.3335 8.33332C8.3335 7.87309 8.70659 7.49999 9.16683 7.49999H18.3335C18.7937 7.49999 19.1668 7.87309 19.1668 8.33332V9.95116C19.1668 10.2387 19.0186 10.5062 18.7746 10.6584L17.0745 11.7171L17.007 15.4842C17.0061 15.5316 17.0013 15.5792 16.9924 15.6258C16.692 17.197 15.3181 18.3333 13.7184 18.3333H6.2819C4.68227 18.3333 3.30831 17.197 3.00798 15.6258C2.99907 15.5792 2.99418 15.5316 2.99333 15.4842L2.92497 11.7171L1.22575 10.6584C0.981766 10.5062 0.833496 10.2387 0.833496 9.95116V8.33332L0.837565 8.24787C0.880341 7.82777 1.23543 7.49999 1.66683 7.49999H3.3335ZM11.1696 1.66666C12.3368 1.66666 13.349 2.47429 13.6077 3.61246L13.9813 5.25552C14.0833 5.70432 13.8018 6.15125 13.353 6.25324C12.9043 6.35515 12.4581 6.0737 12.3561 5.62499L11.9826 3.98192C11.8964 3.60252 11.5587 3.33332 11.1696 3.33332H7.08838C6.58712 3.33332 6.20712 3.7696 6.25911 4.25373L6.27539 4.35139L6.27946 4.37011L7.89974 12.334C7.99146 12.7849 7.70048 13.2245 7.24951 13.3162C6.79855 13.408 6.35902 13.117 6.26725 12.666L4.64616 4.70214V4.70132C4.30474 3.144 5.49069 1.66666 7.08838 1.66666H11.1696Z" fill="currentColor"></path></svg>
                 Корзина
               </button>
             </div>
@@ -241,16 +236,16 @@
       </div>
 
       <!-- ===== MOBILE SEARCH OVERLAY ===== -->
-      <div class="mobile_search_overlay" id="mobileSearchOverlay">
-        <div class="mobile_search_box">
-          <div class="mobile_search_inner">
+      <div class="mobile-search" id="mobileSearchOverlay">
+        <div class="mobile-search__box">
+          <div class="mobile-search__inner">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" class="mobile_search_input_field" placeholder="Поиск товаров..." id="mobileSearchInput" />
-            <button class="mobile_search_close_button" id="mobileSearchClose">
+            <input type="text" class="mobile-search__input" placeholder="Поиск товаров..." id="mobileSearchInput" />
+            <button class="mobile-search__close" id="mobileSearchClose">
               <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
-          <div class="search_results_dropdown mobile_search_results_dropdown" id="mobileSearchResults" aria-live="polite"></div>
+          <div class="header-search-results mobile-search__results" id="mobileSearchResults" aria-live="polite"></div>
         </div>
       </div>
 
@@ -301,7 +296,7 @@
             <span>Появились вопросы? Напиши нам!</span>
           </div>
         </div>
-        <div class="sticky_product_bar" data-sticky-product-bar hidden>
+        <div class="sticky_product_bar" data-sticky_product_bar hidden>
           <div class="sticky_product_bar__inner">
             <div class="sticky_product_bar__left">
               <img class="sticky_product_bar__image" data-sticky-product-image alt="" />
@@ -337,11 +332,11 @@
         </div>
       </div>
     </div>
-    <div class="page_header_spacer" aria-hidden="true"></div>
+    <div class="site-header-spacer" aria-hidden="true"></div>
     <div id="megaMenuOverlay" class="mega_menu_overlay" aria-hidden="true"></div>
     <!-- DELIVERY MODAL -->
     <div id="deliveryBackdrop" class="delivery_backdrop"></div>
-    <div id="deliveryModal" class="delivery_overlay" role="dialog" aria-modal="true" aria-label="Доставка">
+    <div id="deliveryModal" class="delivery_overlay" role="dialog" aria-modal="true" aria-labelledby="delivery_header_title" aria-describedby="delivery_header_subtitle" aria-hidden="true">
       <div class="delivery_modal_window">
         <button class="delivery_close_button" id="delivery_close_button" aria-label="Закрыть" type="button">
           <svg viewBox="0 0 16 16" fill="currentColor">
@@ -410,9 +405,11 @@
         <div class="delivery_footer_navigation">
           <button class="delivery_navigation_button delivery_navigation_button_prev" id="delivery_previous_button" aria-label="Назад" type="button">
             <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
+            <span>Назад</span>
           </button>
           <span class="delivery_panel_counter" id="delivery_panel_counter">1 / 3</span>
           <button class="delivery_navigation_button delivery_navigation_button_next" id="delivery_next_button" aria-label="Вперёд" type="button">
+            <span>Далее</span>
             <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
           </button>
         </div>
@@ -421,7 +418,7 @@
 
     <!-- CONTACTS MODAL -->
     <div id="contactsBackdrop" class="contacts_backdrop"></div>
-    <div id="contactsModal" class="contacts_overlay" role="dialog" aria-modal="true" aria-label="Контакты">
+    <div id="contactsModal" class="contacts_overlay" role="dialog" aria-modal="true" aria-labelledby="contactsModalTitle" aria-describedby="contactsModalDescription" aria-hidden="true">
       <div class="contacts_modal">
         <button class="contacts_close" type="button" data-contacts-close aria-label="Закрыть">
           <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor">
@@ -436,8 +433,8 @@
             </svg>
           </div>
           <div class="contacts_header_text">
-            <h3>Контакт-центр</h3>
-            <p>Всегда рады помочь вам</p>
+            <h3 id="contactsModalTitle">Контакт-центр</h3>
+            <p id="contactsModalDescription">Всегда рады помочь вам</p>
           </div>
         </div>
 
@@ -458,16 +455,194 @@
         <div class="contacts_messengers">
           <a href="https://t.me/MEGASPORTUA_BOT" target="_blank" rel="noopener noreferrer" class="contacts_messenger_link">
             <svg viewBox="0 0 24 24" width="20" height="20">
-              <circle cx="12" cy="12" r="12" fill="#54A2DC" />
-              <path d="M16.403 6.775 5.075 11.143c-.773.31-.768.741-.142.934l2.909.907 6.728-4.245c.319-.194.61-.09.37.122l-5.451 4.92h-.002l.002.001-.201 2.998c.294 0 .424-.135.588-.294l1.413-1.374 2.938 2.17c.542.299.931.145 1.066-.501l1.929-9.09c.197-.792-.303-1.15-.82-.916Z" fill="#fff" />
+              <path d="M19.8 4.2 3.9 10.3c-1.1.4-1.1 1.1-.2 1.4l4.1 1.3 1.6 5c.2.6.1.8.8.8.5 0 .8-.2 1-.4l2-1.9 4.2 3.1c.8.4 1.3.2 1.5-.7l2.7-12.8c.3-1.1-.4-1.6-1.1-1.3l-.7.4Zm-10.9 8.5 8-5.1c.4-.3.8-.1.5.2l-6.6 6-.3 3.4-1.6-4.5Z" fill="currentColor" />
             </svg>
-            Telegram
+            <span>Написать в Telegram</span>
+            <svg class="contacts_messenger_arrow" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m9 18 6-6-6-6" />
+            </svg>
           </a>
         </div>
       </div>
     </div>
 
-    <script src="{% static 'site/shared/js/header.js' %}?v=structure1"></script>
+    <!-- CLIENT CARD MODAL -->
+    <div id="clientCardBackdrop" class="client_card_backdrop"></div>
+    <div id="clientCardModal" class="client_card_overlay" role="dialog" aria-modal="true" aria-labelledby="clientCardTitle" aria-describedby="clientCardDescription" aria-hidden="true">
+      <div class="client_card_modal">
+        <div class="client_card_shell">
+          <section class="client_card_content">
+            <button class="client_card_close" type="button" data-client-card-close aria-label="Закрыть">
+              <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor">
+                <path d="m8.94 8 2.867-2.86a.67.67 0 1 0-.947-.947L8 7.06 5.14 4.193a.67.67 0 0 0-.947.947L7.06 8l-2.867 2.86a.667.667 0 0 0 .217 1.093.667.667 0 0 0 .73-.146L8 8.94l2.86 2.867a.667.667 0 0 0 1.093-.217.667.667 0 0 0-.146-.73L8.94 8Z" />
+              </svg>
+            </button>
+            <div class="client_card_header">
+              <div>
+              </div>
+            </div>
+
+            <div class="client_card_auth_view" data-client-view="auth" data-client-auth-url="{% url 'main:api_client_firebase_auth' %}" data-client-logout-url="{% url 'main:api_client_logout' %}">
+              <div class="client_card_social_panel" data-client-social-panel>
+                <div class="client_card_auth_intro">
+                  <strong>Вход</strong>
+                  <span>Карта клиента открывается через безопасный аккаунт Google или Apple. Если профиля еще нет, мы создадим его после ника и даты рождения.</span>
+                </div>
+                <button class="client_card_provider_button client_card_provider_button--google" type="button" data-client-provider="google">
+                  <span class="client_card_provider_icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M21.35 11.1h-9.18v2.98h5.28c-.23 1.49-1.6 4.36-5.28 4.36A6.03 6.03 0 0 1 6.1 12a6.03 6.03 0 0 1 6.07-6.44c1.8 0 3.02.77 3.71 1.44l2.53-2.44C16.79 3.05 14.69 2.1 12.17 2.1 6.61 2.1 2.1 6.61 2.1 12s4.51 9.9 10.07 9.9c5.82 0 9.68-4.09 9.68-9.84 0-.66-.07-1.16-.5-1.96Z" fill="currentColor"/></svg>
+                  </span>
+                  <span>Продолжить через Google</span>
+                </button>
+                <button class="client_card_provider_button client_card_provider_button--apple" type="button" data-client-provider="apple">
+                  <span class="client_card_provider_icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M17.4 12.9c0-2 1.6-3 1.7-3.1-1-.1-2-.6-2.6-1.4-.6-.7-1.5-1.1-2.4-1.1-1 0-1.9.6-2.4.6-.6 0-1.5-.6-2.4-.6-1.3 0-2.5.8-3.1 2-1.3 2.3-.3 5.8.9 7.7.6.9 1.4 2 2.4 1.9.9 0 1.3-.6 2.4-.6s1.4.6 2.4.6 1.6-.9 2.3-1.8c.7-1 1-2 1-2.1 0-.1-1.9-.8-1.9-3.1ZM14.5 6.2c.5-.6.9-1.5.8-2.4-.8 0-1.7.5-2.2 1.2-.5.6-.9 1.5-.8 2.3.8.1 1.7-.4 2.2-1.1Z" fill="currentColor"/></svg>
+                  </span>
+                  <span>Продолжить через Apple</span>
+                </button>
+              </div>
+              <div class="client_card_tabs" role="tablist" aria-label="Карта клиента">
+                <button class="client_card_tab is-active" type="button" data-client-auth-tab="login">Вход</button>
+                <button class="client_card_tab" type="button" data-client-auth-tab="register">Регистрация</button>
+              </div>
+
+              <form class="client_card_form is-active" data-client-form="login" novalidate>
+                <div class="client_card_input">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  <input id="clientLoginInput" name="login" type="text" autocomplete="username" placeholder="Логин" aria-label="Логин" required />
+                </div>
+
+                <div class="client_card_input">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 10V8a6 6 0 0 1 12 0v2"></path><rect x="4" y="10" width="16" height="10" rx="2"></rect></svg>
+                  <input id="clientPasswordInput" name="password" type="password" autocomplete="current-password" placeholder="Пароль" aria-label="Пароль" required />
+                  <button class="client_card_password_toggle" type="button" data-client-password-toggle data-target-input="clientPasswordInput" aria-label="Показать пароль">
+                    <svg class="client_card_eye_open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    <svg class="client_card_eye_closed" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18"></path><path d="M7.1 7.1C3.8 8.8 2 12 2 12s3.6 6 10 6c1.7 0 3.1-.4 4.3-1"></path><path d="M10.2 6.2A11 11 0 0 1 12 6c6.4 0 10 6 10 6a14 14 0 0 1-2.3 2.9"></path></svg>
+                  </button>
+                </div>
+
+                <button class="client_card_primary_button" type="submit">Войти</button>
+
+                <div class="client_card_auth_divider"><span>или</span></div>
+
+                <button class="client_card_google_button" type="button" data-client-google>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.35 11.1h-9.18v2.98h5.28c-.23 1.49-1.6 4.36-5.28 4.36A6.03 6.03 0 0 1 6.1 12a6.03 6.03 0 0 1 6.07-6.44c1.8 0 3.02.77 3.71 1.44l2.53-2.44C16.79 3.05 14.69 2.1 12.17 2.1 6.61 2.1 2.1 6.61 2.1 12s4.51 9.9 10.07 9.9c5.82 0 9.68-4.09 9.68-9.84 0-.66-.07-1.16-.5-1.96Z" fill="currentColor"/></svg>
+                  Войти через Google
+                </button>
+              </form>
+
+              <form class="client_card_form" data-client-form="register" novalidate>
+                <div class="client_card_input">
+                  <input id="clientFirstNameInput" name="first_name" type="text" autocomplete="given-name" placeholder="Имя" aria-label="Имя" />
+                </div>
+
+                <div class="client_card_input client_card_birth_field" data-client-birth-field>
+                  <input id="clientBirthInput" name="birth_date" type="text" inputmode="numeric" autocomplete="off" placeholder="Дата рождения: ДД.ММ.ГГГГ" aria-label="Дата рождения" required />
+                  <button class="client_card_date_button" type="button" data-client-date-toggle aria-label="Выбрать дату рождения" aria-expanded="false">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 8h16M5 5h14v15H5z"></path></svg>
+                  </button>
+                  <div class="client_card_date_picker" data-client-date-picker hidden>
+                    <div class="client_card_date_picker_head">
+                      <button class="client_card_date_switch" type="button" data-client-date-mode="month" aria-label="Выбрать месяц">
+                        <span>Месяц</span>
+                        <strong data-client-date-month-label></strong>
+                      </button>
+                      <button class="client_card_date_switch" type="button" data-client-date-mode="year" aria-label="Выбрать год">
+                        <span>Год</span>
+                        <strong data-client-date-year-label></strong>
+                      </button>
+                    </div>
+                    <div class="client_card_date_weekdays" data-client-date-weekdays aria-hidden="true">
+                      <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
+                    </div>
+                    <div class="client_card_date_grid" data-client-date-grid></div>
+                  </div>
+                </div>
+
+                <div class="client_card_input">
+                  <input id="clientUsernameInput" name="username" type="text" autocomplete="username" placeholder="Логин" aria-label="Логин" required />
+                </div>
+
+                <div class="client_card_input">
+                  <input id="clientRegisterPasswordInput" name="password" type="password" autocomplete="new-password" placeholder="Пароль от 6 символов" aria-label="Пароль" required />
+                  <button class="client_card_password_toggle" type="button" data-client-password-toggle data-target-input="clientRegisterPasswordInput" aria-label="Показать пароль">
+                    <svg class="client_card_eye_open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    <svg class="client_card_eye_closed" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18"></path><path d="M7.1 7.1C3.8 8.8 2 12 2 12s3.6 6 10 6c1.7 0 3.1-.4 4.3-1"></path><path d="M10.2 6.2A11 11 0 0 1 12 6c6.4 0 10 6 10 6a14 14 0 0 1-2.3 2.9"></path></svg>
+                  </button>
+                </div>
+
+                <div class="client_card_input">
+                  <input id="clientRegisterPasswordConfirmInput" name="password_confirm" type="password" autocomplete="new-password" placeholder="Повторите пароль" aria-label="Повторите пароль" required />
+                  <button class="client_card_password_toggle" type="button" data-client-password-toggle data-target-input="clientRegisterPasswordConfirmInput" aria-label="Показать пароль">
+                    <svg class="client_card_eye_open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    <svg class="client_card_eye_closed" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18"></path><path d="M7.1 7.1C3.8 8.8 2 12 2 12s3.6 6 10 6c1.7 0 3.1-.4 4.3-1"></path><path d="M10.2 6.2A11 11 0 0 1 12 6c6.4 0 10 6 10 6a14 14 0 0 1-2.3 2.9"></path></svg>
+                  </button>
+                </div>
+
+                <button class="client_card_primary_button" type="submit">Создать карту</button>
+
+                <div class="client_card_auth_divider"><span>или</span></div>
+
+                <button class="client_card_google_button" type="button" data-client-google>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.35 11.1h-9.18v2.98h5.28c-.23 1.49-1.6 4.36-5.28 4.36A6.03 6.03 0 0 1 6.1 12a6.03 6.03 0 0 1 6.07-6.44c1.8 0 3.02.77 3.71 1.44l2.53-2.44C16.79 3.05 14.69 2.1 12.17 2.1 6.61 2.1 2.1 6.61 2.1 12s4.51 9.9 10.07 9.9c5.82 0 9.68-4.09 9.68-9.84 0-.66-.07-1.16-.5-1.96Z" fill="currentColor"/></svg>
+                  Продолжить с Google
+                </button>
+              </form>
+
+              <p class="client_card_status" data-client-status></p>
+            </div>
+
+            <div class="client_card_dashboard" data-client-view="dashboard" hidden>
+              <div class="client_card_profile_head">
+                <label class="client_card_avatar_control">
+                  <input type="file" accept="image/*" data-client-avatar-input />
+                  <span class="client_card_avatar" data-client-avatar></span>
+                  <span class="client_card_avatar_hint">Сменить фото</span>
+                </label>
+                <div class="client_card_profile_meta">
+                  <strong data-client-dashboard-nick>@wave</strong>
+                  <span data-client-dashboard-name>Клиент wave smokin</span>
+                </div>
+              </div>
+
+              <div class="client_card_dashboard_grid">
+                <button class="client_card_dashboard_tile is-active" type="button" data-client-dashboard-tab="orders">
+                  <span>Заказы</span>
+                  <strong data-client-orders-count>0</strong>
+                </button>
+                <button class="client_card_dashboard_tile" type="button" data-client-dashboard-tab="reviews">
+                  <span>Отзывы</span>
+                  <strong data-client-reviews-count>0</strong>
+                </button>
+                <button class="client_card_dashboard_tile" type="button" data-client-dashboard-tab="profile">
+                  <span>Профиль</span>
+                  <strong>edit</strong>
+                </button>
+              </div>
+
+              <div class="client_card_dashboard_panel is-active" data-client-dashboard-panel="orders">
+                <p>История заказов появится здесь после оформления первой покупки.</p>
+              </div>
+              <div class="client_card_dashboard_panel" data-client-dashboard-panel="reviews">
+                <p>Здесь будут собраны отзывы, которые вы оставили к товарам.</p>
+              </div>
+              <div class="client_card_dashboard_panel" data-client-dashboard-panel="profile">
+                <div class="client_card_field">
+                  <label for="clientEditNickInput">Логин</label>
+                  <input id="clientEditNickInput" type="text" data-client-edit-nick />
+                </div>
+                <button class="client_card_secondary_button" type="button" data-client-save-profile>Сохранить логин</button>
+              </div>
+
+              <button class="client_card_logout_button" type="button" data-client-logout>Выйти</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <script src="{% static 'site/shared/js/header.js' %}?v=cart-low-height2"></script>
+    <script src="{% static 'site/shared/js/site_navigation.js' %}?v=seamless6"></script>
     {% include 'site/shared/includes/cookie_banner.html' %}
     {% if not disable_header_cursor %}
       {% include 'site/shared/includes/cursor.html' %}

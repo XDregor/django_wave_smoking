@@ -5,7 +5,7 @@ def home(request):
     products = list(
         with_product_card_review_stats(Product.objects.filter(available=True))
         .select_related("brand", "category")
-        .prefetch_related(available_variant_prefetch, product_sku_prefetch)
+        .prefetch_related(available_variant_prefetch, product_sku_prefetch, product_specification_prefetch)
     )
     product_browser_context = build_product_browser_context(request, products)
     brand_carousel_items = [

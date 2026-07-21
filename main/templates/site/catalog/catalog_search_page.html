@@ -8,23 +8,24 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="{% static 'site/shared/css/theme.css' %}" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/theme.css' %}?v=site-tokens1" />
     <link rel="icon" type="image/png" href="{% static 'site/shared/img/mini_logo.png' %}" />
-    <link rel="stylesheet" href="{% static 'site/shared/css/product_card.css' %}?v=product-card-7" />
-    {% include 'site/shared/includes/badges.html' %}
-    <link rel="stylesheet" href="{% static 'site/catalog/css/catalog_page.css' %}?v=home-catalog-5" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/product_card.css' %}?v=mobile-adapt1" />
+    <link rel="stylesheet" href="{% static 'site/catalog/css/catalog_page.css' %}?v=mobile-adapt1" />
   </head>
-  <body class="catalog_search_mode">
+  <body class="is-catalog-search">
     {% include 'site/shared/header.html' %}
-    <section class="catalog_search_summary" id="catalog_search_summary_id" aria-live="polite">
-      <h1 class="catalog_search_summary_title" id="catalog_search_summary_title_id"></h1>
-      <p class="catalog_search_summary_text" id="catalog_search_summary_text_id"></p>
+    <div id="site-content" class="site-content" data-site-content data-wave-page="catalog">
+    <section class="catalog-search-summary" id="catalog-search-summary_id" aria-live="polite">
+      <h1 class="catalog-search-summary__title" id="catalog-search-summary__title_id"></h1>
+      <p class="catalog-search-summary__text" id="catalog-search-summary__text_id"></p>
     </section>
     {% include 'site/shared/includes/product_browser.html' %}
     {% include 'site/shared/includes/scroll_to_top.html' %}
     {{ products_json|json_script:"productsData" }}
     {{ categories_json|json_script:"categoriesData" }}
-    <script src="{% static 'site/shared/js/product_card.js' %}?v=product-card-7"></script>
-    <script src="{% static 'site/catalog/js/catalog_page.js' %}?v=home-catalog-4"></script>
+    <script src="{% static 'site/shared/js/product_card.js' %}?v=product-card-data-bem1"></script>
+    <script src="{% static 'site/catalog/js/catalog_page.js' %}?v=catalog-bem2"></script>
+    </div>
   </body>
 </html>

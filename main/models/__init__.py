@@ -135,6 +135,13 @@ def brand_image_upload_to(instance, filename):
     return f"brands/{brand_id}/brand-{brand_id}-{brand_slug}-logo.{extension}"
 
 
+def warehouse_item_image_upload_to(instance, filename):
+    item_id = instance.pk or "new"
+    item_slug = slugify(getattr(instance, "name", "") or "warehouse-item") or "warehouse-item"
+    extension = get_upload_extension(filename)
+    return f"warehouse/items/warehouse-{item_id}-{item_slug}-original.{extension}"
+
+
 def make_unique_slug(model_class, value, instance_pk=None):
     base_slug = slugify(value) or "item"
     slug = base_slug
@@ -158,11 +165,28 @@ from .product import (
 )
 from .reviews import ProductLike, ProductReview, ProductReviewHelpful
 from .cart import Cart, CartItem
+from .client import ClientProfile
+from .warehouse import (
+    WarehouseBatch,
+    WarehouseBatchItem,
+    WarehouseCounterparty,
+    WarehouseItem,
+    WarehouseShipmentOrder,
+    WarehouseShipmentOrderItem,
+    WarehousePointsWeekClose,
+    WarehouseShippingPhone,
+    WarehouseWriteOff,
+    WarehouseWriteOffItem,
+)
 from .analytics import SiteVisit
 
 __all__ = (
     "Brand", "Cart", "CartItem", "Category", "Product", "ProductAlsoChosen",
     "ProductImage", "ProductLike", "ProductReview", "ProductReviewHelpful",
     "ProductSKU", "ProductSpecification", "ProductVariant", "VariantGroup",
-    "VariantOption", "SiteVisit", "sanitize_product_description",
+    "VariantOption", "ClientProfile", "SiteVisit", "WarehouseBatch", "WarehouseBatchItem",
+    "WarehouseCounterparty", "WarehouseItem", "WarehouseShipmentOrder",
+    "WarehouseShipmentOrderItem", "WarehousePointsWeekClose", "WarehouseShippingPhone", "WarehouseWriteOff",
+    "WarehouseWriteOffItem",
+    "sanitize_product_description",
 )

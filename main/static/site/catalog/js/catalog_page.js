@@ -119,10 +119,67 @@
           return 0;
         }
 
+        function escapeHtml(value) {
+          const node = document.createElement("div");
+          node.textContent = value == null ? "" : String(value);
+          return node.innerHTML;
+        }
+
+        function getProductColorVariants(product) {
+          const variants = [
+            ...(Array.isArray(product.display_options) ? product.display_options : []),
+            ...(Array.isArray(product.variant_options) ? product.variant_options : []),
+          ];
+          const seen = new Set();
+          return variants.filter((variant) => {
+            if (variant.group_kind !== "color" || !variant.color_hex) return false;
+            const key = String(variant.option_id || variant.id || variant.name || "");
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+        }
+
+        function renderProductColorSwatches(product) {
+          return getProductColorVariants(product).map((variant, index) => {
+            const imageUrl = variant.image_url || variant.thumbnail_url || "";
+            const label = variant.name || variant.filter_name || "Цвет";
+            return `
+              <button
+                class="product_card_color_swatch${index === 0 ? " is-selected" : ""}"
+                type="button"
+                style="--product-swatch-color: ${escapeHtml(variant.color_hex)}"
+                data-product-card-color-swatch
+                data-product-card-color-image="${escapeHtml(imageUrl)}"
+                aria-label="${escapeHtml(label)}"
+                aria-pressed="${index === 0 ? "true" : "false"}"
+                title="${escapeHtml(label)}"
+              ></button>
+            `;
+          }).join("");
+        }
+
+        function hydrateProductCard(card, product) {
+          if (!card || !product) return;
+          const image = card.querySelector(".product_card_image_element");
+          if (image && !image.getAttribute("data-product-card-default-image")) {
+            image.setAttribute("data-product-card-default-image", image.getAttribute("src") || product.image_url || "");
+          }
+          const swatches = card.querySelector(".product_card_color_swatches");
+          if (swatches) swatches.innerHTML = renderProductColorSwatches(product);
+        }
+
+        function hydrateRenderedCards(products) {
+          const productById = new Map(products.map((product) => [Number(product.id), product]));
+          document.querySelectorAll(".product_card_component[data-product-card-id]").forEach((card) => {
+            hydrateProductCard(card, productById.get(Number(card.getAttribute("data-product-card-id"))));
+          });
+        }
+
         function isProductAvailable(product) {
           if (Number(product.stock) <= 0) return false;
 
-          const variants = Array.isArray(product.display_variant_options) ? product.display_variant_options : [];
+          const variants = Array.isArray(product.display_options) ? product.display_options : [];
           if (variants.length) return variants.some((variant) => Boolean(variant.available));
           return true;
         }
@@ -154,7 +211,7 @@
 
           const variants = [
             ...(Array.isArray(product.variant_options) ? product.variant_options : []),
-            ...(Array.isArray(product.display_variant_options) ? product.display_variant_options : []),
+            ...(Array.isArray(product.display_options) ? product.display_options : []),
           ];
 
           variants.forEach((variant) => {
@@ -175,7 +232,7 @@
           const brand = normalizeSearch(product.brand || product.brand_name);
           const variants = [
             ...(Array.isArray(product.variant_options) ? product.variant_options : []),
-            ...(Array.isArray(product.display_variant_options) ? product.display_variant_options : []),
+            ...(Array.isArray(product.display_options) ? product.display_options : []),
           ];
           const variantMatch = variants.some((variant) => [variant.name, variant.slug, variant.group].filter(Boolean).some((value) => normalizeSearch(value).includes(query)));
 
@@ -189,9 +246,9 @@
 
         function updateCatalogSearchMode(total) {
           const query = state.searchQuery.trim();
-          document.body.classList.toggle("catalog_search_mode", Boolean(query));
-          const title = document.getElementById("catalog_search_summary_title_id");
-          const text = document.getElementById("catalog_search_summary_text_id");
+          document.body.classList.toggle("is-catalog-search", Boolean(query));
+          const title = document.getElementById("catalog-search-summary__title_id");
+          const text = document.getElementById("catalog-search-summary__text_id");
           if (!title || !text) return;
           if (!query) {
             title.textContent = "";
@@ -267,7 +324,7 @@
       ============================================================ */
         const productCardTemplate = document.getElementById("productCardTemplates");
         const productCardMap = new Map(
-          [...(productCardTemplate?.content.querySelectorAll(".product_card_component") || [])].map((card) => [Number(card.getAttribute("data_product_card_id")), card.outerHTML]),
+          [...(productCardTemplate?.content.querySelectorAll(".product_card_component") || [])].map((card) => [Number(card.getAttribute("data-product-card-id")), card.outerHTML]),
         );
 
         function renderCard(p) {
@@ -281,11 +338,11 @@
             ? `<div class="product_card_price_meta_row"><span class="product_card_old_price_value">${Number(p.old_price).toLocaleString("uk-UA")} грн</span>${discountPercent ? `<span class="product_card_discount_value">-${discountPercent}%</span>` : ""}</div>`
             : `<div class="product_card_price_meta_row"></div>`;
           const imgHtml = p.image_url
-            ? `<img src="${p.image_url}" alt="${p.name}" class="product_card_image_element" loading="lazy" />` : "";
+            ? `<img src="${p.image_url}" data-product-card-default-image="${p.image_url}" alt="${p.name}" class="product_card_image_element" loading="lazy" />` : "";
           const isUnavailable = !isProductAvailable(p);
           const detailUrl = p.detail_url || (p.slug ? `/products/${p.id}/${p.slug}/` : "#");
           const brandHtml = `<div class="product_card_brand_text">${p.brand || ""}</div>`;
-          const detailAttr = ` data_product_card_url="${detailUrl}"`;
+          const detailAttr = ` data-product-card-url="${detailUrl}"`;
           const requiresSelection = Boolean(p.requires_selection);
           const ratingHtml = `<div class="product_card_rating_slot">${Number(p.review_count || 0) > 0
             ? `<a class="product_card_rating_row" href="${detailUrl}#product-reviews" aria-label="Рейтинг ${Number(p.average_rating || 0).toFixed(1)}, отзывов: ${Number(p.review_count)}">
@@ -297,11 +354,11 @@
             ? `<div class="product_card_unavailable_overlay_element" aria-hidden="true"></div><div class="product_card_unavailable_status_text">Нет в наличии</div>` : "";
           const nameHtml = `<a href="${detailUrl}">${p.name}</a>`;
           return `
-          <article class="product_card_component${isUnavailable ? " product_card_unavailable_state" : ""}" data_product_card_id="${p.id}"${detailAttr} data_product_card_requires_selection="${requiresSelection ? "true" : "false"}">
+          <article class="product_card_component${isUnavailable ? " product_card_unavailable_state" : ""}" data-product-card-id="${p.id}"${detailAttr} data-product-card-requires-selection="${requiresSelection ? "true" : "false"}">
             <div class="product_card_media_container">
               <div class="product_card_skeleton_element"></div>
               ${badgeHtml}
-              <button class="product_card_like_button${p.is_liked ? " active" : ""}" type="button" data_product_card_like_id="${p.id}" data_product_card_like_url="/products/${p.id}/like/" data_product_card_liked_state="${p.is_liked ? "true" : "false"}" aria-label="В избранное">
+              <button class="product_card_like_button${p.is_liked ? " is-active" : ""}" type="button" data-product-card-like-id="${p.id}" data-product-card-like-url="/products/${p.id}/like/" data-product-card-liked-state="${p.is_liked ? "true" : "false"}" aria-label="В избранное">
                 <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 <span class="product_card_like_count_text">${p.likes || 0}</span>
               </button>
@@ -311,18 +368,18 @@
             <div class="product_card_info_block">
               ${brandHtml}
               <div class="product_card_identity_block">
-                <h3 class="product_card_name_text product_card_name_link_element">
+                <h3 class="product_card_name_text ">
                   ${nameHtml}
                 </h3>
                 ${ratingHtml}
               </div>
-              <div class="product_card_color_swatches"></div>
+              <div class="product_card_color_swatches">${renderProductColorSwatches(p)}</div>
               <div class="product_card_footer_row">
                 <div class="product_card_price_row_container">
                   ${oldHtml}
                   <span class="product_card_price_value">${Number(p.price).toLocaleString("uk-UA")} грн</span>
                 </div>
-                <button class="product_card_cart_button" type="button" data_product_card_cart_url="/api/cart/add/"${isUnavailable ? " disabled aria-disabled=\"true\" title=\"Нет в наличии\"" : requiresSelection ? " title=\"Выбрать вариант\" aria-label=\"Выбрать вариант товара\"" : " title=\"Добавить в корзину\" aria-label=\"Добавить товар в корзину\""}>
+                <button class="product_card_cart_button" type="button" data-product-card-cart-url="/api/cart/add/"${isUnavailable ? " disabled aria-disabled=\"true\" title=\"Нет в наличии\"" : requiresSelection ? " title=\"Выбрать вариант\" aria-label=\"Выбрать вариант товара\"" : " title=\"Добавить в корзину\" aria-label=\"Добавить товар в корзину\""}>
                   <svg class="product_card_cart_icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h2l1.8 9.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L20 8H6"/><circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/><path d="M15 3v6M12 6h6"/></svg>
                   <svg class="product_card_cart_check_icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>
                 </button>
@@ -331,7 +388,7 @@
           </article>`;
         }
 
-        document.addEventListener("product-card:liked", (event) => {
+        document.addEventListener("product_card_component:liked", (event) => {
           const id = Number(event.detail?.productId);
           if (!id) return;
           const liked = Boolean(event.detail?.liked);
@@ -343,12 +400,12 @@
             product.likes = likes;
           }
 
-          const templateCard = productCardTemplate?.content.querySelector(`.product_card_component[data_product_card_id="${id}"]`);
+          const templateCard = productCardTemplate?.content.querySelector(`.product_card_component[data-product-card-id="${id}"]`);
           if (templateCard) {
-            const templateBtn = templateCard.querySelector("[data_product_card_like_id]");
+            const templateBtn = templateCard.querySelector("[data-product-card-like-id]");
             if (templateBtn) {
-              templateBtn.setAttribute("data_product_card_liked_state", liked ? "true" : "false");
-              templateBtn.classList.toggle("active", liked);
+              templateBtn.setAttribute("data-product-card-liked-state", liked ? "true" : "false");
+              templateBtn.classList.toggle("is-active", liked);
             }
             const templateCounter = templateCard.querySelector(".product_card_like_count_text");
             if (templateCounter) templateCounter.textContent = likes;
@@ -459,10 +516,11 @@
 
           if (page.length === 0) {
             grid.innerHTML = "";
-            empty.classList.add("catalog_empty_state_visible");
+            empty.classList.add("is-visible");
             const noProducts = document.getElementById("catalog_empty_icon_no_products_id");
             const noResults = document.getElementById("catalog_empty_icon_no_results_id");
             const emptyTitle = document.getElementById("emptyTitle");
+            const emptyDescription = document.getElementById("emptyDescription");
             const catalog_empty_reset_button_idBtn = document.getElementById("catalog_empty_reset_button_id");
             const hasVariantFilters = Object.values(state.variantFilters).some((values) => values.size > 0);
             const hasSortFilter = ["hit", "new", "sale"].includes(state.sort);
@@ -472,17 +530,24 @@
               if (noProducts) noProducts.style.display = "";
               if (noResults) noResults.style.display = "none";
               if (emptyTitle) emptyTitle.textContent = "Список товаров пуст";
+              if (emptyDescription) emptyDescription.textContent = "Ассортимент пока не заполнен. Новые товары появятся здесь.";
               if (catalog_empty_reset_button_idBtn) catalog_empty_reset_button_idBtn.style.display = "none";
             } else {
               // Есть товары, но фильтры дали 0 результатов
               if (noProducts) noProducts.style.display = "none";
               if (noResults) noResults.style.display = "";
               if (emptyTitle) emptyTitle.textContent = state.searchQuery ? `По запросу "${state.searchQuery}" ничего не найдено` : "Ничего не найдено";
+              if (emptyDescription) {
+                emptyDescription.textContent = state.searchQuery
+                  ? "Проверьте запрос или сбросьте выбранные фильтры."
+                  : "Измените параметры или сбросьте фильтры, чтобы увидеть товары.";
+              }
               if (catalog_empty_reset_button_idBtn) catalog_empty_reset_button_idBtn.style.display = "";
             }
           } else {
-            empty.classList.remove("catalog_empty_state_visible");
+            empty.classList.remove("is-visible");
             grid.innerHTML = page.map(renderCard).join("");
+            hydrateRenderedCards(page);
           }
 
           renderPagination(total);
@@ -561,11 +626,11 @@
          FILTER BLOCKS (accordion)
         ============================================================ */
         function initFilterBlocks() {
-          document.querySelectorAll(".filter_block_header_element").forEach((header) => {
+          document.querySelectorAll(".filter-panel__header").forEach((header) => {
             header.addEventListener("click", () => {
-              const block = header.closest(".filter_block_component");
-              if (block.classList.contains("filter_block_static_variant")) return;
-              block.classList.toggle("filter_block_open_state");
+              const block = header.closest(".filter-panel");
+              if (block.classList.contains("filter-panel--static")) return;
+              block.classList.toggle("is-open");
             });
           });
         }
@@ -579,7 +644,7 @@
           const categories = [{ slug: "all", name: "Все" }, ...allCategories];
           root.innerHTML = categories
             .map((category) => `
-              <button class="filter_chip_button${state.categoryFilter === category.slug ? " active" : ""}" type="button" data_filter_category_slug="${category.slug}">
+              <button class="filter-chip${state.categoryFilter === category.slug ? " is-active" : ""}" type="button" data-filter-category-slug="${category.slug}">
                 ${category.name}
               </button>
             `)
@@ -588,12 +653,12 @@
 
         function initTypeChips() {
           buildCategoryChips();
-          const allChips = document.querySelectorAll("[data_filter_category_slug].filter_chip_button");
+          const allChips = document.querySelectorAll("[data-filter-category-slug].filter-chip");
           allChips.forEach((btn) => {
             btn.addEventListener("click", () => {
-              document.querySelectorAll(".filter_chip_button[data_filter_category_slug]").forEach((b) => b.classList.remove("active"));
-              btn.classList.add("active");
-              state.categoryFilter = btn.getAttribute("data_filter_category_slug");
+              document.querySelectorAll(".filter-chip[data-filter-category-slug]").forEach((b) => b.classList.remove("is-active"));
+              btn.classList.add("is-active");
+              state.categoryFilter = btn.getAttribute("data-filter-category-slug");
               state.brandFilters = new Set();
               state.variantFilters = {};
               state.page = 1;
@@ -626,25 +691,25 @@
           });
 
           if (!brandMap.size) {
-            root.innerHTML = '<span class="filter_empty_text_element">Нет брендов</span>';
+            root.innerHTML = '<span class="filter-empty">Нет брендов</span>';
             return;
           }
 
           root.innerHTML = [...brandMap.values()]
             .sort((a, b) => String(a.name).localeCompare(String(b.name), "ru"))
             .map((brand) => `
-              <label class="filter_checkbox_label_element">
-                <input type="checkbox" data_filter_brand_id="${brand.id}" ${state.brandFilters.has(brand.id) ? "checked" : ""} />
-                <span class="filter_checkbox_box_element"></span>
-                <span class="filter_checkbox_text_span">${brand.name}</span>
-                <span class="filter_checkbox_count_span">${brand.count}</span>
+              <label class="filter-checkbox">
+                <input type="checkbox" data-filter-brand-id="${brand.id}" ${state.brandFilters.has(brand.id) ? "checked" : ""} />
+                <span class="filter-checkbox__box"></span>
+                <span class="filter-checkbox__text">${brand.name}</span>
+                <span class="filter-checkbox__count">${brand.count}</span>
               </label>
             `)
             .join("");
 
-          root.querySelectorAll("[data_filter_brand_id]").forEach((input) => {
+          root.querySelectorAll("[data-filter-brand-id]").forEach((input) => {
             input.addEventListener("change", () => {
-              const id = String(input.getAttribute("data_filter_brand_id"));
+              const id = String(input.getAttribute("data-filter-brand-id"));
               if (input.checked) state.brandFilters.add(id);
               else state.brandFilters.delete(id);
               state.page = 1;
@@ -664,8 +729,14 @@
             const countedFilters = new Set();
             variants.forEach((variant) => {
               const group = variant.group || "default";
-              if (!groups.has(group)) groups.set(group, new Map());
-              const bySlug = groups.get(group);
+              const parsedGroupOrder = Number(variant.group_order);
+              const groupOrder = Number.isFinite(parsedGroupOrder) ? parsedGroupOrder : 999999;
+              if (!groups.has(group)) {
+                groups.set(group, { order: groupOrder, variants: new Map() });
+              } else {
+                groups.get(group).order = Math.min(groups.get(group).order, groupOrder);
+              }
+              const bySlug = groups.get(group).variants;
               const slug = String(variant.filter_slug || variant.filter_name || variant.name || "");
               if (!slug || countedFilters.has(`${group}\u0000${slug}`)) return;
               countedFilters.add(`${group}\u0000${slug}`);
@@ -686,31 +757,34 @@
           }
 
           root.innerHTML = [...groups.entries()]
-            .map(([group, variants]) => {
+            .sort(([groupA, dataA], [groupB, dataB]) => (
+              dataA.order - dataB.order || groupA.localeCompare(groupB, "ru")
+            ))
+            .map(([group, groupData]) => {
               const title = group === "default" ? "Варианты" : group;
-              const options = [...variants.values()]
+              const options = [...groupData.variants.values()]
                 .sort((a, b) => String(a.name).localeCompare(String(b.name), "ru"))
                 .map((variant) => `
-                  <label class="filter_checkbox_label_element">
-                    <input type="checkbox" data_filter_variant_group_name="${group}" data_filter_variant_slug="${variant.slug}" ${state.variantFilters[group]?.has(String(variant.slug)) ? "checked" : ""} />
-                    <span class="filter_checkbox_box_element"></span>
-                    <span class="filter_checkbox_text_span">${variant.name}</span>
-                    <span class="filter_checkbox_count_span">${variant.count}</span>
+                  <label class="filter-checkbox">
+                    <input type="checkbox" data-filter-group-name="${group}" data-filter-slug="${variant.slug}" ${state.variantFilters[group]?.has(String(variant.slug)) ? "checked" : ""} />
+                    <span class="filter-checkbox__box"></span>
+                    <span class="filter-checkbox__text">${variant.name}</span>
+                    <span class="filter-checkbox__count">${variant.count}</span>
                   </label>
                 `)
                 .join("");
               return `
-                <div class="filter_block_component filter_block_open_state" data_filter_variant_block_group="${group}">
-                  <div class="filter_block_header_element">
-                    <span class="filter_block_title_text">${title}</span>
-                    <span class="filter_block_arrow_wrapper">
-                      <svg class="filter_block_arrow_icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+                <div class="filter-panel" data-filter-block-group="${group}">
+                  <div class="filter-panel__header">
+                    <span class="filter-panel__title">${title}</span>
+                    <span class="filter-panel__arrow">
+                      <svg class="filter-panel__arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
                     </span>
                   </div>
-                  <div class="filter_block_body_container">
-                    <div class="filter_block_body_inner_wrapper">
-                      <div class="filter_block_body_content_area">
-                        <div class="filter_checkboxes_container">
+                  <div class="filter-panel__body">
+                    <div class="filter-panel__body-inner">
+                      <div class="filter-panel__content">
+                        <div class="filter-checkbox-list">
                           ${options}
                         </div>
                       </div>
@@ -721,16 +795,16 @@
             })
             .join("");
 
-          root.querySelectorAll(".filter_block_header_element").forEach((header) => {
+          root.querySelectorAll(".filter-panel__header").forEach((header) => {
             header.addEventListener("click", () => {
-              header.closest(".filter_block_component")?.classList.toggle("filter_block_open_state");
+              header.closest(".filter-panel")?.classList.toggle("is-open");
             });
           });
 
-          root.querySelectorAll("[data_filter_variant_slug]").forEach((input) => {
+          root.querySelectorAll("[data-filter-slug]").forEach((input) => {
             input.addEventListener("change", () => {
-              const group = input.getAttribute("data_filter_variant_group_name") || "default";
-              const slug = String(input.getAttribute("data_filter_variant_slug"));
+              const group = input.getAttribute("data-filter-group-name") || "default";
+              const slug = String(input.getAttribute("data-filter-slug"));
               if (!state.variantFilters[group]) state.variantFilters[group] = new Set();
               const selected = state.variantFilters[group];
               if (input.checked) selected.add(slug);
@@ -747,12 +821,12 @@
         function initSort() {
           const container = document.getElementById("sort_options_container_id");
           if (!container) return;
-          container.querySelectorAll(".sort_option_button").forEach((b) => b.classList.toggle("active", b.getAttribute("data_sort_option_key") === state.sort));
-          container.querySelectorAll(".sort_option_button").forEach((btn) => {
+          container.querySelectorAll(".sort-options__button").forEach((b) => b.classList.toggle("is-active", b.getAttribute("data-sort-option-key") === state.sort));
+          container.querySelectorAll(".sort-options__button").forEach((btn) => {
             btn.addEventListener("click", () => {
-              container.querySelectorAll(".sort_option_button").forEach((b) => b.classList.remove("active"));
-              btn.classList.add("active");
-              state.sort = btn.getAttribute("data_sort_option_key");
+              container.querySelectorAll(".sort-options__button").forEach((b) => b.classList.remove("is-active"));
+              btn.classList.add("is-active");
+              state.sort = btn.getAttribute("data-sort-option-key");
               state.page = 1;
               render();
             });
@@ -815,20 +889,29 @@
         /* Определяем доступные опции по ширине и дефолтное значение */
         function getViewOptions() {
           const w = window.innerWidth;
-          if (w > 1200) return { options: [3, 4], default: 4 };
-          if (w > 900) return { options: [2, 3], default: 3 };
+          if (w > 1200) return { options: [4, 5], default: 4 };
+          if (w > 900) return { options: [3, 4], default: 3 };
           // ≤900: мобиль — 1 или 2 колонки
           return { options: [1, 2], default: 2 };
         }
 
         function getGridViewClass(cols) {
           const classes = {
-            1: "catalog_grid_one_column_state",
-            2: "catalog_grid_two_columns_state",
-            3: "catalog_grid_three_columns_state",
-            4: "catalog_grid_four_columns_state",
+            1: "product-browser__grid--one",
+            2: "product-browser__grid--two",
+            3: "product-browser__grid--three",
+            4: "product-browser__grid--four",
+            5: "product-browser__grid--five",
           };
           return classes[cols] || "";
+        }
+
+        function applyGridView(cols) {
+          const grid = document.getElementById("catalog_grid_container_id");
+          if (!grid) return;
+          grid.className = "product-browser__grid";
+          const viewClass = getGridViewClass(cols);
+          if (viewClass) grid.classList.add(viewClass);
         }
 
         function buildViewToggle() {
@@ -839,21 +922,15 @@
           // Если текущее state.view не входит в доступные — сбросить на дефолт
           if (!options.includes(state.view)) {
             state.view = def;
-            const grid = document.getElementById("catalog_grid_container_id");
-            if (grid) {
-              grid.className = "catalog_grid_container";
-              if (state.view !== options[options.length - 1]) {
-                grid.classList.add(getGridViewClass(state.view));
-              }
-            }
           }
+          applyGridView(state.view);
 
           container.innerHTML = options
             .map(
               (cols) => `
-            <button class="catalog_view_button_element${state.view === cols ? " catalog_view_button_active_state" : ""}"
+            <button class="product-browser-controls__view-button${state.view === cols ? " is-active" : ""}"
                     data_view_columns_count="${cols}"
-                    data_view_button_label="${VIEW_LABELS[cols]}"
+                    data-view-button-label="${VIEW_LABELS[cols]}"
                     title="${VIEW_LABELS[cols]}">
               ${VIEW_ICONS[cols]}
             </button>
@@ -861,17 +938,13 @@
             )
             .join("");
 
-          container.querySelectorAll(".catalog_view_button_element").forEach((btn) => {
+          container.querySelectorAll(".product-browser-controls__view-button").forEach((btn) => {
             btn.addEventListener("click", () => {
               const cols = +btn.getAttribute("data_view_columns_count");
               state.view = cols;
-              container.querySelectorAll(".catalog_view_button_element").forEach((b) => b.classList.remove("catalog_view_button_active_state"));
-              btn.classList.add("catalog_view_button_active_state");
-              const grid = document.getElementById("catalog_grid_container_id");
-              if (!grid) return;
-              grid.className = "catalog_grid_container";
-              const maxCols = getViewOptions().options[getViewOptions().options.length - 1];
-              if (cols !== maxCols) grid.classList.add(getGridViewClass(cols));
+              container.querySelectorAll(".product-browser-controls__view-button").forEach((b) => b.classList.remove("is-active"));
+              btn.classList.add("is-active");
+              applyGridView(cols);
             });
           });
         }
@@ -902,8 +975,8 @@
           state.variantFilters = {};
           state.sort = "recommended";
           state.searchQuery = "";
-          document.querySelectorAll(".filter_chip_button[data_filter_category_slug]").forEach((b) => b.classList.toggle("active", b.getAttribute("data_filter_category_slug") === "all"));
-          document.querySelectorAll(".sort_option_button").forEach((b) => b.classList.toggle("active", b.getAttribute("data_sort_option_key") === "recommended"));
+          document.querySelectorAll(".filter-chip[data-filter-category-slug]").forEach((b) => b.classList.toggle("is-active", b.getAttribute("data-filter-category-slug") === "all"));
+          document.querySelectorAll(".sort-options__button").forEach((b) => b.classList.toggle("is-active", b.getAttribute("data-sort-option-key") === "recommended"));
           const rMin = document.getElementById("filter_range_min_slider_id");
           const rMax = document.getElementById("filter_range_max_slider_id");
           if (rMin) rMin.value = 0;
@@ -917,7 +990,7 @@
             fill.style.left = "0%";
             fill.style.width = "100%";
           }
-          document.querySelectorAll(".filter_checkboxes_container input[type=checkbox]").forEach((cb) => (cb.checked = false));
+          document.querySelectorAll(".filter-checkbox-list input[type=checkbox]").forEach((cb) => (cb.checked = false));
           initBrandFilters();
           initVariantFilters();
           render();
@@ -951,18 +1024,18 @@
 
           function openDrawer() {
             previousBodyOverflow = document.body.style.overflow;
-            drawer.classList.add("open");
-            overlay.classList.add("open");
-            arrowBtn?.classList.add("open");
-            document.body.classList.add("filter_drawer_open");
+            drawer.classList.add("is-open");
+            overlay.classList.add("is-open");
+            arrowBtn?.classList.add("is-open");
+            document.body.classList.add("is-filter-drawer-open");
             drawer.setAttribute("aria-hidden", "false");
             document.body.style.overflow = "hidden";
           }
           function closeDrawer() {
-            drawer.classList.remove("open");
-            overlay.classList.remove("open");
-            arrowBtn?.classList.remove("open");
-            document.body.classList.remove("filter_drawer_open");
+            drawer.classList.remove("is-open");
+            overlay.classList.remove("is-open");
+            arrowBtn?.classList.remove("is-open");
+            document.body.classList.remove("is-filter-drawer-open");
             drawer.setAttribute("aria-hidden", "true");
             document.body.style.overflow = previousBodyOverflow;
           }
@@ -972,7 +1045,7 @@
           arrowBtn?.addEventListener("click", closeDrawer);
           overlay.addEventListener("click", closeDrawer);
           document.addEventListener("keydown", (event) => {
-            if (event.key === "Escape" && drawer.classList.contains("open")) closeDrawer();
+            if (event.key === "Escape" && drawer.classList.contains("is-open")) closeDrawer();
           });
         }
 

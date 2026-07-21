@@ -18,6 +18,7 @@ from ..models import (
     ProductReview,
     ProductReviewHelpful,
     ProductSKU,
+    ProductSpecification,
     ProductVariant,
 )
 
@@ -36,6 +37,11 @@ available_variant_prefetch = Prefetch(
 product_sku_prefetch = Prefetch(
     "skus",
     queryset=ProductSKU.objects.prefetch_related("options").order_by("sort_order", "id"),
+)
+
+product_specification_prefetch = Prefetch(
+    "specifications",
+    queryset=ProductSpecification.objects.order_by("order", "id"),
 )
 
 
@@ -132,6 +138,10 @@ def serialize_product(product, liked_product_ids=None):
         "review_count": review_count,
         "average_rating": round(float(average_rating), 1) if average_rating is not None else None,
         "requires_selection": requires_selection,
+        "key_specifications": [
+            {"name": item.name, "value": item.value, "icon": item.icon}
+            for item in product.key_specifications
+        ],
         "is_available": is_product_available_for_purchase(product),
         "detail_url": f"/products/{product.id}/{product.slug}/",
     }
@@ -255,24 +265,56 @@ def serialize_search_product(product):
 def serialize_cart_item(item):
     product = item.product
     selected_variant_ids = [int(value) for value in (item.selected_variant_ids or []) if value]
+    selected_variants = []
+    selected_image_url = product.image.url if product.image else None
     if item.product_sku_id:
         selected_options = list(item.product_sku.options.all())
         selected_variant_ids = [option.id for option in selected_options]
+        if item.product_sku.image:
+            selected_image_url = item.product_sku.image.url
+        selected_variants = [
+            {
+                "id": option.id,
+                "group": option.group.name if option.group_id else "",
+                "name": option.name,
+            }
+            for option in selected_options
+        ]
         variant_name = ", ".join(option.name for option in selected_options)
     elif selected_variant_ids:
         variants_by_id = {
             variant.id: variant
-            for variant in ProductVariant.objects.select_related("variant").filter(
+            for variant in ProductVariant.objects.select_related("variant", "variant__group").filter(
                 id__in=selected_variant_ids,
                 product=product,
             )
         }
+        variant_with_image = next((variant for variant_id in selected_variant_ids if variant_id in variants_by_id and variants_by_id[variant_id].image), None)
+        if variant_with_image:
+            selected_image_url = variant_with_image.image.url
+        selected_variants = [
+            {
+                "id": variants_by_id[variant_id].id,
+                "group": variants_by_id[variant_id].variant.group.name if variants_by_id[variant_id].variant.group_id else "",
+                "name": variants_by_id[variant_id].variant.name,
+            }
+            for variant_id in selected_variant_ids
+            if variant_id in variants_by_id
+        ]
         variant_name = ", ".join(
             variants_by_id[variant_id].variant.name
             for variant_id in selected_variant_ids
             if variant_id in variants_by_id
         )
     else:
+        if item.product_variant_id:
+            if item.product_variant.image:
+                selected_image_url = item.product_variant.image.url
+            selected_variants = [{
+                "id": item.product_variant_id,
+                "group": item.product_variant.variant.group.name if item.product_variant.variant.group_id else "",
+                "name": item.product_variant.variant.name,
+            }]
         variant_name = item.product_variant.variant.name if item.product_variant_id else ""
     return {
         "id": item.id,
@@ -284,11 +326,12 @@ def serialize_cart_item(item):
         "price": float(item.price),
         "old_price": float(product.old_price) if product.old_price else None,
         "badge": serialize_badge(product),
-        "image_url": product.image.url if product.image else None,
+        "image_url": selected_image_url,
         "product_sku_id": item.product_sku_id,
         "variant_id": item.product_variant_id,
         "variant_ids": selected_variant_ids,
         "variant_name": variant_name,
+        "selected_variants": selected_variants,
         "quantity": item.quantity,
         "total_price": float(item.total_price),
     }
@@ -303,7 +346,8 @@ def serialize_cart(cart):
             "product_sku",
             "product_variant",
             "product_variant__variant",
-        ).prefetch_related("product_sku__options")
+            "product_variant__variant__group",
+        ).prefetch_related("product_sku__options__group")
     )
     total_price = sum((item.total_price for item in items), Decimal("0.00"))
     total_quantity = sum(item.quantity for item in items)

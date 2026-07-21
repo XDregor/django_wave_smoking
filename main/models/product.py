@@ -119,6 +119,13 @@ class Product(models.Model):
     def display_likes(self):
         return max(0, int(self.likes or 0) + int(self.likes_adjustment or 0))
 
+    @property
+    def key_specifications(self):
+        specifications = getattr(self, "_prefetched_objects_cache", {}).get("specifications")
+        if specifications is None:
+            return list(self.specifications.filter(is_key=True).order_by("order", "id")[:5])
+        return [specification for specification in specifications if specification.is_key][:5]
+
     def save(self, *args, **kwargs):
         self.slug = make_unique_slug(Product, self.name, self.pk)
         self.clean()
@@ -218,6 +225,7 @@ class Product(models.Model):
                 "color_hex": item.variant.color_hex,
                 "group": item.variant.group.name if item.variant.group_id else "",
                 "group_kind": item.variant.group.kind if item.variant.group_id else "",
+                "group_order": item.variant.group.order if item.variant.group_id else 999999,
                 "image_url": item.image.url if item.image else "",
                 "thumbnail_url": item.thumbnail_url,
                 "stock": item.stock,
@@ -242,6 +250,7 @@ class Product(models.Model):
                 "color_hex": product_variant.variant.color_hex,
                 "group": product_variant.variant.group.name if product_variant.variant.group_id else "",
                 "group_kind": product_variant.variant.group.kind if product_variant.variant.group_id else "",
+                "group_order": product_variant.variant.group.order if product_variant.variant.group_id else 999999,
                 "image_url": product_variant.image.url if product_variant.image else "",
                 "thumbnail_url": product_variant.thumbnail_url,
                 "stock": product_variant.stock,
@@ -499,6 +508,33 @@ class ProductImage(models.Model):
 
 
 class ProductSpecification(models.Model):
+    ICON_INFO = "info"
+    ICON_SLIDERS = "sliders"
+    ICON_BLOOM = "bloom"
+    ICON_SPROUT = "sprout"
+    ICON_SPARK = "spark"
+    ICON_BOLT = "bolt"
+    ICON_DROP = "drop"
+    ICON_LEAF = "leaf"
+    ICON_FLASK = "flask"
+    ICON_BATTERY = "battery"
+    ICON_RULER = "ruler"
+    ICON_SHIELD = "shield"
+    ICON_CHOICES = (
+        (ICON_SLIDERS, "Параметры"),
+        (ICON_BLOOM, "Растение"),
+        (ICON_SPROUT, "Листья"),
+        (ICON_INFO, "Общее"),
+        (ICON_SPARK, "Особенность"),
+        (ICON_BOLT, "Мощность"),
+        (ICON_DROP, "Жидкость"),
+        (ICON_LEAF, "Состав"),
+        (ICON_FLASK, "Формула"),
+        (ICON_BATTERY, "Аккумулятор"),
+        (ICON_RULER, "Размер"),
+        (ICON_SHIELD, "Защита"),
+    )
+
     product = models.ForeignKey(
         Product,
         related_name="specifications",
@@ -508,6 +544,13 @@ class ProductSpecification(models.Model):
     name = models.CharField(max_length=120, verbose_name="Name")
     value = models.CharField(max_length=255, verbose_name="Value")
     order = models.PositiveIntegerField(default=0, verbose_name="Order")
+    is_key = models.BooleanField(default=False, verbose_name="Key characteristic")
+    icon = models.CharField(
+        max_length=20,
+        choices=ICON_CHOICES,
+        default=ICON_INFO,
+        verbose_name="Icon",
+    )
 
     class Meta:
         ordering = ("order", "id")

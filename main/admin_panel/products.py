@@ -35,7 +35,7 @@ class ProductImageInline(TabularInline):
 class ProductSpecificationInline(TabularInline):
     model = ProductSpecification
     extra = 0
-    fields = ("name", "value", "order")
+    fields = ("name", "value", "icon", "is_key", "order")
     show_change_link = True
 
 
@@ -283,7 +283,7 @@ class ProductAdmin(
 
 @admin.register(ProductSpecification)
 class ProductSpecificationAdmin(HiddenFromMenuAdminMixin, ModelAdmin):
-    list_display = ("product", "name", "value", "order")
+    list_display = ("product", "name", "value", "icon", "is_key", "order")
     search_fields = ("product__name", "name", "value")
     autocomplete_fields = ("product",)
     ordering = ("product__name", "order", "id")

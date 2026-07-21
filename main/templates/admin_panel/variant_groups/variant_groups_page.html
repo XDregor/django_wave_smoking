@@ -8,7 +8,7 @@
   {{ block.super }}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{% static 'admin_panel/variant_groups/css/variant_groups_page.css' %}?v=variant-groups9" />
+  <link rel="stylesheet" href="{% static 'admin_panel/variant_groups/css/variant_groups_page.css' %}?v=variant-groups10" />
 {% endblock %}
 
 {% block content %}
@@ -84,14 +84,31 @@
           <div class="modal-field group-name-field">
             <label for="variantGroupName" id="variantGroupNameLabel">Название группы</label>
             <input id="variantGroupName" type="text" maxlength="80" placeholder="Например: Цвет" autocomplete="off" />
-            <div class="color-group-identity" id="colorGroupIdentity" hidden>
-              <span class="color-group-identity-mark" aria-hidden="true">
+            <div class="system-group-identity color-group-identity" id="colorGroupIdentity" hidden>
+              <span class="system-group-identity-mark color-group-identity-mark" aria-hidden="true">
                 <i></i><i></i><i></i><i></i>
               </span>
-              <span class="color-group-identity-copy">
+              <span class="system-group-identity-copy">
                 <strong>Цвет</strong>
               </span>
-              <span class="color-group-identity-lock" aria-label="Системная группа" title="Системная группа">
+              <span class="system-group-identity-lock" aria-label="Системная группа" title="Системная группа">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <rect x="4" y="10" width="16" height="11" rx="2"></rect>
+                  <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+                </svg>
+              </span>
+            </div>
+            <div class="system-group-identity flavor-group-identity" id="flavorGroupIdentity" hidden>
+              <span class="system-group-identity-mark flavor-group-identity-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                  <path d="M12 20c4.1 0 7-2.8 7-6.7C19 9.2 15.8 6 12 3c-3.8 3-7 6.2-7 10.3C5 17.2 7.9 20 12 20Z"></path>
+                  <path d="M9 13.5c.7 1.4 1.8 2.2 3.5 2.4"></path>
+                </svg>
+              </span>
+              <span class="system-group-identity-copy">
+                <strong>Вкус</strong>
+              </span>
+              <span class="system-group-identity-lock" aria-label="Системная группа" title="Системная группа">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                   <rect x="4" y="10" width="16" height="11" rx="2"></rect>
                   <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
@@ -120,7 +137,7 @@
 
           <div class="options-column-head" id="variantOptionsColumnHead" aria-hidden="true">
             <span>Название</span>
-            <span>Для фильтра</span>
+            <span id="variantFilterColumnLabel">Для фильтра</span>
             <span class="color-column-label">Цвет</span>
             <span>Использование</span>
             <span></span>
@@ -159,5 +176,5 @@
 
 {% block extrahead %}
   {{ block.super }}
-  <script src="{% static 'admin_panel/variant_groups/js/variant_groups_page.js' %}?v=variant-groups6" defer></script>
+  <script src="{% static 'admin_panel/variant_groups/js/variant_groups_page.js' %}?v=variant-groups7" defer></script>
 {% endblock %}

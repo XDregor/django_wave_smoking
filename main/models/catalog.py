@@ -47,9 +47,11 @@ class Brand(models.Model):
 class VariantGroup(models.Model):
     KIND_DEFAULT = ""
     KIND_COLOR = "color"
+    KIND_FLAVOR = "flavor"
     KIND_CHOICES = (
         (KIND_DEFAULT, "Обычная"),
         (KIND_COLOR, "Цвет"),
+        (KIND_FLAVOR, "Вкус"),
     )
 
     name = models.CharField(max_length=80, unique=True, verbose_name="Group name")
@@ -74,11 +76,20 @@ class VariantGroup(models.Model):
                 condition=models.Q(kind="color"),
                 name="main_variantgroup_single_color_kind",
             ),
+            models.UniqueConstraint(
+                fields=("kind",),
+                condition=models.Q(kind="flavor"),
+                name="main_variantgroup_single_flavor_kind",
+            ),
         )
 
     @property
     def is_color_group(self):
         return self.kind == self.KIND_COLOR
+
+    @property
+    def is_flavor_group(self):
+        return self.kind == self.KIND_FLAVOR
 
     @property
     def is_system_group(self):
@@ -88,6 +99,9 @@ class VariantGroup(models.Model):
         if self.is_color_group:
             self.name = "Цвет"
             self.order = 0
+        elif self.is_flavor_group:
+            self.name = "Вкус"
+            self.order = 1
         self.slug = make_unique_slug(VariantGroup, self.name, self.pk)
         super().save(*args, **kwargs)
 

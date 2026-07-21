@@ -3,4 +3,4 @@ from .site import urlpatterns as site_urlpatterns
 
 app_name = "main"
 
-urlpatterns = [*site_urlpatterns, *api_urlpatterns]
+urlpatterns = [*api_urlpatterns, *site_urlpatterns]

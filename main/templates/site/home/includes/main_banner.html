@@ -1,6 +1,6 @@
 {% load static %}
 <section
-  class="main_banner wave_campaign_hero"
+  class="main_banner wave-campaign"
   id="mainBanner"
   aria-labelledby="mainBannerTitle"
   data-smoke-vertical="{% static 'site/shared/img/main_banner/ambient-smoke-vertical.webp' %}"
@@ -21,32 +21,38 @@
   data-tastes-corner-right="{% static 'site/shared/img/main_banner/tastes-corner-right.webp' %}"
   data-tastes-splash-bottom="{% static 'site/shared/img/main_banner/tastes-splash-bottom.webp' %}"
 >
-  <div class="wave_campaign_backdrop" aria-hidden="true">
-    <img class="wave_campaign_backdrop_image" id="mainBannerBackdrop" alt="" decoding="async" />
-    <img class="wave_campaign_smoke wave_campaign_smoke--vertical" id="mainBannerSmokeVertical" alt="" decoding="async" />
-    <img class="wave_campaign_smoke wave_campaign_smoke--floor" id="mainBannerSmokeFloor" alt="" decoding="async" />
+  <div class="wave-campaign__backdrop" aria-hidden="true">
+    <img class="wave-campaign__backdrop-image" id="mainBannerBackdrop" alt="" decoding="async" />
+    <img class="wave-campaign__smoke wave-campaign__smoke--vertical" id="mainBannerSmokeVertical" alt="" decoding="async" />
+    <img class="wave-campaign__smoke wave-campaign__smoke--floor" id="mainBannerSmokeFloor" alt="" decoding="async" />
   </div>
 
-  <div class="wave_campaign_scene_art wave_campaign_scene_art--back" id="mainBannerBackArt" aria-hidden="true">
-    <span class="wave_campaign_decor_shell" data-back-decor="0"><img alt="" decoding="async" /></span>
-    <span class="wave_campaign_decor_shell" data-back-decor="1"><img alt="" decoding="async" /></span>
-    <span class="wave_campaign_decor_shell" data-back-decor="2"><img alt="" decoding="async" /></span>
-    <span class="wave_campaign_decor_shell" data-back-decor="3"><img alt="" decoding="async" /></span>
+  <div class="wave-campaign__scene-art wave-campaign__scene-art--back" id="mainBannerBackArt" aria-hidden="true">
+    <span class="wave-campaign__decor-shell" data-back-decor="0"><img alt="" decoding="async" /></span>
+    <span class="wave-campaign__decor-shell" data-back-decor="1"><img alt="" decoding="async" /></span>
+    <span class="wave-campaign__decor-shell" data-back-decor="2"><img alt="" decoding="async" /></span>
+    <span class="wave-campaign__decor-shell" data-back-decor="3"><img alt="" decoding="async" /></span>
   </div>
 
-  <div class="wave_campaign_frame">
-    <div class="wave_campaign_content">
-      <div class="wave_campaign_copy" id="mainBannerCopy">
-        <h1 class="wave_campaign_title" id="mainBannerTitle">
-          Вкус, который<br /><span>держит ритм.</span>
-        </h1>
-        <p class="wave_campaign_description" id="mainBannerDescription">
-          Современные устройства для ровной и контролируемой подачи. Компактный формат, понятное управление и ничего лишнего.
-        </p>
-        <div class="wave_campaign_actions">
-          <a class="wave_campaign_cta wave_campaign_cta--primary" id="mainBannerCta" href="#products">
-            <span id="mainBannerCtaText">Смотреть устройства</span>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+  <div class="wave-campaign__frame">
+    <div class="wave-campaign__content">
+      <div class="wave-campaign__copy" id="mainBannerCopy">
+        <div class="wave-campaign__message">
+          <h1 class="wave-campaign__title" id="mainBannerTitle">
+            <span class="wave-campaign__title-line">
+              <span class="wave-campaign__title-text">Вкус, который</span>
+            </span>
+            <span class="wave-campaign__title-line wave-campaign__title-line--accent">
+              <span class="wave-campaign__title-text">держит ритм.</span>
+            </span>
+          </h1>
+          <p class="wave-campaign__description" id="mainBannerDescription">
+            Современные устройства для ровной и контролируемой подачи. Компактный формат, понятное управление и ничего лишнего.
+          </p>
+        </div>
+        <div class="wave-campaign__actions">
+          <a class="wave-campaign__cta wave-campaign__cta--primary" id="mainBannerCta" href="#products">
+            <span class="wave-campaign__cta-text" id="mainBannerCtaText">Выбрать</span>
           </a>
         </div>
       </div>
@@ -54,15 +60,15 @@
     </div>
   </div>
 
-  <div class="wave_campaign_stage" id="mainBannerVisual" aria-live="polite">
-        <img class="wave_campaign_visual wave_campaign_visual--primary" id="mainBannerPrimaryVisual" alt="Устройства для вейпинга" decoding="async" />
-        <img class="wave_campaign_visual wave_campaign_visual--secondary" id="mainBannerSecondaryVisual" alt="" decoding="async" hidden />
+  <div class="wave-campaign__stage" id="mainBannerVisual" aria-live="polite">
+        <img class="wave-campaign__visual wave-campaign__visual--primary" id="mainBannerPrimaryVisual" alt="Устройства для вейпинга" decoding="async" />
+        <img class="wave-campaign__visual wave-campaign__visual--secondary" id="mainBannerSecondaryVisual" alt="" decoding="async" hidden />
   </div>
-  <div class="wave_campaign_scene_art wave_campaign_scene_art--front" id="mainBannerFrontArt" aria-hidden="true">
-    <span class="wave_campaign_decor_shell" data-front-decor="0"><img alt="" decoding="async" /></span>
-    <span class="wave_campaign_decor_shell" data-front-decor="1"><img alt="" decoding="async" /></span>
+  <div class="wave-campaign__scene-art wave-campaign__scene-art--front" id="mainBannerFrontArt" aria-hidden="true">
+    <span class="wave-campaign__decor-shell" data-front-decor="0"><img alt="" decoding="async" /></span>
+    <span class="wave-campaign__decor-shell" data-front-decor="1"><img alt="" decoding="async" /></span>
   </div>
-  <nav class="wave_campaign_dots" id="mainBannerDots" aria-label="Сцены баннера">
-    <span class="wave_campaign_dot_morph" id="mainBannerDotMorph" aria-hidden="true"></span>
+  <nav class="wave-campaign__dots" id="mainBannerDots" aria-label="Сцены баннера">
+    <span class="wave-campaign__dot-morph" id="mainBannerDotMorph" aria-hidden="true"></span>
   </nav>
 </section>

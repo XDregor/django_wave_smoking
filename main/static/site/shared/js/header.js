@@ -197,8 +197,8 @@ class AdaptiveAccountButton {
 
         renderMessage(message) {
           this.dropdown.innerHTML = `
-            <div class="search_results_empty">
-              <div class="search_results_empty_title">${this.escapeHtml(message)}</div>
+            <div class="header-search-results__empty">
+              <div class="header-search-results__empty-title">${this.escapeHtml(message)}</div>
             </div>
           `;
           this.show();
@@ -211,9 +211,9 @@ class AdaptiveAccountButton {
 
           if (!results.length) {
             this.dropdown.innerHTML = `
-              <div class="search_results_empty">
-                <div class="search_results_empty_title">Ничего не найдено</div>
-                <a class="search_result_empty_link" href="${catalogUrl}">Перейти в каталог</a>
+              <div class="header-search-results__empty">
+                <div class="header-search-results__empty-title">Ничего не найдено</div>
+                <a class="header-search-results__empty-link" href="${catalogUrl}">Перейти в каталог</a>
               </div>
             `;
             this.show();
@@ -221,14 +221,14 @@ class AdaptiveAccountButton {
           }
 
           this.dropdown.innerHTML = `
-            <div class="search_results_list">
+            <div class="header-search-results__list">
               ${results.map((product) => this.renderProduct(product)).join("")}
             </div>
-            <div class="search_result_footer">
+            <div class="header-search-results__footer">
               <a href="${catalogUrl}">Показать все результаты${total > results.length ? ` (${total})` : ""}</a>
             </div>
           `;
-          this.dropdown.querySelectorAll(".search_result_item").forEach((item) => {
+          this.dropdown.querySelectorAll(".header-search-results__item").forEach((item) => {
             item.addEventListener("click", () => {
               this.onSelect?.();
             });
@@ -238,21 +238,21 @@ class AdaptiveAccountButton {
 
         renderProduct(product) {
           const image = product.image_url
-            ? `<img class="search_result_image" src="${this.escapeHtml(product.image_url)}" alt="${this.escapeHtml(product.name)}" loading="lazy">`
-            : `<span class="search_result_image" aria-hidden="true"></span>`;
-          const statusHtml = product.available ? "" : '<span class="search_result_status">Нет в наличии</span>';
+            ? `<img class="header-search-results__image" src="${this.escapeHtml(product.image_url)}" alt="${this.escapeHtml(product.name)}" loading="lazy">`
+            : `<span class="header-search-results__image" aria-hidden="true"></span>`;
+          const statusHtml = product.available ? "" : '<span class="header-search-results__status">Нет в наличии</span>';
           return `
-            <a class="search_result_item" href="${this.escapeHtml(product.url)}">
+            <a class="header-search-results__item" href="${this.escapeHtml(product.url)}">
               ${image}
-              <span class="search_result_content">
-                <span class="search_result_name">${this.escapeHtml(product.name)}</span>
-                <span class="search_result_meta">
+              <span class="header-search-results__content">
+                <span class="header-search-results__name">${this.escapeHtml(product.name)}</span>
+                <span class="header-search-results__meta">
                   <span>${this.escapeHtml(product.brand || "Без бренда")}</span>
                   <span>${this.escapeHtml(product.code || "")}</span>
                 </span>
               </span>
               <span>
-                <span class="search_result_price">${this.formatPrice(product.price)}</span>
+                <span class="header-search-results__price">${this.formatPrice(product.price)}</span>
                 ${statusHtml}
               </span>
             </a>
@@ -284,7 +284,7 @@ class AdaptiveAccountButton {
           this.closeButton = document.querySelector("[data-search-close]");
           this.input = document.querySelector("[data-search-input]");
           this.results = document.querySelector("[data-search-results]");
-          this.underline = document.querySelector(".search_input_underline");
+          this.underline = document.querySelector(".header-search__underline");
           this.isOpen = false;
 
           if (!this.searchRoot || !this.openButton || !this.closeButton || !this.input) {
@@ -337,7 +337,7 @@ class AdaptiveAccountButton {
 
         open() {
           this.isOpen = true;
-          this.searchRoot.classList.add("search_widget_active");
+          this.searchRoot.classList.add("is-active");
           this.accountButtonController?.setCompactMode(true);
 
           window.setTimeout(() => {
@@ -350,7 +350,7 @@ class AdaptiveAccountButton {
 
         close(clearInput = true) {
           this.isOpen = false;
-          this.searchRoot.classList.remove("search_widget_active");
+          this.searchRoot.classList.remove("is-active");
           this.accountButtonController?.setCompactMode(false);
           if (clearInput) {
             this.searchResults?.clear();
@@ -370,8 +370,28 @@ class AdaptiveAccountButton {
 
       class InfoLineController {
         constructor() {
+          this.items = document.querySelectorAll(".promo_banner_item");
+          this.items.forEach((item) => {
+            if (item.querySelector(":scope > .promo_banner_content")) return;
+            const content = document.createElement("div");
+            content.className = "promo_banner_content";
+            while (item.firstChild) content.appendChild(item.firstChild);
+            item.appendChild(content);
+          });
           this.iconContainers = document.querySelectorAll(".promo_banner_icon_container");
           this.track = document.querySelector(".promo_banner_track");
+          this.contents = document.querySelectorAll(".promo_banner_content");
+          if (this.track) {
+            this.track.style.animation = "none";
+            this.contents.forEach((content) => {
+              content.style.animation = "none";
+            });
+            void this.track.offsetWidth;
+            this.track.style.animation = "";
+            this.contents.forEach((content) => {
+              content.style.animation = "";
+            });
+          }
           this.iconClassNames = ["promo_banner_icon_question", "promo_banner_icon_phone", "promo_banner_icon_telegram"];
           this.currentIconIndex = 0;
           this.iconIntervalId = null;
@@ -382,8 +402,19 @@ class AdaptiveAccountButton {
           this.waitingForCycleEnd = false;
           this.handleTrackMouseEnter = null;
           this.handleTrackMouseLeave = null;
+          this.runtimePaused = document.hidden;
+          this.handleRuntimeChange = (event) => {
+            this.setRuntimePaused(Boolean(event.detail?.paused) || document.hidden);
+          };
+          this.handleVisibilityChange = () => {
+            const headerPaused = document.body.classList.contains("is-runtime-paused");
+            this.setRuntimePaused(document.hidden || headerPaused);
+          };
 
-          if (this.iconContainers.length) {
+          window.addEventListener("header-runtime-change", this.handleRuntimeChange);
+          document.addEventListener("visibilitychange", this.handleVisibilityChange);
+
+          if (this.iconContainers.length && !this.runtimePaused) {
             this.startAnimation();
           }
 
@@ -393,6 +424,10 @@ class AdaptiveAccountButton {
         }
 
         startAnimation() {
+          if (this.runtimePaused || this.iconIntervalId !== null || !this.iconContainers.length) {
+            return;
+          }
+
           const switchIcons = () => {
             if (![...this.iconContainers].every((container) => document.body.contains(container))) {
               this.destroy();
@@ -416,6 +451,35 @@ class AdaptiveAccountButton {
           this.iconIntervalId = window.setInterval(switchIcons, 1500);
         }
 
+        setRuntimePaused(paused) {
+          if (this.runtimePaused === paused) {
+            return;
+          }
+
+          this.runtimePaused = paused;
+
+          if (paused) {
+            if (this.iconIntervalId !== null) {
+              window.clearInterval(this.iconIntervalId);
+              this.iconIntervalId = null;
+            }
+
+            if (this.pauseTimeout !== null) {
+              window.clearTimeout(this.pauseTimeout);
+              this.pauseTimeout = null;
+            }
+
+            this.waitingForCycleEnd = false;
+            if (this.track) this.track.style.animationPlayState = "paused";
+            return;
+          }
+
+          this.startAnimation();
+          if (this.track && !this.isPaused) {
+            this.track.style.animationPlayState = "running";
+          }
+        }
+
         bindHoverPause() {
           // Получаем длительность одного цикла анимации из CSS (в миллисекундах)
           const getAnimationDuration = () => {
@@ -426,7 +490,7 @@ class AdaptiveAccountButton {
 
           this.handleTrackMouseEnter = () => {
             // Если уже на паузе или уже ждём завершения цикла — ничего не делаем
-            if (this.isPaused || this.waitingForCycleEnd) return;
+            if (this.runtimePaused || this.isPaused || this.waitingForCycleEnd) return;
 
             const cycleDuration = getAnimationDuration();
 
@@ -450,7 +514,7 @@ class AdaptiveAccountButton {
 
             // Если анимация была на паузе — возобновляем
             if (this.isPaused) {
-              this.track.style.animationPlayState = "running";
+              if (!this.runtimePaused) this.track.style.animationPlayState = "running";
               this.isPaused = false;
             }
           };
@@ -477,23 +541,43 @@ class AdaptiveAccountButton {
           if (this.track && this.handleTrackMouseLeave) {
             this.track.removeEventListener("mouseleave", this.handleTrackMouseLeave);
           }
+
+          window.removeEventListener("header-runtime-change", this.handleRuntimeChange);
+          document.removeEventListener("visibilitychange", this.handleVisibilityChange);
         }
       }
 
       class NavigationUnderlineController {
         constructor() {
           this.header = document.querySelector("[data-header]");
-          this.navItems = [...document.querySelectorAll(".navigation_item")];
+          this.navItems = [...document.querySelectorAll(".site-nav__item")];
+          this.runtimePaused = document.hidden;
+          this.resizeTimer = null;
+          this.handleResize = () => {
+            if (this.runtimePaused) return;
+            window.clearTimeout(this.resizeTimer);
+            this.resizeTimer = window.setTimeout(() => this.updateOffsets(), 120);
+          };
+          this.handleRuntimeChange = (event) => {
+            const paused = Boolean(event.detail?.paused) || document.hidden;
+            if (this.runtimePaused === paused) return;
+            this.runtimePaused = paused;
+            window.clearTimeout(this.resizeTimer);
+            if (!paused) this.updateOffsets();
+          };
 
           if (!this.header || !this.navItems.length) {
             return;
           }
 
           this.updateOffsets();
-          window.addEventListener("resize", () => this.updateOffsets());
+          window.addEventListener("resize", this.handleResize);
+          window.addEventListener("header-runtime-change", this.handleRuntimeChange);
         }
 
         updateOffsets() {
+          if (this.runtimePaused) return;
+
           const headerRect = this.header.getBoundingClientRect();
           const headerHeight = headerRect.height;
 
@@ -508,20 +592,42 @@ class AdaptiveAccountButton {
 
       class MegaMenuController {
         constructor() {
+          this.headerModule = document.querySelector("[data-header-module]");
           this.menu = document.querySelector("[data-mega-menu-panel]");
           this.menuContainer = document.querySelector("[data-mega-menu-container]");
           this.header = document.querySelector("[data-header]");
           this.infoLine = document.querySelector("[data-info-line]");
-          this.navItems = [...document.querySelectorAll(".navigation_item")];
+          this.navItems = [...document.querySelectorAll(".site-nav__item")];
           this.activeTrigger = null;
           this.closeTimeoutId = null;
           this.catalogUrl = "/#products";
+          this.enabled = this.headerModule?.dataset.megaMenuEnabled !== "false";
 
           if (!this.menu || !this.menuContainer || !this.header || !this.navItems.length) {
             return;
           }
 
+          if (!this.enabled) {
+            this.disable();
+            return;
+          }
+
           this.bindEvents();
+        }
+
+        disable() {
+          this.menu.hidden = true;
+          this.menu.classList.remove("is-active");
+          this.header.classList.remove("is-mega-menu-open");
+          document.getElementById("megaMenuOverlay")?.classList.remove("is-open");
+
+          this.navItems.forEach((navItem) => {
+            if (!navItem.hasAttribute("data-mega-menu-trigger")) return;
+            navItem.classList.remove("site-nav__item--dropdown", "is-active");
+            const anchor = navItem.querySelector("a");
+            anchor?.removeAttribute("aria-haspopup");
+            anchor?.removeAttribute("aria-expanded");
+          });
         }
 
         bindEvents() {
@@ -555,11 +661,11 @@ class AdaptiveAccountButton {
 
         hide(force = false) {
           const closeMenu = () => {
-            this.menu.classList.remove("active");
-            this.header.classList.remove("mega_menu_open");
+            this.menu.classList.remove("is-active");
+            this.header.classList.remove("is-mega-menu-open");
 
             if (this.activeTrigger) {
-              this.activeTrigger.classList.remove("navigation_item_active");
+              this.activeTrigger.classList.remove("is-active");
               this.activeTrigger.querySelector("a")?.setAttribute("aria-expanded", "false");
             }
 
@@ -571,7 +677,7 @@ class AdaptiveAccountButton {
             this.activeTrigger = null;
             // hide mega menu overlay when menu closed
             const mmOverlayClose = document.getElementById("megaMenuOverlay");
-            if (mmOverlayClose) mmOverlayClose.classList.remove("open");
+            if (mmOverlayClose) mmOverlayClose.classList.remove("is-open");
           };
 
           window.clearTimeout(this.closeTimeoutId);
@@ -597,11 +703,11 @@ class AdaptiveAccountButton {
           this.render(sectionName);
 
           this.navItems.forEach((item) => {
-            item.classList.remove("navigation_item_active");
+            item.classList.remove("is-active");
             item.querySelector("a")?.setAttribute("aria-expanded", "false");
           });
 
-          navItem.classList.add("navigation_item_active");
+          navItem.classList.add("is-active");
           navItem.querySelector("a")?.setAttribute("aria-expanded", "true");
           this.activeTrigger = navItem;
 
@@ -610,15 +716,15 @@ class AdaptiveAccountButton {
             this.infoLine.style.visibility = "hidden";
           }
 
-          this.menu.classList.add("active");
-          this.header.classList.add("mega_menu_open");
+          this.menu.classList.add("is-active");
+          this.header.classList.add("is-mega-menu-open");
           // show blur overlay for promo cards and collections layouts
           const mmOverlay = document.getElementById("megaMenuOverlay");
           if (mmOverlay) {
             if (this.menu.classList.contains("mega_menu_layout_promo_cards") || this.menu.classList.contains("mega_menu_layout_collections")) {
-              mmOverlay.classList.add("open");
+              mmOverlay.classList.add("is-open");
             } else {
-              mmOverlay.classList.remove("open");
+              mmOverlay.classList.remove("is-open");
             }
           }
         }
@@ -633,7 +739,7 @@ class AdaptiveAccountButton {
             return;
           }
 
-          if (sectionName === "navigation_item_sale") {
+          if (sectionName === "site-nav__item--sale") {
             this.menu.classList.add("mega_menu_layout_promo_cards");
             this.menuContainer.innerHTML = this.createPromoCardsMarkup();
             this.bindPromoImageFallbacks();
@@ -848,7 +954,7 @@ class AdaptiveAccountButton {
             basketButton: document.getElementById("basketBtn"),
             favoritesCounter: document.getElementById("favoritesCounter"),
             basketCounter: document.getElementById("basketCounter"),
-            actionsList: document.querySelector(".navigation_secondary_list"),
+            actionsList: document.querySelector(".site-nav__secondary-list"),
           };
 
           this.promoCode = "SAVE20";
@@ -962,8 +1068,8 @@ class AdaptiveAccountButton {
         }
 
         movePanelIntoActionsFlow() {
-          const actionsList = this.elements.actionsList; // .navigation_secondary_list
-          const bigButtons = actionsList.closest(".header_actions_wrapper");
+          const actionsList = this.elements.actionsList; // .site-nav__secondary-list
+          const bigButtons = actionsList.closest(".site-header__actions");
           if (!actionsList || !bigButtons) return;
 
           // Удаляем старый контейнер, если есть
@@ -991,7 +1097,7 @@ class AdaptiveAccountButton {
           const oldDropdownLi = actionsList.querySelector(".shop_panel_trigger_item");
           if (oldDropdownLi) oldDropdownLi.remove();
 
-          // Перемещаем сам дропдаун в .header_actions_wrapper (за пределы <ul>)
+          // Перемещаем сам дропдаун в .site-header__actions (за пределы <ul>)
           if (!bigButtons.contains(this.elements.dropdown)) {
             bigButtons.appendChild(this.elements.dropdown);
           }
@@ -1027,10 +1133,12 @@ class AdaptiveAccountButton {
 
           let resizeTimer;
           window.addEventListener("resize", () => {
+            if (document.body.classList.contains("is-runtime-paused")) return;
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(() => this.updatePanelPosition(), 60);
           });
           window.addEventListener("scroll", () => {
+            if (document.body.classList.contains("is-runtime-paused")) return;
             if (this.state.isOpen) {
               this.hide();
             }
@@ -1046,6 +1154,7 @@ class AdaptiveAccountButton {
           if (window.innerWidth <= 768) {
             this.elements.dropdown.style.left = "";
             this.elements.dropdown.style.top = "";
+            this.elements.dropdown.style.removeProperty("--shop-panel-available-height");
             return;
           }
 
@@ -1063,8 +1172,12 @@ class AdaptiveAccountButton {
           const rawLeft = centerX - panelWidth / 2;
           const clampedLeft = Math.min(Math.max(rawLeft, margin), vw - panelWidth - margin);
 
-          this.elements.dropdown.style.top = `${headerRect.height}px`;
+          const panelTop = headerRect.height;
+          const availableHeight = Math.max(220, window.innerHeight - panelTop);
+
+          this.elements.dropdown.style.top = `${panelTop}px`;
           this.elements.dropdown.style.left = `${clampedLeft}px`;
+          this.elements.dropdown.style.setProperty("--shop-panel-available-height", `${availableHeight}px`);
           // transform полностью управляется CSS (.shop_panel / .shop_panel.show)
           // — inline значение не ставим, чтобы не перебивать CSS-анимацию
         }
@@ -1109,14 +1222,13 @@ class AdaptiveAccountButton {
 
           if (this.state.currentMode === "cart_widget") {
             this.elements.dropdownTitle.innerHTML = `
-        <div class="page_header_top">
+        <div class="shop-panel__top">
           <div class="shop_panel_title_text">
             <div class="shop_panel_title_icon shop_panel_mode_cart">
               <i class="fa-solid fa-shopping-bag"></i>
             </div>
             <span>Корзина</span>
           </div>
-          <span class="shop_panel_items_count">${items.length} ${this.getItemsCountLabel(items.length)}</span>
         </div>
       `;
             return;
@@ -1124,14 +1236,13 @@ class AdaptiveAccountButton {
 
           // внутри renderHeader() после заголовка
           this.elements.dropdownTitle.innerHTML = `
-            <div class="page_header_top">
+            <div class="shop-panel__top">
               <div class="shop_panel_title_text">
                 <div class="shop_panel_title_icon shop_panel_mode_favorites">
                   <i class="fa-solid fa-heart"></i>
                 </div>
                 <span>Избранное</span>
               </div>
-              <span class="shop_panel_items_count">${items.length} ${this.getItemsCountLabel(items.length)}</span>
             </div>
             <div class="shop_filters_container">
               <button class="shop_filter_button shop_filter_button_all ${this.state.currentFilter === "all" ? "active" : ""}" data-filter="all">Все</button>
@@ -1607,10 +1718,15 @@ class AdaptiveAccountButton {
         constructor({ megaMenuController, shopPanelController }) {
           this.header = document.querySelector("[data-header]");
           this.infoLine = document.querySelector("[data-info-line]");
+          this.headerModule = document.querySelector("[data-header-module]");
           this.megaMenuController = megaMenuController;
           this.shopPanelController = shopPanelController;
-          this.lastScrollTop = 0;
+          this.lastScrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
           this.frameScheduled = false;
+          this.headerHidden = false;
+          this.pageHidden = document.hidden;
+          this.runtimePaused = false;
+          this.resizeTimer = null;
 
           if (!this.header) {
             return;
@@ -1619,19 +1735,30 @@ class AdaptiveAccountButton {
           this.updateLayoutVariables();
           this.syncPositions();
           this.bindEvents();
+          this.syncRuntimeState();
         }
 
         bindEvents() {
-          window.addEventListener("scroll", () => this.onScroll());
+          window.addEventListener("scroll", () => this.onScroll(), { passive: true });
           window.addEventListener("resize", () => {
-            this.updateLayoutVariables();
-            this.syncPositions();
+            if (this.runtimePaused) return;
+            window.clearTimeout(this.resizeTimer);
+            this.resizeTimer = window.setTimeout(() => {
+              this.updateLayoutVariables();
+              this.syncPositions();
+            }, 120);
           });
           window.addEventListener("product-sticky-bar-change", () => {
+            if (this.runtimePaused) return;
             window.setTimeout(() => {
+              if (this.runtimePaused) return;
               this.updateLayoutVariables();
               this.syncPositions();
             }, 40);
+          });
+          document.addEventListener("visibilitychange", () => {
+            this.pageHidden = document.hidden;
+            this.syncRuntimeState();
           });
         }
 
@@ -1644,37 +1771,56 @@ class AdaptiveAccountButton {
 
           requestAnimationFrame(() => {
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollDelta = scrollTop - this.lastScrollTop;
 
             if (scrollTop > 120) {
               document.body.classList.add("scrolled");
 
-              if (scrollTop > this.lastScrollTop) {
-                document.body.classList.add("header_hidden");
-                this.header.classList.add("page_header_hidden");
-                this.megaMenuController?.hide(true);
-                this.shopPanelController?.forceHide();
-
-                if (this.infoLine) {
-                  this.updateLayoutVariables();
-                  this.syncPositions();
-                }
-              } else {
-                document.body.classList.remove("header_hidden");
-                this.header.classList.remove("page_header_hidden");
-                this.updateLayoutVariables();
-                this.syncPositions();
-              }
+              if (scrollDelta > 2) this.hideHeader();
+              if (scrollDelta < -2) this.showHeader();
             } else {
               document.body.classList.remove("scrolled");
-              document.body.classList.remove("header_hidden");
-              this.header.classList.remove("page_header_hidden");
-              this.updateLayoutVariables();
-              this.syncPositions();
+              this.showHeader();
             }
 
             this.lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
             this.frameScheduled = false;
           });
+        }
+
+        hideHeader() {
+          if (this.headerHidden) return;
+
+          this.headerHidden = true;
+          document.body.classList.add("is-header-hidden");
+          this.header.classList.add("is-hidden");
+          this.megaMenuController?.hide(true);
+          this.shopPanelController?.forceHide();
+          this.syncPositions();
+          this.syncRuntimeState();
+        }
+
+        showHeader() {
+          if (!this.headerHidden) return;
+
+          this.headerHidden = false;
+          document.body.classList.remove("is-header-hidden");
+          this.header.classList.remove("is-hidden");
+          this.syncRuntimeState();
+          this.updateLayoutVariables();
+          this.syncPositions();
+        }
+
+        syncRuntimeState() {
+          const shouldPause = this.headerHidden || this.pageHidden;
+          if (this.runtimePaused === shouldPause) return;
+
+          this.runtimePaused = shouldPause;
+          document.body.classList.toggle("is-runtime-paused", shouldPause);
+          this.headerModule?.classList.toggle("is-runtime-paused", shouldPause);
+          window.dispatchEvent(new CustomEvent("header-runtime-change", {
+            detail: { paused: shouldPause },
+          }));
         }
 
         updateLayoutVariables() {
@@ -1691,7 +1837,7 @@ class AdaptiveAccountButton {
 
           const headerHeight = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--header-height")) || this.header.offsetHeight;
           this.infoLine.style.top = `${headerHeight}px`;
-          this.infoLine.style.zIndex = document.body.classList.contains("header_hidden") ? "1001" : "999";
+          this.infoLine.style.zIndex = document.body.classList.contains("is-header-hidden") ? "1001" : "999";
         }
       }
 
@@ -1741,16 +1887,16 @@ class AdaptiveAccountButton {
           this.accordionLinks.forEach((link) => {
             link.setAttribute("aria-expanded", "false");
             link.addEventListener("click", () => {
-              const item = link.closest(".mobile_menu_item");
+              const item = link.closest(".mobile-menu__item");
               if (!item) return;
 
-              const nextExpandedState = !item.classList.contains("expanded");
-              item.classList.toggle("expanded", nextExpandedState);
+              const nextExpandedState = !item.classList.contains("is-expanded");
+              item.classList.toggle("is-expanded", nextExpandedState);
               link.setAttribute("aria-expanded", String(nextExpandedState));
             });
           });
 
-          // Mobile search_widget
+          // Mobile header-search__shell
           this.searchBtn?.addEventListener("click", () => this.openSearch());
           this.searchCloseBtn?.addEventListener("click", () => this.closeSearch());
           this.searchOverlay?.addEventListener("click", (e) => {
@@ -1781,10 +1927,10 @@ class AdaptiveAccountButton {
 
         openMenu() {
           this.isOpen = true;
-          this.menu.classList.add("open");
-          this.burgerBtn.classList.add("open");
+          this.menu.classList.add("is-open");
+          this.burgerBtn.classList.add("is-open");
           this.burgerBtn.setAttribute("aria-expanded", "true");
-          document.querySelector("[data-header]")?.classList.add("mobile_menu_open");
+          document.querySelector("[data-header]")?.classList.add("is-mobile-menu-open");
           document.querySelector("[data-info-line]")?.style.setProperty("visibility", "hidden");
 
           // Последовательно скрываем кнопки: поиск → избранное → корзина
@@ -1796,15 +1942,15 @@ class AdaptiveAccountButton {
           });
 
           // Плавно меняем цвет хедера под drawer
-          document.querySelector("[data-header]")?.classList.add("mobile_menu_header_open");
+          document.querySelector("[data-header]")?.classList.add("is-mobile-menu-open");
         }
 
         closeMenu() {
           this.isOpen = false;
-          this.menu.classList.remove("open");
-          this.burgerBtn.classList.remove("open");
+          this.menu.classList.remove("is-open");
+          this.burgerBtn.classList.remove("is-open");
           this.burgerBtn.setAttribute("aria-expanded", "false");
-          document.querySelector("[data-header]")?.classList.remove("mobile_menu_open");
+          document.querySelector("[data-header]")?.classList.remove("is-mobile-menu-open");
           document.querySelector("[data-info-line]")?.style.setProperty("visibility", "visible");
 
           // Последовательно возвращаем кнопки: корзина → избранное → поиск
@@ -1816,16 +1962,16 @@ class AdaptiveAccountButton {
           });
 
           // Возвращаем цвет хедера
-          document.querySelector("[data-header]")?.classList.remove("mobile_menu_header_open");
+          document.querySelector("[data-header]")?.classList.remove("is-mobile-menu-open");
         }
 
         openSearch() {
-          this.searchOverlay.classList.add("open");
+          this.searchOverlay.classList.add("is-open");
           window.setTimeout(() => this.searchInput?.focus(), 120);
         }
 
         closeSearch(clearInput = true) {
-          this.searchOverlay.classList.remove("open");
+          this.searchOverlay.classList.remove("is-open");
           if (clearInput) {
             this.searchResultsController?.clear();
           } else {
@@ -1834,7 +1980,7 @@ class AdaptiveAccountButton {
           if (this.searchInput && clearInput) this.searchInput.value = "";
         }
 
-        // Called by ShopPanelController to sync cart_widget notification_badge
+        // Called by ShopPanelController to sync cart_widget site-nav__badge
         updateBasketBadge(count) {
           if (!this.mobileBasketBtn || !this.mobileBasketBadge) return;
           this.mobileBasketBadge.textContent = count > 9 ? "9+" : String(count);
@@ -1866,20 +2012,22 @@ class AdaptiveAccountButton {
           this.headerTitle = document.getElementById("delivery_header_title");
           this.headerSubtitle = document.getElementById("delivery_header_subtitle");
           this.headerIcon = document.getElementById("delivery_header_icon_slot");
+          this.closeButton = document.getElementById("delivery_close_button");
+          this.lastTrigger = null;
 
           this.panelData = [
             {
-              title: "ДОСТАВКА",
+              title: "Доставка",
               subtitle: "Надёжная упаковка и быстрая отправка",
               icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/><path d="M16.5 9.4 7.55 4.24"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/><circle cx="18.5" cy="15.5" r="2.5"/><path d="M20.27 17.27 22 19"/></svg>`,
             },
             {
-              title: "СПОСОБЫ ОПЛАТЫ",
+              title: "Способы оплаты",
               subtitle: "Удобные варианты для вас",
               icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/><line x1="14" y1="15" x2="16" y2="15"/></svg>`,
             },
             {
-              title: "ВАЖНЫЕ УСЛОВИЯ",
+              title: "Важные условия",
               subtitle: "Ограничения и правила получения",
               icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>`,
             },
@@ -1887,6 +2035,7 @@ class AdaptiveAccountButton {
 
           this.bindEvents();
           this.updateUI();
+          this.overlay.inert = true;
         }
 
         bindEvents() {
@@ -1894,6 +2043,7 @@ class AdaptiveAccountButton {
           document.querySelectorAll("[data-delivery-open]").forEach((el) => {
             el.addEventListener("click", (e) => {
               e.preventDefault();
+              this.lastTrigger = e.currentTarget;
               this.open();
             });
           });
@@ -1974,15 +2124,36 @@ class AdaptiveAccountButton {
         open() {
           this.currentPanel = 0;
           this.updateUI();
+          this.overlay.inert = false;
           this.overlay.classList.add("delivery_overlay_open");
           this.backdrop?.classList.add("delivery_backdrop_open");
+          this.overlay.setAttribute("aria-hidden", "false");
           document.body.style.overflow = "hidden";
+          requestAnimationFrame(() => this.closeButton?.focus({ preventScroll: true }));
         }
 
         close() {
+          this.moveFocusOutside();
           this.overlay.classList.remove("delivery_overlay_open");
           this.backdrop?.classList.remove("delivery_backdrop_open");
+          this.overlay.setAttribute("aria-hidden", "true");
+          this.overlay.inert = true;
           document.body.style.overflow = "";
+        }
+
+        moveFocusOutside() {
+          const activeElement = document.activeElement;
+          if (!activeElement || !this.overlay.contains(activeElement)) return;
+
+          const target = this.lastTrigger?.isConnected ? this.lastTrigger : document.querySelector("[data-delivery-open]");
+          if (target?.focus) {
+            target.focus({ preventScroll: true });
+            return;
+          }
+
+          document.body.setAttribute("tabindex", "-1");
+          document.body.focus({ preventScroll: true });
+          window.setTimeout(() => document.body.removeAttribute("tabindex"), 0);
         }
       }
 
@@ -1994,8 +2165,11 @@ class AdaptiveAccountButton {
           this.overlay = document.getElementById("contactsModal");
           this.backdrop = document.getElementById("contactsBackdrop");
           if (!this.overlay) return;
+          this.closeButton = this.overlay.querySelector("[data-contacts-close]");
+          this.lastTrigger = null;
 
           this.bindEvents();
+          this.overlay.inert = true;
         }
 
         bindEvents() {
@@ -2003,6 +2177,7 @@ class AdaptiveAccountButton {
           document.querySelectorAll("[data-contacts-open]").forEach((el) => {
             el.addEventListener("click", (e) => {
               e.preventDefault();
+              this.lastTrigger = e.currentTarget;
               this.open();
             });
           });
@@ -2020,20 +2195,798 @@ class AdaptiveAccountButton {
 
           // Закрытие по Escape
           document.addEventListener("keydown", (e) => {
-            if (e.key === "Escape" && this.overlay.classList.contains("open")) this.close();
+            if (e.key === "Escape" && this.overlay.classList.contains("is-open")) this.close();
           });
         }
 
         open() {
-          this.overlay.classList.add("open");
-          this.backdrop?.classList.add("open");
+          this.overlay.inert = false;
+          this.overlay.classList.add("is-open");
+          this.backdrop?.classList.add("is-open");
+          this.overlay.setAttribute("aria-hidden", "false");
           document.body.style.overflow = "hidden";
+          requestAnimationFrame(() => this.closeButton?.focus({ preventScroll: true }));
         }
 
         close() {
-          this.overlay.classList.remove("open");
-          this.backdrop?.classList.remove("open");
+          this.moveFocusOutside();
+          this.overlay.classList.remove("is-open");
+          this.backdrop?.classList.remove("is-open");
+          this.overlay.setAttribute("aria-hidden", "true");
+          this.overlay.inert = true;
           document.body.style.overflow = "";
+        }
+
+        moveFocusOutside() {
+          const activeElement = document.activeElement;
+          if (!activeElement || !this.overlay.contains(activeElement)) return;
+
+          const target = this.lastTrigger?.isConnected ? this.lastTrigger : document.querySelector("[data-contacts-open]");
+          if (target?.focus) {
+            target.focus({ preventScroll: true });
+            return;
+          }
+
+          document.body.setAttribute("tabindex", "-1");
+          document.body.focus({ preventScroll: true });
+          window.setTimeout(() => document.body.removeAttribute("tabindex"), 0);
+        }
+      }
+
+      /* ============================================================
+         CLIENT CARD MODAL CONTROLLER
+         ============================================================ */
+      class ClientCardModalController {
+        constructor() {
+          this.overlay = document.getElementById("clientCardModal");
+          this.backdrop = document.getElementById("clientCardBackdrop");
+          if (!this.overlay) return;
+
+          this.closeButton = this.overlay.querySelector("[data-client-card-close]");
+          this.status = this.overlay.querySelector("[data-client-status]");
+          this.authView = this.overlay.querySelector('[data-client-view="auth"]');
+          this.dashboardView = this.overlay.querySelector('[data-client-view="dashboard"]');
+          this.lastTrigger = null;
+          this.lockedScrollY = 0;
+          const defaultBirthCalendarDate = new Date();
+          defaultBirthCalendarDate.setFullYear(defaultBirthCalendarDate.getFullYear() - 18);
+          this.birthCalendarDate = defaultBirthCalendarDate;
+          this.birthCalendarMode = "day";
+          this.storageKey = "waveClientCardProfile";
+          this.sessionKey = "waveClientCardSession";
+          this.firebaseConfig = this.readFirebaseConfig();
+          this.firebaseAuth = null;
+          this.pendingFirebaseUser = null;
+
+          this.bindEvents();
+          this.overlay.inert = true;
+          this.renderState();
+        }
+
+        bindEvents() {
+          document.querySelectorAll("[data-client-card-open]").forEach((trigger) => {
+            trigger.addEventListener("click", (event) => {
+              event.preventDefault();
+              this.lastTrigger = event.currentTarget;
+              this.open();
+            });
+            trigger.addEventListener("keydown", (event) => {
+              if (event.key !== "Enter" && event.key !== " ") return;
+              event.preventDefault();
+              this.lastTrigger = event.currentTarget;
+              this.open();
+            });
+          });
+
+          this.closeButton?.addEventListener("click", () => this.close());
+          this.backdrop?.addEventListener("click", () => this.close());
+          this.overlay.addEventListener("click", (event) => {
+            if (event.target === this.overlay) this.close();
+          });
+          document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && this.overlay.classList.contains("is-open")) this.close();
+          });
+
+          this.overlay.querySelectorAll("[data-client-auth-tab]").forEach((button) => {
+            button.addEventListener("click", () => this.setAuthTab(button.dataset.clientAuthTab));
+          });
+
+          this.overlay.querySelectorAll("[data-client-password-toggle]").forEach((button) => {
+            button.addEventListener("click", () => this.togglePassword(button));
+          });
+
+          this.overlay.querySelector("#clientBirthInput")?.addEventListener("input", (event) => {
+            this.formatBirthInput(event.currentTarget);
+            this.syncBirthCalendarFromInput();
+          });
+          this.overlay.querySelector("[data-client-date-toggle]")?.addEventListener("click", () => this.toggleBirthCalendar());
+          this.overlay.querySelectorAll("[data-client-date-mode]").forEach((button) => {
+            button.addEventListener("click", () => this.setBirthCalendarMode(button.dataset.clientDateMode));
+          });
+          this.overlay.querySelector("[data-client-date-grid]")?.addEventListener("click", (event) => {
+            const button = event.target.closest("[data-client-date-day]");
+            if (button) {
+              this.selectBirthDate(button.dataset.clientDateDay);
+              return;
+            }
+            const monthButton = event.target.closest("[data-client-date-month]");
+            if (monthButton) {
+              this.setBirthCalendarMonth(monthButton.dataset.clientDateMonth);
+              return;
+            }
+            const yearButton = event.target.closest("[data-client-date-year]");
+            if (yearButton) {
+              this.setBirthCalendarYear(yearButton.dataset.clientDateYear);
+            }
+          });
+
+          this.overlay.querySelectorAll("[data-client-google]").forEach((button) => {
+            button.addEventListener("click", () => this.handleGoogle());
+          });
+          this.overlay.querySelectorAll("[data-client-provider]").forEach((button) => {
+            button.addEventListener("click", () => this.handleProviderLogin(button.dataset.clientProvider));
+          });
+
+          this.overlay.querySelector('[data-client-form="login"]')?.addEventListener("submit", (event) => this.handleLogin(event));
+          this.overlay.querySelector('[data-client-form="register"]')?.addEventListener("submit", (event) => this.handleRegister(event));
+          this.overlay.querySelector("[data-client-avatar-input]")?.addEventListener("change", (event) => this.handleAvatar(event));
+          this.overlay.querySelector("[data-client-save-profile]")?.addEventListener("click", () => this.saveProfileEdits());
+          this.overlay.querySelector("[data-client-logout]")?.addEventListener("click", () => this.logout());
+
+          this.overlay.querySelectorAll("[data-client-dashboard-tab]").forEach((button) => {
+            button.addEventListener("click", () => this.setDashboardTab(button.dataset.clientDashboardTab));
+          });
+
+          this.overlay.addEventListener("click", (event) => {
+            const birthField = this.overlay.querySelector("[data-client-birth-field]");
+            if (birthField && !birthField.contains(event.target)) this.closeBirthCalendar();
+          });
+        }
+
+        getProfile() {
+          try {
+            return JSON.parse(localStorage.getItem(this.storageKey) || "null");
+          } catch (_) {
+            return null;
+          }
+        }
+
+        saveProfile(profile) {
+          localStorage.setItem(this.storageKey, JSON.stringify(profile));
+        }
+
+        isSessionActive() {
+          return localStorage.getItem(this.sessionKey) === "1";
+        }
+
+        setSessionActive(isActive) {
+          if (isActive) {
+            localStorage.setItem(this.sessionKey, "1");
+          } else {
+            localStorage.removeItem(this.sessionKey);
+          }
+        }
+
+        readFirebaseConfig() {
+          return null;
+        }
+
+        getCsrfToken() {
+          return document.cookie
+            .split(";")
+            .map((item) => item.trim())
+            .find((item) => item.startsWith("csrftoken="))
+            ?.split("=")[1] || "";
+        }
+
+        async getFirebaseAuth() {
+          if (this.firebaseAuth) return this.firebaseAuth;
+          if (!this.firebaseConfig?.apiKey || !this.firebaseConfig?.projectId || !this.firebaseConfig?.appId) {
+            throw new Error("Firebase web config не настроен.");
+          }
+
+          const [{ initializeApp, getApps }, authModule] = await Promise.all([
+            import("https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js"),
+            import("https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js"),
+          ]);
+          const app = getApps().length ? getApps()[0] : initializeApp(this.firebaseConfig);
+          this.firebaseAuth = {
+            auth: authModule.getAuth(app),
+            GoogleAuthProvider: authModule.GoogleAuthProvider,
+            OAuthProvider: authModule.OAuthProvider,
+            signInWithPopup: authModule.signInWithPopup,
+            signOut: authModule.signOut,
+          };
+          return this.firebaseAuth;
+        }
+
+        async sendFirebaseAuth(user, extraPayload = {}) {
+          const authUrl = this.authView?.dataset.clientAuthUrl;
+          if (!authUrl || !user) throw new Error("Не настроен URL авторизации клиента.");
+          const idToken = await user.getIdToken();
+          const response = await fetch(authUrl, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": this.getCsrfToken(),
+            },
+            body: JSON.stringify({
+              idToken,
+              displayName: user.displayName || "",
+              avatarUrl: user.photoURL || "",
+              ...extraPayload,
+            }),
+          });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok || !result.success) {
+            throw new Error(result.message || "Не удалось войти в карту клиента.");
+          }
+          return result;
+        }
+
+        normalizeNickname(value) {
+          const clean = String(value || "").trim().replace(/^@+/, "");
+          return clean ? `@${clean}` : "";
+        }
+
+        setStatus(message = "", type = "") {
+          if (!this.status) return;
+          this.status.textContent = message;
+          this.status.classList.toggle("is-error", type === "error");
+          this.status.classList.toggle("is-success", type === "success");
+        }
+
+        setAuthTab(tab) {
+          const authView = this.authView;
+          authView?.classList.remove("is-switching-login", "is-switching-register");
+          authView?.classList.add(`is-switching-${tab}`);
+          this.overlay.querySelectorAll("[data-client-google]").forEach((button) => {
+            button.classList.remove("is-pulsed");
+          });
+          this.overlay.querySelectorAll("[data-client-auth-tab]").forEach((button) => {
+            button.classList.toggle("is-active", button.dataset.clientAuthTab === tab);
+          });
+          this.overlay.querySelectorAll("[data-client-form]").forEach((form) => {
+            form.classList.toggle("is-active", form.dataset.clientForm === tab);
+          });
+          window.setTimeout(() => {
+            authView?.classList.remove("is-switching-login", "is-switching-register");
+          }, 320);
+          this.setStatus();
+        }
+
+        validateRegisterForm() {
+          const birth = this.overlay.querySelector("#clientBirthInput");
+          const username = this.overlay.querySelector("#clientUsernameInput");
+          const password = this.overlay.querySelector("#clientRegisterPasswordInput");
+          const confirm = this.overlay.querySelector("#clientRegisterPasswordConfirmInput");
+          const usernameValue = username?.value.trim() || "";
+          const passwordValue = password?.value.trim() || "";
+          const confirmValue = confirm?.value.trim() || "";
+
+          if (!birth?.value) {
+            this.setStatus("Укажите дату рождения.", "error");
+            birth?.focus();
+            return false;
+          }
+          if (!this.parseBirthDate(birth.value)) {
+            this.setStatus("Введите дату в формате ДД.ММ.ГГГГ.", "error");
+            birth?.focus();
+            return false;
+          }
+          if (!this.isAdult(birth.value)) {
+            this.setStatus("Карта клиента доступна только пользователям 18+.", "error");
+            birth?.focus();
+            return false;
+          }
+          if (!/^[A-Za-z][A-Za-z0-9_]{2,31}$/.test(usernameValue)) {
+            this.setStatus("Логин должен быть на английском: от 3 символов, буквы, цифры и _.", "error");
+            username?.focus();
+            return false;
+          }
+          if (passwordValue.length < 6) {
+            this.setStatus("Пароль должен быть минимум из 6 символов.", "error");
+            password?.focus();
+            return false;
+          }
+          if (passwordValue !== confirmValue) {
+            this.setStatus("Пароли не совпадают.", "error");
+            confirm?.focus();
+            return false;
+          }
+          this.setStatus();
+          return true;
+        }
+
+        togglePassword(button) {
+          const inputId = button?.dataset?.targetInput;
+          const input = inputId ? this.overlay.querySelector(`#${CSS.escape(inputId)}`) : null;
+          if (!input) return;
+          const isVisible = input.type === "text";
+          input.type = isVisible ? "password" : "text";
+          button.classList.toggle("visible", !isVisible);
+          button.setAttribute("aria-label", isVisible ? "Показать пароль" : "Скрыть пароль");
+        }
+
+        handleGoogle() {
+          this.setStatus();
+          this.overlay.querySelectorAll("[data-client-google]").forEach((button) => {
+            button.classList.remove("is-pulsed");
+          });
+          window.requestAnimationFrame(() => {
+            this.overlay.querySelectorAll("[data-client-google]").forEach((button) => {
+              button.classList.add("is-pulsed");
+            });
+          });
+        }
+
+        async handleProviderLogin(providerName) {
+          this.setStatus("Открываем безопасный вход...", "");
+          this.overlay.querySelectorAll("[data-client-provider]").forEach((button) => {
+            button.disabled = true;
+          });
+          try {
+            const firebase = await this.getFirebaseAuth();
+            const provider = providerName === "apple"
+              ? new firebase.OAuthProvider("apple.com")
+              : new firebase.GoogleAuthProvider();
+            if (providerName === "google") {
+              provider.setCustomParameters({ prompt: "select_account" });
+            }
+            const credential = await firebase.signInWithPopup(firebase.auth, provider);
+            this.pendingFirebaseUser = credential.user;
+            const result = await this.sendFirebaseAuth(credential.user);
+            if (result.needsOnboarding) {
+              this.showOnboarding(result);
+              return;
+            }
+            this.saveProfile(result.profile);
+            this.setSessionActive(true);
+            this.renderDashboard(result.profile);
+            this.setStatus("Вы вошли в карту клиента.", "success");
+          } catch (error) {
+            this.setStatus(error?.message || "Не удалось выполнить вход.", "error");
+          } finally {
+            this.overlay.querySelectorAll("[data-client-provider]").forEach((button) => {
+              button.disabled = false;
+            });
+          }
+        }
+
+        showOnboarding(data = {}) {
+          this.authView?.classList.add("is-onboarding");
+          this.overlay.querySelector("[data-client-social-panel]")?.setAttribute("hidden", "");
+          this.overlay.querySelector(".client_card_tabs")?.setAttribute("hidden", "");
+          this.overlay.querySelector('[data-client-form="login"]')?.setAttribute("hidden", "");
+          const registerForm = this.overlay.querySelector('[data-client-form="register"]');
+          if (registerForm) {
+            registerForm.hidden = false;
+            registerForm.classList.add("active", "client_card_onboarding");
+          }
+          const username = this.overlay.querySelector("#clientUsernameInput");
+          if (username && !username.value) {
+            username.value = String(data.suggestedNickname || "").replace(/^@+/, "");
+            username.placeholder = "Ник на английском";
+            username.setAttribute("aria-label", "Ник");
+          }
+          const technicalPassword = "firebase-client";
+          const password = this.overlay.querySelector("#clientRegisterPasswordInput");
+          const confirm = this.overlay.querySelector("#clientRegisterPasswordConfirmInput");
+          if (password) password.value = technicalPassword;
+          if (confirm) confirm.value = technicalPassword;
+          this.setStatus("Осталось указать ник и дату рождения.");
+          username?.focus({ preventScroll: true });
+        }
+
+        formatDateForInput(date) {
+          const day = String(date.getDate()).padStart(2, "0");
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const year = date.getFullYear();
+          return `${day}.${month}.${year}`;
+        }
+
+        formatBirthInput(input) {
+          const digits = String(input.value || "").replace(/\D/g, "").slice(0, 8);
+          const chunks = [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, 8)].filter(Boolean);
+          input.value = chunks.join(".");
+        }
+
+        parseBirthDate(value) {
+          const raw = String(value || "").trim();
+          const dotMatch = raw.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+          const isoMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+          const day = dotMatch ? Number(dotMatch[1]) : isoMatch ? Number(isoMatch[3]) : 0;
+          const month = dotMatch ? Number(dotMatch[2]) : isoMatch ? Number(isoMatch[2]) : 0;
+          const year = dotMatch ? Number(dotMatch[3]) : isoMatch ? Number(isoMatch[1]) : 0;
+          if (!day || !month || !year) return null;
+          const birthDate = new Date(year, month - 1, day);
+          if (
+            birthDate.getFullYear() !== year ||
+            birthDate.getMonth() !== month - 1 ||
+            birthDate.getDate() !== day
+          ) {
+            return null;
+          }
+          return birthDate;
+        }
+
+        syncBirthCalendarFromInput() {
+          const inputDate = this.parseBirthDate(this.overlay.querySelector("#clientBirthInput")?.value);
+          if (!inputDate) return;
+          this.birthCalendarDate = new Date(inputDate.getFullYear(), inputDate.getMonth(), 1);
+          this.renderBirthCalendar();
+        }
+
+        toggleBirthCalendar() {
+          const picker = this.overlay.querySelector("[data-client-date-picker]");
+          const toggle = this.overlay.querySelector("[data-client-date-toggle]");
+          if (!picker || !toggle) return;
+          const shouldOpen = picker.hidden;
+          if (shouldOpen) {
+            this.birthCalendarMode = "day";
+            this.syncBirthCalendarFromInput();
+            this.renderBirthCalendar();
+          }
+          picker.hidden = !shouldOpen;
+          toggle.classList.toggle("is-active", shouldOpen);
+          toggle.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+        }
+
+        closeBirthCalendar() {
+          const picker = this.overlay.querySelector("[data-client-date-picker]");
+          const toggle = this.overlay.querySelector("[data-client-date-toggle]");
+          if (!picker || picker.hidden) return;
+          picker.hidden = true;
+          toggle?.classList.remove("is-active");
+          toggle?.setAttribute("aria-expanded", "false");
+        }
+
+        setBirthCalendarMonth(value) {
+          const month = Number(value);
+          if (Number.isNaN(month)) return;
+          this.birthCalendarDate = new Date(
+            this.birthCalendarDate.getFullYear(),
+            month,
+            1
+          );
+          this.birthCalendarMode = "day";
+          this.renderBirthCalendar();
+        }
+
+        setBirthCalendarYear(value) {
+          const year = Number(value);
+          if (Number.isNaN(year)) return;
+          this.birthCalendarDate = new Date(
+            year,
+            this.birthCalendarDate.getMonth(),
+            1
+          );
+          this.birthCalendarMode = "day";
+          this.renderBirthCalendar();
+        }
+
+        setBirthCalendarMode(mode) {
+          const nextMode = mode === "month" || mode === "year" ? mode : "day";
+          this.birthCalendarMode = this.birthCalendarMode === nextMode ? "day" : nextMode;
+          this.renderBirthCalendar();
+        }
+
+        selectBirthDate(value) {
+          const [year, month, day] = String(value || "").split("-").map(Number);
+          if (!year || !month || !day) return;
+          const selectedDate = new Date(year, month - 1, day);
+          const input = this.overlay.querySelector("#clientBirthInput");
+          if (input) input.value = this.formatDateForInput(selectedDate);
+          this.birthCalendarDate = new Date(year, month - 1, 1);
+          this.closeBirthCalendar();
+        }
+
+        renderBirthCalendar() {
+          const monthLabel = this.overlay.querySelector("[data-client-date-month-label]");
+          const yearLabel = this.overlay.querySelector("[data-client-date-year-label]");
+          const weekdays = this.overlay.querySelector("[data-client-date-weekdays]");
+          const picker = this.overlay.querySelector("[data-client-date-picker]");
+          const grid = this.overlay.querySelector("[data-client-date-grid]");
+          if (!monthLabel || !yearLabel || !weekdays || !grid) return;
+          const monthNames = [
+            "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+            "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
+          ];
+          const year = this.birthCalendarDate.getFullYear();
+          const month = this.birthCalendarDate.getMonth();
+          const selectedDate = this.parseBirthDate(this.overlay.querySelector("#clientBirthInput")?.value);
+          const firstDay = new Date(year, month, 1);
+          const startOffset = (firstDay.getDay() + 6) % 7;
+          const daysInMonth = new Date(year, month + 1, 0).getDate();
+          const cells = [];
+          monthLabel.textContent = monthNames[month];
+          yearLabel.textContent = String(year);
+          picker?.setAttribute("data-mode", this.birthCalendarMode);
+          weekdays.hidden = this.birthCalendarMode !== "day";
+
+          if (this.birthCalendarMode === "month") {
+            grid.innerHTML = monthNames
+              .map((name, index) => (
+                `<button class="client_card_date_option${index === month ? " is-selected" : ""}" type="button" data-client-date-month="${index}">${name}</button>`
+              ))
+              .join("");
+            return;
+          }
+
+          if (this.birthCalendarMode === "year") {
+            const currentYear = new Date().getFullYear();
+            const minYear = currentYear - 100;
+            const maxYear = currentYear - 18;
+            for (let optionYear = maxYear; optionYear >= minYear; optionYear -= 1) {
+              cells.push(
+                `<button class="client_card_date_option${optionYear === year ? " is-selected" : ""}" type="button" data-client-date-year="${optionYear}">${optionYear}</button>`
+              );
+            }
+            grid.innerHTML = cells.join("");
+            return;
+          }
+
+          for (let index = 0; index < startOffset; index += 1) {
+            cells.push('<span class="client_card_date_empty"></span>');
+          }
+
+          for (let day = 1; day <= daysInMonth; day += 1) {
+            const value = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+            const isSelected = selectedDate &&
+              selectedDate.getFullYear() === year &&
+              selectedDate.getMonth() === month &&
+              selectedDate.getDate() === day;
+            cells.push(
+              `<button class="client_card_date_day${isSelected ? " is-selected" : ""}" type="button" data-client-date-day="${value}">${day}</button>`
+            );
+          }
+
+          while (cells.length < 42) {
+            cells.push('<span class="client_card_date_empty"></span>');
+          }
+
+          grid.innerHTML = cells.join("");
+        }
+
+        isAdult(value) {
+          const birthDate = this.parseBirthDate(value);
+          if (!birthDate) return false;
+          const today = new Date();
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const monthDelta = today.getMonth() - birthDate.getMonth();
+          if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < birthDate.getDate())) age -= 1;
+          return age >= 18;
+        }
+
+        handleLogin(event) {
+          event.preventDefault();
+          const profile = this.getProfile();
+          const login = this.overlay.querySelector("#clientLoginInput")?.value.trim();
+          const password = this.overlay.querySelector("#clientPasswordInput")?.value.trim();
+          if (!login || !password) {
+            this.setStatus("Введите логин и пароль.", "error");
+            return;
+          }
+          if (!profile) {
+            this.setStatus("Карта пока не создана. Перейдите в регистрацию.", "error");
+            this.setAuthTab("register");
+            return;
+          }
+          this.setSessionActive(true);
+          this.setStatus("Вы вошли в карту клиента.", "success");
+          this.renderDashboard(profile);
+        }
+
+        async handleRegister(event) {
+          event.preventDefault();
+          if (this.pendingFirebaseUser) {
+            if (!this.validateRegisterForm()) return;
+            try {
+              const nickname = this.overlay.querySelector("#clientUsernameInput")?.value.trim() || "";
+              const birthDate = this.overlay.querySelector("#clientBirthInput")?.value || "";
+              const result = await this.sendFirebaseAuth(this.pendingFirebaseUser, { nickname, birthDate });
+              this.saveProfile(result.profile);
+              this.setSessionActive(true);
+              this.pendingFirebaseUser = null;
+              this.renderDashboard(result.profile);
+              this.setStatus("Карта клиента создана.", "success");
+            } catch (error) {
+              this.setStatus(error?.message || "Не удалось создать карту клиента.", "error");
+            }
+            return;
+          }
+          if (!this.validateRegisterForm()) return;
+          const username = this.overlay.querySelector("#clientUsernameInput")?.value.trim();
+          const password = this.overlay.querySelector("#clientRegisterPasswordInput")?.value.trim();
+          if (!username || !password || password.length < 6) {
+            this.setStatus("Укажите логин и пароль минимум из 6 символов.", "error");
+            return;
+          }
+          const profile = {
+            nickname: this.normalizeNickname(username),
+            birthDate: this.overlay.querySelector("#clientBirthInput")?.value || "",
+            firstName: this.overlay.querySelector("#clientFirstNameInput")?.value.trim() || "",
+            lastName: "",
+            username,
+            avatar: this.getProfile()?.avatar || "",
+            orders: [],
+            reviews: [],
+          };
+          this.saveProfile(profile);
+          this.setSessionActive(true);
+          this.setStatus("Карта клиента создана.", "success");
+          this.renderDashboard(profile);
+        }
+
+        handleAvatar(event) {
+          const file = event.target.files?.[0];
+          if (!file || !file.type.startsWith("image/")) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            const profile = this.getProfile() || {};
+            profile.avatar = String(reader.result || "");
+            this.saveProfile(profile);
+            this.renderDashboard(profile);
+          };
+          reader.readAsDataURL(file);
+        }
+
+        saveProfileEdits() {
+          const profile = this.getProfile();
+          if (!profile) return;
+          const input = this.overlay.querySelector("[data-client-edit-nick]");
+          const login = String(input?.value || "").trim().replace(/^@+/, "");
+          if (!/^[A-Za-z][A-Za-z0-9_]{2,31}$/.test(login)) {
+            this.setStatus("Логин должен быть на английском: от 3 символов, буквы, цифры и _.", "error");
+            input?.focus();
+            return;
+          }
+          profile.username = login;
+          profile.nickname = this.normalizeNickname(login);
+          this.saveProfile(profile);
+          this.renderDashboard(profile);
+          this.setStatus("Профиль обновлён.", "success");
+        }
+
+        async logout() {
+          try {
+            const firebase = this.firebaseAuth || await this.getFirebaseAuth().catch(() => null);
+            if (firebase?.auth) await firebase.signOut(firebase.auth);
+          } catch (_) {
+            /* Firebase can be unavailable before first login. */
+          }
+          const logoutUrl = this.authView?.dataset.clientLogoutUrl;
+          if (logoutUrl) {
+            fetch(logoutUrl, {
+              method: "POST",
+              credentials: "same-origin",
+              headers: { "X-CSRFToken": this.getCsrfToken() },
+            }).catch(() => {});
+          }
+          this.setSessionActive(false);
+          this.pendingFirebaseUser = null;
+          this.authView?.classList.remove("is-onboarding");
+          this.overlay.querySelector("[data-client-social-panel]")?.removeAttribute("hidden");
+          this.overlay.querySelector('[data-client-form="register"]')?.setAttribute("hidden", "");
+          this.authView.hidden = false;
+          this.dashboardView.hidden = true;
+          this.setAuthTab("login");
+          this.setStatus("Вы вышли из карты клиента.");
+        }
+
+        setDashboardTab(tab) {
+          this.overlay.querySelectorAll("[data-client-dashboard-tab]").forEach((button) => {
+            button.classList.toggle("is-active", button.dataset.clientDashboardTab === tab);
+          });
+          this.overlay.querySelectorAll("[data-client-dashboard-panel]").forEach((panel) => {
+            panel.classList.toggle("is-active", panel.dataset.clientDashboardPanel === tab);
+          });
+        }
+
+        renderState() {
+          const profile = this.getProfile();
+          if (profile && this.isSessionActive()) {
+            this.renderDashboard(profile);
+          } else {
+            this.authView?.classList.remove("is-onboarding");
+            this.overlay.querySelector("[data-client-social-panel]")?.removeAttribute("hidden");
+            this.overlay.querySelector('[data-client-form="register"]')?.setAttribute("hidden", "");
+            this.authView.hidden = false;
+            this.dashboardView.hidden = true;
+            this.renderAvatar(profile?.avatar || "");
+          }
+        }
+
+        renderDashboard(profile) {
+          const nickname = profile.nickname || "@wave";
+          const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(" ") || "Клиент wave smokin";
+          this.authView.hidden = true;
+          this.dashboardView.hidden = false;
+          this.overlay.querySelector("[data-client-dashboard-nick]").textContent = nickname;
+          this.overlay.querySelector("[data-client-dashboard-name]").textContent = fullName;
+          this.overlay.querySelector("[data-client-orders-count]").textContent = profile.orders?.length || 0;
+          this.overlay.querySelector("[data-client-reviews-count]").textContent = profile.reviews?.length || 0;
+          const editNick = this.overlay.querySelector("[data-client-edit-nick]");
+          if (editNick) editNick.value = String(profile.username || nickname).replace(/^@/, "");
+          this.renderAvatar(profile.avatar);
+        }
+
+        renderDashboard(profile) {
+          const nickname = this.normalizeNickname(profile.nickname || profile.username || "wave");
+          const fullName = profile.displayName || [profile.firstName, profile.lastName].filter(Boolean).join(" ") || "Клиент wave smokin";
+          this.authView.hidden = true;
+          this.dashboardView.hidden = false;
+          this.overlay.querySelector("[data-client-dashboard-nick]").textContent = nickname;
+          this.overlay.querySelector("[data-client-dashboard-name]").textContent = fullName;
+          this.overlay.querySelector("[data-client-orders-count]").textContent = profile.ordersCount ?? profile.orders?.length ?? 0;
+          this.overlay.querySelector("[data-client-reviews-count]").textContent = profile.reviewsCount ?? profile.reviews?.length ?? 0;
+          const editNick = this.overlay.querySelector("[data-client-edit-nick]");
+          if (editNick) editNick.value = String(profile.nickname || profile.username || nickname).replace(/^@/, "");
+          this.renderAvatar(profile.avatarUrl || profile.avatar);
+        }
+
+        renderAvatar(src) {
+          const fallback = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+          const markup = src ? `<img src="${src}" alt="">` : fallback;
+          this.overlay.querySelector("[data-client-avatar]").innerHTML = markup;
+        }
+
+        open() {
+          window._mobileMenu?.closeMenu?.();
+          this.renderState();
+          this.overlay.inert = false;
+          this.overlay.classList.add("is-open");
+          this.backdrop?.classList.add("is-open");
+          this.overlay.setAttribute("aria-hidden", "false");
+          this.lockBodyScroll();
+          requestAnimationFrame(() => this.closeButton?.focus({ preventScroll: true }));
+        }
+
+        close() {
+          this.moveFocusOutside();
+          this.overlay.classList.remove("is-open");
+          this.backdrop?.classList.remove("is-open");
+          this.overlay.setAttribute("aria-hidden", "true");
+          this.overlay.inert = true;
+          this.unlockBodyScroll();
+        }
+
+        lockBodyScroll() {
+          if (document.body.classList.contains("client_card_scroll_locked")) return;
+          this.lockedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+          document.body.classList.add("client_card_scroll_locked");
+          document.body.style.position = "fixed";
+          document.body.style.top = `-${this.lockedScrollY}px`;
+          document.body.style.left = "0";
+          document.body.style.right = "0";
+          document.body.style.width = "100%";
+          document.body.style.overflow = "hidden";
+        }
+
+        unlockBodyScroll() {
+          if (!document.body.classList.contains("client_card_scroll_locked")) return;
+          document.body.classList.remove("client_card_scroll_locked");
+          document.body.style.position = "";
+          document.body.style.top = "";
+          document.body.style.left = "";
+          document.body.style.right = "";
+          document.body.style.width = "";
+          document.body.style.overflow = "";
+          window.scrollTo(0, this.lockedScrollY || 0);
+        }
+
+        moveFocusOutside() {
+          const activeElement = document.activeElement;
+          if (!activeElement || !this.overlay.contains(activeElement)) return;
+          const target = this.lastTrigger?.isConnected ? this.lastTrigger : document.querySelector("[data-client-card-open]");
+          if (target?.focus) {
+            target.focus({ preventScroll: true });
+            return;
+          }
+          document.body.setAttribute("tabindex", "-1");
+          document.body.focus({ preventScroll: true });
+          window.setTimeout(() => document.body.removeAttribute("tabindex"), 0);
         }
       }
 
@@ -2070,12 +3023,31 @@ class AdaptiveAccountButton {
             return data;
           };
 
+          controller.getShopPanelItemsSignature = function (items, mode) {
+            return JSON.stringify((items || []).map((item) => {
+              if (mode === "cart_widget") {
+                return [
+                  item.id,
+                  item.product_id,
+                  item.quantity,
+                  item.total_price,
+                  item.image_url,
+                  item.variant_name,
+                  item.variant_ids,
+                ];
+              }
+              return [item.id, item.price, item.old_price, item.image_url, item.is_liked];
+            }));
+          };
+
           controller.refreshFavorites = async function () {
             try {
+              const previousSignature = this.getShopPanelItemsSignature(this.state.favorites_widget, "favorites_widget");
               const data = await this.fetchJSON("/api/favorites/");
               this.state.favorites_widget = data.items || [];
+              const nextSignature = this.getShopPanelItemsSignature(this.state.favorites_widget, "favorites_widget");
               this.updateUI();
-              if (this.state.isOpen && this.state.currentMode === "favorites_widget") {
+              if (this.state.isOpen && this.state.currentMode === "favorites_widget" && previousSignature !== nextSignature) {
                 this.renderHeader();
                 this.renderFavorites();
               }
@@ -2087,12 +3059,14 @@ class AdaptiveAccountButton {
 
           controller.refreshCart = async function () {
             try {
+              const previousSignature = this.getShopPanelItemsSignature(this.state.basketItems, "cart_widget");
               const data = await this.fetchJSON("/api/cart/");
               this.state.basketItems = data.items || [];
               this.state.cartTotalQuantity = data.total_quantity || 0;
               this.state.cartTotalPrice = data.total_price || 0;
+              const nextSignature = this.getShopPanelItemsSignature(this.state.basketItems, "cart_widget");
               this.updateUI();
-              if (this.state.isOpen && this.state.currentMode === "cart_widget") {
+              if (this.state.isOpen && this.state.currentMode === "cart_widget" && previousSignature !== nextSignature) {
                 this.renderHeader();
                 this.renderBasket();
               }
@@ -2101,6 +3075,16 @@ class AdaptiveAccountButton {
               this.state.cartTotalQuantity = 0;
               this.state.cartTotalPrice = 0;
               this.updateUI();
+            }
+          };
+
+          const originalShow = controller.show.bind(controller);
+          controller.show = function (mode) {
+            originalShow(mode);
+            if (mode === "cart_widget") {
+              this.refreshCart();
+            } else if (mode === "favorites_widget") {
+              this.refreshFavorites();
             }
           };
 
@@ -2128,14 +3112,13 @@ class AdaptiveAccountButton {
             const iconClass = this.state.currentMode === "cart_widget" ? "fa-shopping-bag" : "fa-heart";
             const modeClass = this.state.currentMode === "cart_widget" ? "shop_panel_mode_cart" : "shop_panel_mode_favorites";
             this.elements.dropdownTitle.innerHTML = `
-              <div class="page_header_top">
+              <div class="shop-panel__top">
                 <div class="shop_panel_title_text">
                   <div class="shop_panel_title_icon ${modeClass}">
                     <i class="fa-solid ${iconClass}"></i>
                   </div>
                   <span>${modeLabel}</span>
                 </div>
-                <span class="shop_panel_items_count">${items.length} ${this.getItemsCountLabel(items.length)}</span>
               </div>
             `;
           };
@@ -2148,9 +3131,18 @@ class AdaptiveAccountButton {
             return `${Number(value || 0).toLocaleString("uk-UA")}₴`;
           };
 
+          controller.escapeHtml = function (value) {
+            return String(value ?? "")
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#039;");
+          };
+
           controller.getImageMarkup = function (item, alt) {
             if (item.image_url) {
-              return `<img src="${item.image_url}" alt="${alt}" class="shop_panel_product_image" onerror="this.style.display='none'" />`;
+              return `<img src="${this.escapeHtml(item.image_url)}" alt="${this.escapeHtml(alt)}" class="shop_panel_product_image" onerror="this.style.display='none'" />`;
             }
             return `<i class="fa-solid fa-box-open"></i>`;
           };
@@ -2158,7 +3150,82 @@ class AdaptiveAccountButton {
           controller.getBadgeMarkup = function (badge) {
             if (!badge) return "";
             const className = badge.type === "sale" ? "shop_panel_item_badge_sale" : "shop_panel_item_badge_new";
-            return `<span class="${className}">${badge.label}</span>`;
+            return `<span class="${className}">${this.escapeHtml(badge.label)}</span>`;
+          };
+
+          controller.getCartVariantDetails = function (item) {
+            if (Array.isArray(item.selected_variants) && item.selected_variants.length) {
+              return item.selected_variants
+                .filter((variant) => variant && variant.name)
+                .map((variant) => ({
+                  group: variant.group || "Вариант",
+                  name: variant.name,
+                }));
+            }
+            if (item.variant_name) {
+              return String(item.variant_name)
+                .split(",")
+                .map((name) => name.trim())
+                .filter(Boolean)
+                .map((name) => ({ group: "Вариант", name }));
+            }
+            return [];
+          };
+
+          controller.renderCartVariantInfo = function (item) {
+            const variants = this.getCartVariantDetails(item);
+            if (!variants.length) return "";
+            const panelId = `cart-item-variants-${item.id}`;
+            return `
+              <button class="cart_item_variant_info" type="button" data-cart-variant-toggle="${item.id}" aria-label="Показать выбранные варианты" aria-expanded="false" aria-controls="${panelId}">
+                <span class="cart_item_variant_info_mark" aria-hidden="true">
+                  <svg viewBox="0 0 18 18" focusable="false">
+                    <path d="M5.25 4.75h7.5M5.25 9h7.5M5.25 13.25h4.6" />
+                    <path d="M3.1 4.75h.05M3.1 9h.05M3.1 13.25h.05" />
+                  </svg>
+                </span>
+              </button>
+            `;
+          };
+
+          controller.renderCartVariantPanel = function (item) {
+            const variants = this.getCartVariantDetails(item);
+            if (!variants.length) return "";
+            const rows = variants.map((variant) => `
+              <span class="cart_item_variant_panel_row">
+                <span>${this.escapeHtml(variant.group)}</span>
+                <strong>${this.escapeHtml(variant.name)}</strong>
+              </span>
+            `).join("");
+            return `
+              <div class="cart_item_variant_panel" id="cart-item-variants-${item.id}" data-cart-variant-panel aria-hidden="true">
+                <div class="cart_item_variant_panel_inner">
+                  ${rows}
+                </div>
+              </div>
+            `;
+          };
+
+          controller.animateShopPanelItemRemoval = function (element) {
+            if (!element) return Promise.resolve();
+            const measuredHeight = element.getBoundingClientRect().height;
+            element.style.setProperty("--shop-panel-removal-height", `${measuredHeight}px`);
+            element.classList.add("is-removing");
+            element.querySelectorAll("button, a").forEach((control) => {
+              control.setAttribute("tabindex", "-1");
+              control.setAttribute("aria-hidden", "true");
+            });
+            window.requestAnimationFrame(() => {
+              window.requestAnimationFrame(() => {
+                element.classList.add("is-collapsing");
+              });
+            });
+            return new Promise((resolve) => {
+              window.setTimeout(() => {
+                element.remove();
+                resolve();
+              }, 320);
+            });
           };
 
           controller.renderFavorites = function () {
@@ -2169,46 +3236,28 @@ class AdaptiveAccountButton {
               return;
             }
             this.elements.dropdownList.innerHTML = items.map((item) => {
-              const variants = item.display_variant_options || item.variant_options || [];
-              const variantMarkup = variants.length ? `
-                <div class="cart_size_selector">
-                  ${variants.map((variant) => `
-                    <button
-                      class="size ${variant.available ? "available" : ""}"
-                      type="button"
-                      data-favorite-variant="${item.id}"
-                      data-variant-id="${variant.id}"
-                      ${variant.available ? "" : "disabled"}
-                    >${variant.name}</button>
-                  `).join("")}
-                </div>
-              ` : "";
+              const oldPriceMarkup = item.old_price && Number(item.old_price) > Number(item.price)
+                ? `<span class="favorite_item_price_old">${this.formatPrice(item.old_price)}</span>`
+                : "";
               return `
-                <div class="favorites_panel_item" data-favorite-id="${item.id}">
-                  <div class="cart_item_image_stack">
+                <div class="favorites_panel_item" data-favorite-id="${item.id}" data-card-link="${this.escapeHtml(item.detail_url || "#")}" tabindex="0" role="link" aria-label="${this.escapeHtml(item.name)}">
+                  <a class="favorite_item_image" href="${this.escapeHtml(item.detail_url || "#")}" aria-label="${this.escapeHtml(item.name)}">
                     ${this.getBadgeMarkup(item.badge)}
-                    <div class="promo_image_slider">
-                      <div class="promo_image_slide active">
-                        ${this.getImageMarkup(item, item.name)}
-                      </div>
-                    </div>
-                  </div>
-                  <div class="shop_panel_item_details">
-                    <div class="shop_panel_item_header">
-                      <a class="shop_panel_item_name" href="${item.detail_url || "#"}">${item.name}</a>
-                      <button class="cart_remove_button" type="button" data-remove-favorite="${item.id}">
-                        <i class="fa-solid fa-xmark"></i>
+                    ${this.getImageMarkup(item, item.name)}
+                  </a>
+                  <div class="favorite_item_details">
+                    <div class="favorite_item_header">
+                      <a class="favorite_item_name" href="${this.escapeHtml(item.detail_url || "#")}">${this.escapeHtml(item.name)}</a>
+                      <button class="favorite_item_remove" type="button" data-remove-favorite="${item.id}" aria-label="Удалить из избранного">
+                        <svg viewBox="0 0 16 16" aria-hidden="true">
+                          <path d="M4.15 4.15L11.85 11.85M11.85 4.15L4.15 11.85" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+                        </svg>
                       </button>
                     </div>
-                    <div class="shop_panel_item_price_row">
-                      <div class="shop_panel_item_price">${this.formatPrice(item.price)}</div>
-                      ${item.old_price && Number(item.old_price) > Number(item.price) ? `<div class="shop_panel_item_price_old">${this.formatPrice(item.old_price)}</div>` : ""}
+                    <div class="favorite_item_price_row">
+                      ${oldPriceMarkup}
+                      <span class="favorite_item_price">${this.formatPrice(item.price)}</span>
                     </div>
-                    ${variantMarkup}
-                    <button class="cart_add_button" type="button" data-add-favorite-to-cart="${item.id}">
-                      <i class="fa-solid fa-cart-plus"></i>
-                      <span>В корзину</span>
-                    </button>
                   </div>
                 </div>
               `;
@@ -2218,46 +3267,45 @@ class AdaptiveAccountButton {
           };
 
           controller.bindFavoritesInteractions = function () {
-            this.elements.dropdownList.querySelectorAll("[data-favorite-variant]").forEach((button) => {
-              button.addEventListener("click", () => {
-                const itemId = Number(button.getAttribute("data-favorite-variant"));
-                const parent = button.closest(".cart_size_selector");
-                parent?.querySelectorAll(".size").forEach((item) => item.classList.remove("selected"));
-                button.classList.add("selected");
-                this.state.selectedSizes[itemId] = Number(button.getAttribute("data-variant-id"));
+            this.elements.dropdownList.querySelectorAll("[data-card-link]").forEach((card) => {
+              const openCard = () => {
+                const url = card.getAttribute("data-card-link");
+                if (url && url !== "#") window.location.href = url;
+              };
+              card.addEventListener("click", (event) => {
+                if (event.target.closest("a, button")) return;
+                openCard();
               });
-            });
-            this.elements.dropdownList.querySelectorAll("[data-add-favorite-to-cart]").forEach((button) => {
-              button.addEventListener("click", async () => {
-                const itemId = Number(button.getAttribute("data-add-favorite-to-cart"));
-                const item = this.state.favorites_widget.find((favorite) => favorite.id === itemId);
-                if (!item) return;
-                const variants = item.display_variant_options || item.variant_options || [];
-                const variantId = this.state.selectedSizes[itemId] || null;
-                if (variants.length && !variantId) {
-                  this.showToast("Выберите вариант");
-                  return;
-                }
-                try {
-                  await this.fetchJSON("/api/cart/add/", {
-                    method: "POST",
-                    body: JSON.stringify({ product_id: item.id, variant_id: variantId, quantity: 1 }),
-                  });
-                  await this.refreshCart();
-                  this.showToast("Товар добавлен в корзину");
-                } catch (error) {
-                  this.showToast(error.message);
-                }
+              card.addEventListener("keydown", (event) => {
+                if (event.key !== "Enter" && event.key !== " ") return;
+                event.preventDefault();
+                openCard();
               });
             });
             this.elements.dropdownList.querySelectorAll("[data-remove-favorite]").forEach((button) => {
               button.addEventListener("click", async () => {
                 const itemId = Number(button.getAttribute("data-remove-favorite"));
+                const itemElement = button.closest(".favorites_panel_item");
                 try {
-                  await this.fetchJSON(`/products/${itemId}/like/`, { method: "POST" });
-                  await this.refreshFavorites();
+                  button.disabled = true;
+                  const data = await this.fetchJSON(`/products/${itemId}/like/`, { method: "POST" });
+                  document.dispatchEvent(new CustomEvent("product_card_component:liked", {
+                    detail: {
+                      productId: itemId,
+                      liked: Boolean(data.liked),
+                      likes: Number(data.likes || 0),
+                    },
+                  }));
+                  await this.animateShopPanelItemRemoval(itemElement);
+                  this.state.favorites_widget = this.state.favorites_widget.filter((item) => Number(item.id) !== itemId);
+                  this.updateUI();
+                  this.renderHeader();
+                  if (!this.state.favorites_widget.length) {
+                    this.renderFavorites();
+                  }
                   this.showToast("Удалено из избранного");
                 } catch (error) {
+                  button.disabled = false;
                   this.showToast(error.message);
                 }
               });
@@ -2271,27 +3319,40 @@ class AdaptiveAccountButton {
               return;
             }
             this.elements.dropdownList.innerHTML = this.state.basketItems.map((item) => `
-              <div class="cart_item" data-cart-item-id="${item.id}">
-                <div class="cart_item_image">
-                  ${this.getImageMarkup(item, item.product_name)}
+              <div class="cart_item" data-cart-item-id="${item.id}" data-card-link="${this.escapeHtml(item.product_url || "#")}" tabindex="0" role="link" aria-label="${this.escapeHtml(item.product_name)}">
+                <div class="cart_item_image_wrap">
+                  <a class="cart_item_image" href="${this.escapeHtml(item.product_url || "#")}" aria-label="${this.escapeHtml(item.product_name)}">
+                    ${this.getImageMarkup(item, item.product_name)}
+                  </a>
                 </div>
                 <div class="cart_item_details">
-                  <a class="cart_item_name" href="${item.product_url || "#"}">${item.product_name}</a>
-                  ${item.variant_name ? `<div class="shop_panel_item_variant">${item.variant_name}</div>` : ""}
-                  <div class="cart_item_price">${this.formatPrice(item.total_price)}</div>
-                  <div class="cart_quantity_controls">
-                    <button class="cart_quantity_button" type="button" data-cart-decrease="${item.id}" ${item.quantity <= 1 ? "disabled" : ""}>
-                      <i class="fa-solid fa-minus"></i>
-                    </button>
-                    <span class="cart_quantity_value">${item.quantity}</span>
-                    <button class="cart_quantity_button" type="button" data-cart-increase="${item.id}">
-                      <i class="fa-solid fa-plus"></i>
+                  <div class="cart_item_topline">
+                    <a class="cart_item_name" href="${this.escapeHtml(item.product_url || "#")}">${this.escapeHtml(item.product_name)}</a>
+                    <button class="cart_item_remove" type="button" data-remove-cart-item="${item.id}" aria-label="Удалить из корзины">
+                      <svg viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M4.15 4.15L11.85 11.85M11.85 4.15L4.15 11.85" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+                      </svg>
                     </button>
                   </div>
+                  <div class="cart_item_meta_row">
+                    <div class="cart_item_control_cluster">
+                      <div class="cart_quantity_controls">
+                        <button class="cart_quantity_button" type="button" data-cart-decrease="${item.id}" aria-label="${item.quantity <= 1 ? "Удалить товар" : "Уменьшить количество"}">
+                          <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <span class="cart_quantity_value">${item.quantity}</span>
+                        <button class="cart_quantity_button" type="button" data-cart-increase="${item.id}">
+                          <i class="fa-solid fa-plus"></i>
+                        </button>
+                      </div>
+                      ${this.renderCartVariantInfo(item)}
+                    </div>
+                    <div class="cart_item_meta_cluster">
+                      <span class="cart_item_price">${this.formatPrice(item.total_price)}</span>
+                    </div>
+                  </div>
                 </div>
-                <button class="cart_item_remove" type="button" data-remove-cart-item="${item.id}">
-                  <i class="fa-solid fa-trash-alt"></i>
-                </button>
+                ${this.renderCartVariantPanel(item)}
               </div>
             `).join("");
             this.showFooter();
@@ -2300,6 +3361,40 @@ class AdaptiveAccountButton {
           };
 
           controller.bindBasketInteractions = function () {
+            this.elements.dropdownList.querySelectorAll("[data-card-link]").forEach((card) => {
+              const openCard = () => {
+                const url = card.getAttribute("data-card-link");
+                if (url && url !== "#") window.location.href = url;
+              };
+              card.addEventListener("click", (event) => {
+                if (event.target.closest("a, button, [data-cart-variant-toggle], .cart_quantity_controls")) return;
+                openCard();
+              });
+              card.addEventListener("keydown", (event) => {
+                if (event.key !== "Enter" && event.key !== " ") return;
+                event.preventDefault();
+                openCard();
+              });
+            });
+            this.elements.dropdownList.querySelectorAll("[data-cart-variant-toggle]").forEach((button) => {
+              button.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                const card = button.closest(".cart_item");
+                const panel = card?.querySelector("[data-cart-variant-panel]");
+                if (!card || !panel) return;
+                const shouldOpen = !card.classList.contains("is-variants-open");
+                this.elements.dropdownList.querySelectorAll(".cart_item.is-variants-open").forEach((openCard) => {
+                  if (openCard === card) return;
+                  openCard.classList.remove("is-variants-open");
+                  openCard.querySelector("[data-cart-variant-toggle]")?.setAttribute("aria-expanded", "false");
+                  openCard.querySelector("[data-cart-variant-panel]")?.setAttribute("aria-hidden", "true");
+                });
+                card.classList.toggle("is-variants-open", shouldOpen);
+                button.setAttribute("aria-expanded", String(shouldOpen));
+                panel.setAttribute("aria-hidden", String(!shouldOpen));
+              });
+            });
             this.elements.dropdownList.querySelectorAll("[data-cart-increase], [data-cart-decrease]").forEach((button) => {
               button.addEventListener("click", async () => {
                 const itemId = Number(button.getAttribute("data-cart-increase") || button.getAttribute("data-cart-decrease"));
@@ -2307,6 +3402,25 @@ class AdaptiveAccountButton {
                 if (!item) return;
                 const nextQuantity = button.hasAttribute("data-cart-increase") ? item.quantity + 1 : item.quantity - 1;
                 try {
+                  if (nextQuantity <= 0) {
+                    const itemElement = button.closest(".cart_item");
+                    const data = await this.fetchJSON(`/api/cart/${itemId}/`, { method: "DELETE" });
+                    await this.animateShopPanelItemRemoval(itemElement);
+                    if (data.cart) {
+                      this.state.basketItems = data.cart.items || [];
+                      this.state.cartTotalQuantity = data.cart.total_quantity || 0;
+                      this.state.cartTotalPrice = data.cart.total_price || 0;
+                    } else {
+                      this.state.basketItems = this.state.basketItems.filter((cartItem) => Number(cartItem.id) !== itemId);
+                      this.state.cartTotalQuantity = this.state.basketItems.reduce((sum, cartItem) => sum + (cartItem.quantity || 0), 0);
+                      this.state.cartTotalPrice = this.state.basketItems.reduce((sum, cartItem) => sum + Number(cartItem.total_price || 0), 0);
+                    }
+                    this.updateUI();
+                    this.renderHeader();
+                    this.updateBasketTotals();
+                    if (!this.state.basketItems.length) this.renderBasket();
+                    return;
+                  }
                   await this.fetchJSON(`/api/cart/${itemId}/`, {
                     method: "PATCH",
                     body: JSON.stringify({ quantity: nextQuantity }),
@@ -2320,13 +3434,113 @@ class AdaptiveAccountButton {
             this.elements.dropdownList.querySelectorAll("[data-remove-cart-item]").forEach((button) => {
               button.addEventListener("click", async () => {
                 const itemId = Number(button.getAttribute("data-remove-cart-item"));
+                const itemElement = button.closest(".cart_item");
                 try {
-                  await this.fetchJSON(`/api/cart/${itemId}/`, { method: "DELETE" });
-                  await this.refreshCart();
+                  button.disabled = true;
+                  const data = await this.fetchJSON(`/api/cart/${itemId}/`, { method: "DELETE" });
+                  await this.animateShopPanelItemRemoval(itemElement);
+                  if (data.cart) {
+                    this.state.basketItems = data.cart.items || [];
+                    this.state.cartTotalQuantity = data.cart.total_quantity || 0;
+                    this.state.cartTotalPrice = data.cart.total_price || 0;
+                  } else {
+                    this.state.basketItems = this.state.basketItems.filter((item) => Number(item.id) !== itemId);
+                    this.state.cartTotalQuantity = this.state.basketItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+                    this.state.cartTotalPrice = this.state.basketItems.reduce((sum, item) => sum + Number(item.total_price || 0), 0);
+                  }
+                  this.updateUI();
+                  this.renderHeader();
+                  this.updateBasketTotals();
+                  if (!this.state.basketItems.length) {
+                    this.renderBasket();
+                  }
                 } catch (error) {
+                  button.disabled = false;
                   this.showToast(error.message);
                 }
               });
+            });
+          };
+
+          controller.ensureFooter = function () {
+            if (this.elements.footer?.dataset.cartFooterDesign === "checkout-v2") {
+              return;
+            }
+
+            this.elements.footer?.remove();
+            const footer = document.createElement("div");
+            footer.className = "shop_panel_footer";
+            footer.dataset.cartFooterDesign = "checkout-v2";
+            footer.innerHTML = `
+              <details class="cart_promo_section">
+                <summary class="cart_promo_summary">
+                  <span class="cart_promo_summary_text">Промокод</span>
+                  <span class="cart_promo_summary_icon" aria-hidden="true">
+                    <svg viewBox="0 0 16 16"><path d="M4.3 6.2 8 9.9l3.7-3.7" /></svg>
+                  </span>
+                </summary>
+                <div class="cart_promo_body">
+                  <div class="cart_promo_input_wrapper">
+                    <input type="text" class="cart_promo_input" id="promoInput" placeholder="SAVE20" autocomplete="off" />
+                    <button class="cart_promo_button" type="button">Применить</button>
+                  </div>
+                </div>
+              </details>
+              <div class="cart_total_section">
+                <div class="cart_total_copy">
+                  <span class="cart_total_label">К оплате</span>
+                  <span class="cart_total_hint">Без учета доставки</span>
+                </div>
+                <div class="cart_total_prices">
+                  <span class="cart_total_price cart_price_old" id="oldPrice"></span>
+                  <span class="cart_total_price" id="totalPrice">0₴</span>
+                </div>
+              </div>
+
+              <button class="cart_checkout_button" type="button">
+                <span class="cart_checkout_text">Оформить заказ</span>
+                <span class="cart_checkout_icon_container" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" class="cart_checkout_icon cart_checkout_card_icon">
+                    <path d="M20,8H4V6H20M20,18H4V12H20M20,4H4C2.89,4 2,4.89 2,6V18C2,19.11 2.89,20 4,20H20C21.11,20 22,19.11 22,18V6C22,4.89 21.11,4 20,4Z" fill="currentColor"></path>
+                  </svg>
+                  <svg viewBox="0 0 24 24" class="cart_checkout_icon cart_checkout_terminal_icon">
+                    <path d="M2,17H22V21H2V17M6.25,7H9V6H6V3H18V6H15V7H17.75L19,17H5L6.25,7M9,10H15V8H9V10M9,13H15V11H9V13Z" fill="currentColor"></path>
+                  </svg>
+                  <svg viewBox="0 0 24 24" class="cart_checkout_icon cart_checkout_coin_icon">
+                    <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" fill="currentColor"></path>
+                  </svg>
+                  <svg viewBox="0 0 24 24" class="cart_checkout_icon cart_checkout_wallet_icon is-default">
+                    <path d="M21,18V19A2,2 0 0,1 19,21H5C3.89,21 3,20.1 3,19V5A2,2 0 0,1 5,3H19A2,2 0 0,1 21,5V6H12C10.89,6 10,6.9 10,8V16A2,2 0 0,0 12,18M12,16H22V8H12M16,13.5A1.5,1.5 0 0,1 14.5,12A1.5,1.5 0 0,1 16,10.5A1.5,1.5 0 0,1 17.5,12A1.5,1.5 0 0,1 16,13.5Z" fill="currentColor"></path>
+                  </svg>
+                  <svg viewBox="0 0 24 24" class="cart_checkout_icon cart_checkout_check_icon">
+                    <path d="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z" fill="currentColor"></path>
+                  </svg>
+                </span>
+              </button>
+            `;
+
+            this.elements.dropdown.appendChild(footer);
+            this.elements.footer = footer;
+
+            const promoInput = footer.querySelector("#promoInput");
+            const promoButton = footer.querySelector(".cart_promo_button");
+            const checkoutButton = footer.querySelector(".cart_checkout_button");
+
+            promoInput?.addEventListener("input", () => {
+              promoInput.value = promoInput.value.toUpperCase();
+              promoInput.classList.remove("valid", "invalid");
+            });
+
+            promoInput?.addEventListener("keydown", (event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                this.applyPromoCode();
+              }
+            });
+
+            promoButton?.addEventListener("click", () => this.applyPromoCode());
+            checkoutButton?.addEventListener("click", () => {
+              this.showToast("Переход к оформлению заказа");
             });
           };
 
@@ -2337,7 +3551,15 @@ class AdaptiveAccountButton {
               oldPrice.classList.remove("show");
               oldPrice.textContent = "";
             }
-            if (totalPrice) totalPrice.textContent = this.formatPrice(this.state.cartTotalPrice || 0);
+            if (!totalPrice) return;
+            const total = Number(this.state.cartTotalPrice || 0);
+            if (this.state.promoApplied) {
+              oldPrice?.classList.add("show");
+              if (oldPrice) oldPrice.textContent = this.formatPrice(total);
+              totalPrice.textContent = this.formatPrice(Math.round(total * (1 - this.discountPercent / 100)));
+              return;
+            }
+            totalPrice.textContent = this.formatPrice(total);
           };
 
           controller.addItem = async function (customItem = null, targetList = "favorites_widget") {
@@ -2358,7 +3580,7 @@ class AdaptiveAccountButton {
         installRealShopPanelController(shopPanelController);
         window._shopPanel = shopPanelController;
 
-        // Patch ShopPanelController to also update mobile notification_badge
+        // Patch ShopPanelController to also update mobile site-nav__badge
         const origUpdateUI = shopPanelController.updateUI.bind(shopPanelController);
         shopPanelController.updateUI = function () {
           origUpdateUI();
@@ -2376,15 +3598,24 @@ class AdaptiveAccountButton {
 
         new ContactsModalController();
         new DeliveryModalController();
+        new ClientCardModalController();
 
         window.addEventListener("load", () => {
           shopPanelController?.updatePanelPosition?.();
         });
 
-        window.setTimeout(() => {
+        const refreshShopPanelData = () => {
           shopPanelController?.refreshFavorites?.();
           shopPanelController?.refreshCart?.();
-        }, 120);
+        };
+
+        window.setTimeout(refreshShopPanelData, 120);
+
+        window.addEventListener("pageshow", refreshShopPanelData);
+        document.addEventListener("visibilitychange", () => {
+          if (!document.hidden) refreshShopPanelData();
+        });
+        window.addEventListener("focus", refreshShopPanelData);
       });
 
       document.addEventListener("click", (event) => {
@@ -2397,7 +3628,7 @@ class AdaptiveAccountButton {
 
         const sort = link.getAttribute("data-product-browser-sort");
         if (sort) {
-          const sortButton = document.querySelector(`[data_sort_option_key="${sort}"]`);
+          const sortButton = document.querySelector(`[data-sort-option-key="${sort}"]`);
           sortButton?.click();
         }
         target.scrollIntoView({ behavior: "smooth", block: "start" });

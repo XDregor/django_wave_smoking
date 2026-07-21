@@ -1,0 +1,35 @@
+<div
+  class="catalog-empty"
+  id="catalog_empty_state_id"
+  role="status"
+  aria-live="polite"
+>
+  <div class="catalog-empty__icon" id="catalog_empty_icon_no_products_id">
+    <svg class="catalog-empty__icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+      <path d="m4 7 8-4 8 4-8 4-8-4Z"></path>
+      <path d="m4 7 8 4 8-4v10l-8 4-8-4V7Z"></path>
+      <path d="M12 11v10"></path>
+    </svg>
+  </div>
+
+  <div class="catalog-empty__icon catalog-empty__icon--filtered" id="catalog_empty_icon_no_results_id" style="display: none">
+    <svg class="catalog-empty__icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <circle cx="10.5" cy="10.5" r="6.5"></circle>
+      <path d="m15.5 15.5 4 4"></path>
+      <path d="m8.3 8.3 4.4 4.4M12.7 8.3l-4.4 4.4"></path>
+    </svg>
+  </div>
+
+  <div class="catalog-empty__copy">
+    <h3 class="catalog-empty__title" id="emptyTitle">Ничего не найдено</h3>
+    <p class="catalog-empty__description" id="emptyDescription">Попробуйте изменить параметры или сбросить выбранные фильтры.</p>
+  </div>
+
+  <button class="catalog-empty__reset" id="catalog_empty_reset_button_id" type="button" style="display: none">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+      <path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path>
+      <path d="M3 3v5h5"></path>
+    </svg>
+    <span>Сбросить фильтры</span>
+  </button>
+</div>

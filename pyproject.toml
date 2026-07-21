@@ -12,7 +12,10 @@ dependencies = [
     "asgiref (==3.11.1)",
     "sqlparse (==0.5.5)",
     "tzdata (==2026.2)",
-    "django-unfold (>=0.97.0,<0.98.0)"
+    "django-unfold (>=0.97.0,<0.98.0)",
+    "daphne (>=4.2.2,<5.0.0)",
+    "psycopg[binary] (>=3.2,<4.0)",
+    "firebase-admin (>=6.6,<7.0)"
 ]
 
 

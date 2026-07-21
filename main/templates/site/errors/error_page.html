@@ -1,0 +1,46 @@
+<!doctype html>
+{% load static %}
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ error_title }} | WAVE</title>
+    <meta name="robots" content="{{ error_robots|default:'noindex, follow' }}" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/theme.css' %}?v=site-tokens1" />
+    <link rel="icon" type="image/png" href="{% static 'site/shared/img/mini_logo.png' %}" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/site_errors.css' %}?v=public-errors4" />
+  </head>
+  <body class="error-body">
+    <div id="site-content" class="site-content" data-site-content data-wave-page="error">
+      <div class="error-page" data-error-page data-tone="{{ error_tone|default:'accent' }}">
+        <div class="error-page__ambient" aria-hidden="true">
+          <span class="error-page__glow error-page__glow--accent"></span>
+          <span class="error-page__glow error-page__glow--dim"></span>
+          <span class="error-page__glow error-page__glow--danger"></span>
+          <span class="error-page__grid"></span>
+        </div>
+
+        <main class="error-page__main" aria-labelledby="site-error-title">
+          <div class="error-page__content">
+            <h1 class="error-page__code" data-code="{{ error_code }}">{{ error_code }}</h1>
+            <h2 class="error-page__title" id="site-error-title">{{ error_title }}</h2>
+            <p class="error-page__description">{{ error_description }}</p>
+
+            <hr class="error-page__rule" />
+
+            <div class="error-page__actions">
+              <a class="error-page__cta" href="{% url error_primary_url_name %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M19 12H5"></path>
+                  <path d="m12 19-7-7 7-7"></path>
+                </svg>
+                {{ error_primary_text }}
+              </a>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <script src="{% static 'site/shared/js/site_errors.js' %}?v=public-errors2"></script>
+  </body>
+</html>

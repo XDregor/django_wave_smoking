@@ -1,0 +1,20 @@
+.site-content {
+  min-height: 60vh;
+  opacity: 1;
+  transition: opacity 180ms ease;
+}
+
+.site-content.is-page-leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.site-content.is-page-entering {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-content {
+    transition: none;
+  }
+}

@@ -8,7 +8,7 @@
   {{ block.super }}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{% static 'admin_panel/products/css/product_editor_page.css' %}?v=wizard20" />
+  <link rel="stylesheet" href="{% static 'admin_panel/products/css/product_editor_page.css' %}?v=also-chosen2" />
 {% endblock %}
 
 {% block content %}
@@ -16,39 +16,39 @@
         <div class="page-body">
           <!-- STEP NAV -->
           <div class="step-nav" id="stepNav">
-            <div class="step-pill active" id="pill1" onclick="goStep(1)">
+            <div class="step-pill{% if initial_step != 6 %} active{% endif %}" id="pill1" onclick="goStep(1)">
               <div class="step-num">1</div>
               Основное
             </div>
             <div class="step-connector"></div>
-            <div class="step-pill locked" id="pill2" onclick="goStep(2)">
+            <div class="step-pill{% if initial_step != 6 %} locked{% endif %}" id="pill2" onclick="goStep(2)">
               <div class="step-num">2</div>
               Описание
             </div>
             <div class="step-connector"></div>
-            <div class="step-pill locked" id="pill3" onclick="goStep(3)">
+            <div class="step-pill{% if initial_step != 6 %} locked{% endif %}" id="pill3" onclick="goStep(3)">
               <div class="step-num">3</div>
               Медиа
             </div>
             <div class="step-connector"></div>
-            <div class="step-pill locked" id="pill4" onclick="goStep(4)">
+            <div class="step-pill{% if initial_step != 6 %} locked{% endif %}" id="pill4" onclick="goStep(4)">
               <div class="step-num">4</div>
               Варианты
             </div>
             <div class="step-connector"></div>
-            <div class="step-pill locked" id="pill5" onclick="goStep(5)">
+            <div class="step-pill{% if initial_step != 6 %} locked{% endif %}" id="pill5" onclick="goStep(5)">
               <div class="step-num">5</div>
               SKU / &#1050;&#1086;&#1084;&#1073;&#1080;&#1085;&#1072;&#1094;&#1080;&#1080;
             </div>
             <div class="step-connector"></div>
-            <div class="step-pill locked" id="pill6" onclick="goStep(6)">
+            <div class="step-pill{% if initial_step == 6 %} active{% else %} locked{% endif %}" id="pill6" onclick="goStep(6)">
               <div class="step-num">6</div>
               Публикация
             </div>
           </div>
 
           <!-- ─────────── STEP 1 ─────────── -->
-          <div class="wizard-card step-content active" id="step1">
+          <div class="wizard-card step-content{% if initial_step != 6 %} active{% endif %}" id="step1">
             <div class="card-header">
               <div class="card-header-top">
                 <div class="card-icon">
@@ -210,11 +210,23 @@
                   + Добавить характеристики
                 </div>
                 <div id="charBlock" style="display: none; margin-top: 16px">
+                  <div class="char-block-toolbar">
+                    <div>
+                      <div class="char-block-title">Ключевые характеристики</div>
+                      <div class="char-block-hint">Можно отметить до пяти пунктов</div>
+                    </div>
+                    <span class="char-key-count" id="charKeyCount">0 / 5</span>
+                  </div>
                   <div class="char-rows" id="charRows">
                     <!-- initially empty -->
                   </div>
                   <div id="charEmpty" class="char-empty">Нет характеристик</div>
-                  <button class="btn btn-ghost btn-sm" style="margin-top: 8px" onclick="addChar()">+ Добавить строку</button>
+                  <button class="btn btn-ghost btn-sm char-add-button" type="button" onclick="addChar()">+ Добавить строку</button>
+                  <datalist id="characteristicNameSuggestions">
+                    {% for specification_name in specification_name_catalog %}
+                      <option value="{{ specification_name }}"></option>
+                    {% endfor %}
+                  </datalist>
                 </div>
               </div>
             </div>
@@ -417,7 +429,7 @@
           </div>
 
           <!-- ─────────── STEP 6 ─────────── -->
-          <div class="wizard-card step-content" id="step6">
+          <div class="wizard-card step-content{% if initial_step == 6 %} active{% endif %}" id="step6">
             <div class="card-header">
               <div class="card-header-top">
                 <div class="card-icon" style="background: var(--accent-dim); border-color: var(--accent-glow)">
@@ -448,6 +460,32 @@
                   </button>
                 </div>
               </div>
+              <section class="admin-related-products" id="adminRelatedProducts">
+                <div class="admin-related-products__head">
+                  <div>
+                    <div class="admin-related-products__title">Сопутствующие товары</div>
+                    <div class="admin-related-products__text">Товары, которые будут показаны в блоке «Также выбирают» на странице товара.</div>
+                  </div>
+                  <div class="admin-related-products__counter" id="adminRelatedProductsCounter">0 выбрано</div>
+                </div>
+                <div class="admin-related-products__selected-wrap">
+                  <div class="admin-related-products__section-label">Выбрано для блока</div>
+                  <div class="admin-related-products__selected" id="adminRelatedProductsSelected"></div>
+                </div>
+                <div class="admin-related-products__library">
+                  <div class="admin-related-products__library-head">
+                    <div>
+                      <div class="admin-related-products__section-label">Добавить товар</div>
+                      <div class="admin-related-products__library-note">Нажмите на карточку ниже, чтобы добавить товар в список.</div>
+                    </div>
+                    <label class="admin-related-products__search" for="adminRelatedProductsSearch">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z" /></svg>
+                      <input id="adminRelatedProductsSearch" type="search" placeholder="Поиск товара" autocomplete="off" />
+                    </label>
+                  </div>
+                  <div class="admin-related-products__catalog" id="adminRelatedProductsCatalog"></div>
+                </div>
+              </section>
               <div class="final-review" id="finalReview"></div>
             </div>
             <div class="card-footer">
@@ -487,6 +525,7 @@
     </div>
   </div>
   {{ variant_catalog|json_script:"sku-variant-catalog" }}
+  {{ recommendation_product_catalog|json_script:"sku-recommendation-product-catalog" }}
   {{ edit_product_payload|default:"{}"|json_script:"sku-edit-product-data" }}
   <div
     id="sku-admin-config"
@@ -495,9 +534,10 @@
     data-quick-add-url="{{ quick_add_url }}"
     data-mode="{{ sku_admin_mode|default:'create' }}"
     data-product-id="{{ edit_product.pk|default:'' }}"
+    data-initial-step="{{ initial_step|default:1 }}"
     hidden
   ></div>
-  <script src="{% static 'admin_panel/products/js/product_editor_config.js' %}?v=structure1"></script>
-  <script src="{% static 'admin_panel/products/js/product_editor_page.js' %}?v=wizard15"></script>
+  <script src="{% static 'admin_panel/products/js/product_editor_config.js' %}?v=also-chosen2"></script>
+  <script src="{% static 'admin_panel/products/js/product_editor_page.js' %}?v=variant-image-sync1"></script>
   <script src="{% static 'admin_panel/products/js/product_variants_editor.js' %}?v=variants3"></script>
 {% endblock %}

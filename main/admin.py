@@ -11,6 +11,7 @@ from .admin_panel import media  # noqa: F401
 from .admin_panel import products  # noqa: F401
 from .admin_panel import reviews  # noqa: F401
 from .admin_panel import variant_groups  # noqa: F401
+from .admin_panel import warehouse  # noqa: F401
 
 
 admin.site.index_template = "admin/admin_dashboard_page.html"

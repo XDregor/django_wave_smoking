@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>WAVE — мобильный хедер</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Unbounded:wght@600;700;800&display=swap" rel="stylesheet" />
+
+<style>
+  :root{
+    --bg:#0b0c0d;
+    --surface: rgba(255,255,255,0.045);
+    --surface-strong: rgba(20,22,19,0.66);
+    --border: rgba(255,255,255,0.09);
+    --text:#f3f5f2;
+    --text-dim:#9aa39a;
+    --accent:#c8ff4d;
+    --accent-dim: rgba(200,255,77,0.16);
+    --accent-glow: rgba(200,255,77,0.35);
+    --buda:#fce122;
+    --buda-glow: rgba(252,225,34,0.4);
+    --danger:#ff4b4c;
+    --danger-glow: rgba(255,75,76,0.55);
+    --radius-lg:26px;
+    --radius-pill:999px;
+    --font-display:'Unbounded', sans-serif;
+    --font-body:'Manrope', sans-serif;
+    --safe-b: env(safe-area-inset-bottom, 0px);
+    --safe-t: env(safe-area-inset-top, 0px);
+    --ease-expand: cubic-bezier(.22,.9,.32,1);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(120% 55% at 8% 0%, rgba(200,255,77,0.08) 0%, transparent 55%),
+      radial-gradient(90% 40% at 100% 0%, rgba(252,225,34,0.05) 0%, transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    min-height:100vh;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x:hidden;
+  }
+
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer;}
+
+  /* ============ DEMO PAGE CONTENT ============ */
+  .demo-page{padding: calc(96px + var(--safe-t)) 20px calc(150px + var(--safe-b));}
+  .demo-hero{
+    padding:28px 22px;
+    border-radius:24px;
+    background:linear-gradient(160deg, rgba(200,255,77,0.14), rgba(255,255,255,0.02));
+    border:1px solid var(--border);
+    margin-bottom:18px;
+  }
+  .demo-hero h1{font-family:var(--font-display);font-size:22px;margin:0 0 8px;letter-spacing:-0.01em;}
+  .demo-hero p{margin:0;color:var(--text-dim);font-size:14px;line-height:1.5;}
+  .demo-card{
+    height:150px;border-radius:22px;margin-bottom:14px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--text-dim);font-size:13px;
+  }
+  .demo-note{
+    text-align:center;color:var(--text-dim);font-size:12.5px;padding:20px 30px;line-height:1.6;
+  }
+  .demo-note b{color:var(--accent);}
+
+  /* ============================================================
+     TOP BAR
+     ============================================================ */
+  .topbar{
+    position:fixed;
+    top:0; left:0; right:0;
+    z-index:1000;
+    padding: calc(12px + var(--safe-t)) 14px 12px;
+    height: calc(66px + var(--safe-t));
+    display:flex;
+    align-items:center;
+    transition: transform .45s cubic-bezier(.25,.8,.25,1);
+    will-change:transform;
+  }
+  .topbar.is-hidden{ transform: translateY(-130%); }
+
+  .topbar__bg{
+    position:absolute; inset:0;
+    background:var(--surface-strong);
+    backdrop-filter: blur(22px) saturate(160%);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    border-bottom:1px solid var(--border);
+    z-index:-1;
+    mask-image:linear-gradient(to bottom, black 70%, transparent 100%);
+    -webkit-mask-image:linear-gradient(to bottom, black 70%, transparent 100%);
+  }
+
+  .topbar__logo{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 4px;
+    transform-origin:left center;
+    transition: opacity .38s ease, filter .45s ease, transform .45s var(--ease-expand);
+  }
+  .topbar__logo-mark{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:19px;
+    letter-spacing:0.02em;
+    color:var(--text);
+    white-space:nowrap;
+  }
+  .topbar__logo-mark span{ color:var(--accent); }
+
+  .topbar.is-search-open .topbar__logo{
+    opacity:0;
+    filter:blur(14px);
+    transform:scale(.78) translateX(-14px);
+    pointer-events:none;
+  }
+
+  /* ---------- SEARCH: расширяющаяся плашка поверх топбара ----------
+     Якорь всегда справа (right:14px не меняется), растёт только width —
+     так поле гарантированно раскрывается влево, без прыжков. ---------- */
+  .search-expand{
+    position:absolute;
+    top: calc(12px + var(--safe-t));
+    right:14px;
+    height:42px;
+    width:42px;
+    border-radius: var(--radius-pill);
+    background:var(--surface);
+    border:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    overflow:hidden;
+    cursor:pointer;
+    z-index:5;
+    transition:
+      width .5s var(--ease-expand),
+      background .3s ease,
+      border-color .3s ease,
+      box-shadow .3s ease;
+  }
+  .search-expand:hover{ border-color: rgba(200,255,77,0.35); }
+  .search-expand.is-open{
+    width: calc(100% - 28px);
+    background:var(--surface-strong);
+    backdrop-filter: blur(22px) saturate(160%);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    border-color: var(--border);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    cursor:default;
+  }
+
+  .search-expand__icon{
+    flex:0 0 42px;
+    height:42px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px;
+    color:var(--text);
+    pointer-events:none;
+    transition: color .3s ease;
+  }
+  .search-expand.is-open .search-expand__icon{ color:var(--accent); }
+
+  .search-expand input{
+    flex:1 1 auto;
+    min-width:0;
+    width:0;
+    opacity:0;
+    background:transparent;
+    border:none;
+    outline:none;
+    color:var(--text);
+    font-size:14.5px;
+    font-family:var(--font-body);
+    padding:0;
+    transition: opacity .3s ease .12s;
+  }
+  .search-expand.is-open input{ width:auto; opacity:1; }
+  .search-expand input::placeholder{ color:var(--text-dim); }
+
+  .search-expand__close{
+    flex:0 0 auto;
+    width:0;
+    height:32px;
+    opacity:0;
+    overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--text-dim);
+    margin-right:0;
+    border-radius:50%;
+    transition: opacity .22s ease, width .32s ease, margin-right .32s ease, background .2s ease;
+  }
+  .search-expand.is-open .search-expand__close{
+    width:32px; opacity:1; margin-right:2px;
+  }
+  .search-expand__close:hover{ background: var(--surface); color:var(--text); }
+
+  /* ---------- Панель результатов/подсказок, выезжает под топбаром ---------- */
+  .search-results{
+    position:fixed;
+    left:14px; right:14px;
+    top: calc(70px + var(--safe-t));
+    z-index:999;
+    background:var(--surface-strong);
+    backdrop-filter: blur(22px) saturate(160%);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    border:1px solid var(--border);
+    border-radius:22px;
+    padding:8px;
+    max-height:min(60vh, 420px);
+    overflow-y:auto;
+    transform: translateY(-10px);
+    opacity:0;
+    pointer-events:none;
+    transition: transform .38s var(--ease-expand) .05s, opacity .3s ease .05s;
+  }
+  .search-results.is-open{
+    transform:translateY(0);
+    opacity:1;
+    pointer-events:auto;
+  }
+  .search-results__hint{
+    font-size:11px;
+    color:var(--text-dim);
+    padding:8px 10px 6px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+  }
+  .search-results__item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:11px 10px;
+    border-radius:14px;
+    color:var(--text);
+    font-size:13.5px;
+    transition: background .18s ease;
+  }
+  .search-results__item:hover{ background: rgba(255,255,255,0.05); }
+  .search-results__item i{
+    width:30px;height:30px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--accent-dim);
+    color:var(--accent);
+    font-size:13px;
+    flex:0 0 auto;
+  }
+  .search-results__item b{ color:var(--text); font-weight:700; }
+  .search-results__item small{ display:block; color:var(--text-dim); font-size:11px; margin-top:1px; }
+
+  /* backdrop под поиском, лёгкое затемнение контента */
+  .search-backdrop{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0);
+    z-index:998;
+    opacity:0;
+    pointer-events:none;
+    transition: opacity .35s ease, background .35s ease;
+  }
+  .search-backdrop.is-open{
+    background:rgba(0,0,0,0.45);
+    opacity:1;
+    pointer-events:auto;
+  }
+
+  /* ============================================================
+     BOTTOM DOCK
+     ============================================================ */
+  .dock-wrap{
+    position:fixed;
+    left:0; right:0;
+    bottom:0;
+    z-index:1000;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+    padding: 0 14px calc(14px + var(--safe-b));
+    pointer-events:none;
+  }
+
+  .dock{
+    pointer-events:auto;
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:2px;
+    padding:6px;
+    border-radius:var(--radius-pill);
+    background:rgba(18,20,19,0.55);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border:1px solid rgba(255,255,255,0.1);
+    box-shadow:
+      0 10px 40px rgba(0,0,0,0.45),
+      inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+
+  .dock--main{
+    flex:1 1 auto;
+    max-width:300px;
+  }
+
+  .dock__item{
+    position:relative;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    padding:9px 4px 8px;
+    border-radius:var(--radius-pill);
+    color:var(--text-dim);
+    z-index:1;
+    transition: color .25s ease;
+  }
+  .dock__item i{
+    font-size:16.5px;
+    line-height:1;
+    transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+  }
+  .dock__item span{
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:0.01em;
+  }
+  .dock__item.is-active{ color:var(--bg); }
+  .dock__item.is-active i{ transform:translateY(-1px) scale(1.06); }
+
+  .dock__pill{
+    position:absolute;
+    top:6px; bottom:6px;
+    border-radius:var(--radius-pill);
+    background: var(--accent);
+    box-shadow: 0 4px 18px var(--accent-glow);
+    z-index:0;
+    transition: left .35s cubic-bezier(.25,1,.4,1), width .35s cubic-bezier(.25,1,.4,1);
+  }
+
+  .dock--actions{
+    flex:0 0 auto;
+    padding:6px;
+    gap:4px;
+  }
+  .dock--actions .dock__item{
+    flex:0 0 auto;
+    width:46px;
+    height:46px;
+    padding:0;
+    flex-direction:row;
+  }
+  .dock--actions .dock__item i{ font-size:17px; }
+
+  .dock__badge{
+    position:absolute; top:-2px; right:-2px;
+    min-width:19px; height:19px; padding:0 5px;
+    border-radius:999px;
+    background:var(--danger);
+    color:#fff;
+    font-size:10.5px; font-weight:800; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 0 0 2.5px rgba(18,20,19,0.95), 0 0 12px var(--danger-glow);
+    animation: badge-pulse 2.2s ease-in-out infinite;
+  }
+  .dock__badge[hidden]{display:none;}
+  .dock__badge::after{
+    content:'';
+    position:absolute; inset:0;
+    border-radius:inherit;
+    background:var(--danger);
+    z-index:-1;
+    animation: badge-ping 2.2s ease-out infinite;
+  }
+
+  @keyframes badge-pulse{
+    0%, 100%{ transform:scale(1); }
+    50%{ transform:scale(1.16); }
+  }
+  @keyframes badge-ping{
+    0%{ opacity:.55; transform:scale(1); }
+    70%,100%{ opacity:0; transform:scale(2.1); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .dock__badge, .dock__badge::after{ animation:none; }
+  }
+
+  .scroll-hint{
+    position:fixed; top:12px; left:50%; transform:translateX(-50%);
+    z-index:1001; font-size:11px; color:var(--text-dim);
+    background:rgba(0,0,0,0.4); padding:6px 12px; border-radius:999px;
+    border:1px solid var(--border); opacity:0; transition:opacity .3s;
+  }
+</style>
+</head>
+<body>
+
+  <!-- =========================================================
+       TOP BAR — лого слева, поиск справа, раскрывается на весь топбар
+  ========================================================== -->
+  <header class="topbar" id="topbar" data-header>
+    <div class="topbar__bg"></div>
+
+    <a href="#" class="topbar__logo" id="topbarLogo" aria-label="WAVE, главная страница">
+      <span class="topbar__logo-mark">WA<span>V</span>E</span>
+    </a>
+
+    <div class="search-expand" id="searchExpand" role="button" aria-label="Открыть поиск">
+      <span class="search-expand__icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+      <input type="text" id="searchInput" placeholder="Поиск товаров..." />
+      <button class="search-expand__close" id="searchClose" aria-label="Закрыть поиск" tabindex="-1">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </header>
+
+  <div class="search-backdrop" id="searchBackdrop"></div>
+
+  <div class="search-results" id="searchResults" aria-live="polite">
+    <div class="search-results__hint">Популярные запросы</div>
+    <div class="search-results__item"><i class="fa-solid fa-microchip"></i><div><b>POD-системы</b><small>124 товара</small></div></div>
+    <div class="search-results__item"><i class="fa-solid fa-flask"></i><div><b>Жидкости 30мл</b><small>89 товаров</small></div></div>
+    <div class="search-results__item"><i class="fa-solid fa-wind"></i><div><b>Одноразовые устройства</b><small>56 товаров</small></div></div>
+    <div class="search-results__item"><i class="fa-solid fa-fire"></i><div><b>Хиты продаж</b><small>32 товара</small></div></div>
+  </div>
+
+  <div class="scroll-hint" id="scrollHint">↑ скролл вверх — верх появится снова</div>
+
+  <!-- =========================================================
+       DEMO CONTENT
+  ========================================================== -->
+  <main class="demo-page">
+    <div class="demo-hero">
+      <h1>Новый мобильный хедер WAVE</h1>
+      <p>Нажми на иконку лупы: поле поиска раскроется на всю ширину топбара, лого мягко расфокусируется и исчезнет. Под топбаром выедет панель с подсказками.</p>
+    </div>
+    <div class="demo-card">POD-системы</div>
+    <div class="demo-card">Одноразовые устройства</div>
+    <div class="demo-card">Жидкости</div>
+    <div class="demo-card">Комплектующие</div>
+    <div class="demo-card">Хиты продаж</div>
+    <div class="demo-card">Бренды</div>
+    <div class="demo-card">Новинки</div>
+    <div class="demo-card">Скидки недели</div>
+    <p class="demo-note">Это демо-контент для проверки поведения хедера при скролле.<br>Сам хедер начинается выше — блок <b>&lt;header class="topbar"&gt;</b> и <b>&lt;div class="dock-wrap"&gt;</b> внизу файла.</p>
+  </main>
+
+  <!-- =========================================================
+       BOTTOM DOCK
+  ========================================================== -->
+  <div class="dock-wrap">
+
+    <div class="dock-spark" id="dockSpark"></div>
+
+    <nav class="dock dock--main" id="dock" aria-label="Основная навигация">
+      <span class="dock__pill" id="dockPill"></span>
+
+      <button class="dock__item is-active" data-dock-item data-target="catalog">
+        <i class="fa-solid fa-layer-group"></i>
+        <span>Каталог</span>
+      </button>
+
+      <button class="dock__item" data-dock-item data-target="contacts">
+        <i class="fa-solid fa-comment-dots"></i>
+        <span>Контакты</span>
+      </button>
+
+      <button class="dock__item" data-dock-item data-target="delivery">
+        <i class="fa-solid fa-truck-fast"></i>
+        <span>Доставка</span>
+      </button>
+
+      <button class="dock__item" data-dock-item data-target="reviews">
+        <i class="fa-solid fa-star"></i>
+        <span>Отзывы</span>
+      </button>
+    </nav>
+
+    <nav class="dock dock--actions" aria-label="Избранное и корзина">
+      <button class="dock__item" data-shop-trigger="favorites_widget" aria-label="Избранное">
+        <i class="fa-regular fa-heart"></i>
+      </button>
+      <button class="dock__item" data-shop-trigger="cart_widget" aria-label="Корзина">
+        <i class="fa-solid fa-bag-shopping"></i>
+        <span class="dock__badge" id="cartBadge" hidden>0</span>
+      </button>
+    </nav>
+
+  </div>
+
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- 1. TOP BAR: hide on scroll down, show on scroll up ---------- */
+  const topbar = document.getElementById('topbar');
+  const scrollHint = document.getElementById('scrollHint');
+  let lastScrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
+  let hintTimer = null;
+
+  function onScroll(){
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const delta = scrollTop - lastScrollTop;
+
+    if (scrollTop > 80) {
+      if (delta > 4) {
+        topbar.classList.add('is-hidden');
+      } else if (delta < -4) {
+        topbar.classList.remove('is-hidden');
+      }
+    } else {
+      topbar.classList.remove('is-hidden');
+    }
+
+    scrollHint.style.opacity = scrollTop > 80 ? '1' : '0';
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(()=> scrollHint.style.opacity = '0', 1400);
+
+    lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+  }
+  window.addEventListener('scroll', onScroll, { passive:true });
+
+  /* ---------- 2. SEARCH: расширение вместо выпадашки ---------- */
+  const searchExpand = document.getElementById('searchExpand');
+  const searchInput = document.getElementById('searchInput');
+  const searchClose = document.getElementById('searchClose');
+  const searchResults = document.getElementById('searchResults');
+  const searchBackdrop = document.getElementById('searchBackdrop');
+
+  function openSearch(){
+    if (searchExpand.classList.contains('is-open')) return;
+    topbar.classList.add('is-search-open');
+    searchExpand.classList.add('is-open');
+    searchResults.classList.add('is-open');
+    searchBackdrop.classList.add('is-open');
+    searchClose.tabIndex = 0;
+    setTimeout(()=> searchInput.focus(), 260);
+  }
+
+  function closeSearch(){
+    topbar.classList.remove('is-search-open');
+    searchExpand.classList.remove('is-open');
+    searchResults.classList.remove('is-open');
+    searchBackdrop.classList.remove('is-open');
+    searchClose.tabIndex = -1;
+    searchInput.blur();
+    searchInput.value = '';
+  }
+
+  searchExpand.addEventListener('click', (e)=>{
+    if (!searchExpand.classList.contains('is-open')) openSearch();
+  });
+  searchClose.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    closeSearch();
+  });
+  searchBackdrop.addEventListener('click', closeSearch);
+  document.addEventListener('keydown', (e)=>{
+    if (e.key === 'Escape') closeSearch();
+  });
+
+  /* ---------- 3. MAIN DOCK — active pill follows tapped icon ---------- */
+  const dock = document.getElementById('dock');
+  const dockPill = document.getElementById('dockPill');
+  const dockItems = Array.from(dock.querySelectorAll('[data-dock-item]'));
+
+  function movePillTo(el){
+    const dockRect = dock.getBoundingClientRect();
+    const itemRect = el.getBoundingClientRect();
+    dockPill.style.left = (itemRect.left - dockRect.left) + 'px';
+    dockPill.style.width = itemRect.width + 'px';
+  }
+
+  function setActive(el){
+    dockItems.forEach(i => i.classList.remove('is-active'));
+    el.classList.add('is-active');
+    movePillTo(el);
+  }
+
+  dockItems.forEach(item=>{
+    item.addEventListener('click', ()=> setActive(item));
+  });
+
+  window.addEventListener('load', ()=>{
+    const active = dock.querySelector('.dock__item.is-active') || dockItems[0];
+    movePillTo(active);
+  });
+  window.addEventListener('resize', ()=>{
+    const active = dock.querySelector('.dock__item.is-active');
+    if (active) movePillTo(active);
+  });
+
+  /* ---------- 4. Demo cart badge ---------- */
+  const cartBadge = document.getElementById('cartBadge');
+  cartBadge.hidden = false; cartBadge.textContent = '3';
+
+})();
+</script>
+
+</body>
+</html>

@@ -13,17 +13,17 @@
   }
 
   function syncLikeButtons(productId, liked, likes) {
-    document.querySelectorAll(`[data_product_card_like_id="${productId}"]`).forEach((button) => {
-      button.setAttribute("data_product_card_liked_state", liked ? "true" : "false");
-      button.classList.toggle("active", Boolean(liked));
+    document.querySelectorAll(`[data-product-card-like-id="${productId}"]`).forEach((button) => {
+      button.setAttribute("data-product-card-liked-state", liked ? "true" : "false");
+      button.classList.toggle("is-active", Boolean(liked));
       const counter = button.querySelector(".product_card_like_count_text");
       if (counter) counter.textContent = likes;
     });
   }
 
   async function toggleProductLike(button) {
-    const productId = button.getAttribute("data_product_card_like_id");
-    const likeUrl = button.getAttribute("data_product_card_like_url");
+    const productId = button.getAttribute("data-product-card-like-id");
+    const likeUrl = button.getAttribute("data-product-card-like-url");
     if (!productId || !likeUrl || button.disabled) return;
 
     button.disabled = true;
@@ -39,7 +39,7 @@
       if (!response.ok) return;
 
       syncLikeButtons(productId, Boolean(data.liked), Number(data.likes || 0));
-      document.dispatchEvent(new CustomEvent("product-card:liked", {
+      document.dispatchEvent(new CustomEvent("product_card_component:liked", {
         detail: {
           productId: Number(productId),
           liked: Boolean(data.liked),
@@ -54,8 +54,40 @@
 
   function openProductCard(card) {
     if (!card) return;
-    const url = card.getAttribute("data_product_card_url");
+    const url = card.getAttribute("data-product-card-url");
     if (url) window.location.href = url;
+  }
+
+  function closeProductCardSpecs(card) {
+    if (!card) return;
+    const button = card.querySelector("[data-product-card-specs-toggle]");
+    const panel = card.querySelector(".product_card_specs_panel");
+    card.classList.remove("is-specs-open");
+    button?.setAttribute("aria-expanded", "false");
+    button?.setAttribute("aria-label", "Показать ключевые характеристики");
+    panel?.setAttribute("aria-hidden", "true");
+  }
+
+  function toggleProductCardSpecs(button) {
+    const card = button.closest(".product_card_component");
+    if (!card) return;
+    const shouldOpen = !card.classList.contains("is-specs-open");
+
+    document.querySelectorAll(".product_card_component.is-specs-open").forEach((openCard) => {
+      if (openCard !== card) closeProductCardSpecs(openCard);
+    });
+
+    card.classList.add("has-specs-interacted");
+    card.classList.toggle("is-specs-open", shouldOpen);
+    button.setAttribute("aria-expanded", String(shouldOpen));
+    button.setAttribute("aria-label", shouldOpen ? "Скрыть ключевые характеристики" : "Показать ключевые характеристики");
+    const specsPanel = card.querySelector(".product_card_specs_panel");
+    specsPanel?.setAttribute("aria-hidden", String(!shouldOpen));
+    if (shouldOpen) {
+      window.setTimeout(() => {
+        (specsPanel || card).scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+      }, 80);
+    }
   }
 
   function selectColorSwatch(button) {
@@ -82,13 +114,13 @@
     const card = button.closest(".product_card_component");
     if (!card || button.disabled) return;
 
-    if (card.getAttribute("data_product_card_requires_selection") === "true") {
+    if (card.getAttribute("data-product-card-requires-selection") === "true") {
       openProductCard(card);
       return;
     }
 
-    const productId = Number(card.getAttribute("data_product_card_id"));
-    const cartUrl = button.getAttribute("data_product_card_cart_url");
+    const productId = Number(card.getAttribute("data-product-card-id"));
+    const cartUrl = button.getAttribute("data-product-card-cart-url");
     if (!productId || !cartUrl) return;
 
     button.disabled = true;
@@ -118,7 +150,7 @@
       window.setTimeout(() => button.classList.remove("is_added"), 1200);
       window._shopPanel?.updateCartCounters?.(Number(data.cart?.total_quantity || 0));
       window._shopPanel?.refreshCart?.();
-      document.dispatchEvent(new CustomEvent("product-card:cart-added", {
+      document.dispatchEvent(new CustomEvent("product_card_component:cart-added", {
         detail: { productId, cart: data.cart || null },
       }));
     } finally {
@@ -128,6 +160,20 @@
   }
 
   document.addEventListener("click", (event) => {
+    const specsToggle = event.target.closest("[data-product-card-specs-toggle]");
+    if (specsToggle) {
+      event.preventDefault();
+      event.stopPropagation();
+      toggleProductCardSpecs(specsToggle);
+      return;
+    }
+
+    if (event.target.closest(".product_card_specs_panel")) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
     const colorSwatch = event.target.closest("[data-product-card-color-swatch]");
     if (colorSwatch) {
       event.preventDefault();
@@ -153,8 +199,26 @@
     }
 
     const card = event.target.closest(".product_card_component");
-    if (!card) return;
+    if (!card) {
+      document.querySelectorAll(".product_card_component.is-specs-open").forEach(closeProductCardSpecs);
+      return;
+    }
     if (event.target.closest("a, button")) return;
     openProductCard(card);
+  });
+
+  document.addEventListener("product_card_component:liked", (event) => {
+    const detail = event.detail || {};
+    if (!detail.productId) return;
+    syncLikeButtons(detail.productId, Boolean(detail.liked), Number(detail.likes || 0));
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    document.querySelectorAll(".product_card_component.is-specs-open").forEach((card) => {
+      const button = card.querySelector("[data-product-card-specs-toggle]");
+      closeProductCardSpecs(card);
+      button?.focus({ preventScroll: true });
+    });
   });
 })();

@@ -1,0 +1,402 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ site_title|default:"WAVE Admin" }}{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'admin_panel/warehouse/css/warehouse_page.css' %}?v=warehouse-responsive1" />
+{% endblock %}
+
+{% block content %}
+  <div class="wa-warehouse">
+    <div class="page-body">
+      <div class="topbar">
+        <a class="btn shipment-nav-btn" href="{{ shipments_url }}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+            <path d="M3 7h11v10H3z"></path>
+            <path d="M14 10h3l4 4v3h-7z"></path>
+            <circle cx="7" cy="18" r="2"></circle>
+            <circle cx="17" cy="18" r="2"></circle>
+          </svg>
+          <span>Отправки</span>
+        </a>
+        <div class="topbar-actions">
+          <button class="btn btn-ghost" id="warehouseBatchBtn" type="button">Сформировать партию</button>
+          <button class="btn btn-ghost" id="warehouseAddBtn" type="button">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+              <path d="M12 5v14M5 12h14"></path>
+            </svg>
+            <span>Добавить товар</span>
+          </button>
+          <button class="btn icon-only warehouse-writeoff-toggle" id="warehouseWriteOffBtn" type="button" title="Списание" aria-label="Списание">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M4 7h16"></path>
+              <path d="M10 11v6"></path>
+              <path d="M14 11v6"></path>
+              <path d="M6 7l1 13h10l1-13"></path>
+              <path d="M9 7V4h6v3"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+          </span>
+          <input class="search-input" id="warehouseSearch" type="text" placeholder="Поиск по товару, партии, ID или заметке..." autocomplete="off" />
+        </div>
+        <button class="filter-btn active" type="button" data-warehouse-view="products">Товары</button>
+        <button class="filter-btn" type="button" data-warehouse-view="batches">Партии</button>
+        <div class="sort-menu-wrap">
+          <button class="filter-btn" id="warehouseSortBtn" type="button">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 6h18M7 12h10M11 18h2"></path>
+            </svg>
+            <span id="warehouseSortLabel">По названию</span>
+          </button>
+          <div class="sort-menu" id="warehouseSortMenu">
+            <button class="sort-opt active" type="button" data-warehouse-sort="name" data-label="По названию">По названию</button>
+            <button class="sort-opt" type="button" data-warehouse-sort="quantity" data-label="По остатку">По остатку</button>
+            <button class="sort-opt" type="button" data-warehouse-sort="price" data-label="По цене">По цене</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="warehouse-grid" id="warehouseGrid">
+        {% for item in items %}
+          <article
+            class="warehouse-card is-{{ item.display_stock_state }}"
+            data-warehouse-card
+            data-stock-state="{{ item.display_stock_state }}"
+            data-name="{{ item.name|lower }}"
+            data-id="{{ item.id }}"
+            data-product-id="{{ item.product_id|default:'' }}"
+            data-note="{{ item.note|default:''|lower }}"
+            data-date="{{ item.updated|date:'Y-m-d-H-i-s' }}"
+            data-quantity="{{ item.available_quantity }}"
+            data-price="{{ item.price }}"
+          >
+            <div class="warehouse-card-media">
+              <div class="warehouse-thumb">
+                {% if item.image %}
+                  <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy" />
+                {% else %}
+                  <div class="warehouse-thumb-empty" aria-hidden="true">
+                    <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                      <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                      <path d="m21 15-5-5L5 21"></path>
+                    </svg>
+                    <span>Нет фото</span>
+                  </div>
+                {% endif %}
+                {% if item.display_stock_state != "ok" %}
+                  <span class="warehouse-badge{% if item.display_stock_state == 'out' %} danger{% endif %}">
+                    {% if item.display_stock_state == "out" %}Пусто{% else %}Мало{% endif %}
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="warehouse-info">
+              <div class="warehouse-name">{{ item.name }}</div>
+              <div class="warehouse-meta">
+                <span class="warehouse-code">{% if item.product_id %}654{{ item.product_id|stringformat:"04d" }}{% else %}#{{ item.id }}{% endif %}</span>
+                <span class="warehouse-sep"></span>
+                <span class="warehouse-cat">Склад</span>
+              </div>
+              {% if item.note %}
+                <div class="warehouse-note">{{ item.note }}</div>
+              {% endif %}
+              <div class="warehouse-card-summary">
+                <div class="warehouse-summary-cell primary">
+                  <span class="warehouse-summary-label">Остаток</span>
+                  <strong class="warehouse-summary-value">{{ item.available_quantity }} шт.</strong>
+                </div>
+                <div class="warehouse-summary-cell">
+                  <span class="warehouse-summary-label">Цена</span>
+                  <strong class="warehouse-summary-value">{{ item.price|floatformat:2 }} грн</strong>
+                </div>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+
+      <div class="empty-state" id="warehouseEmpty" {% if items %}hidden{% endif %}>
+        <div class="empty-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+            <path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5v-9Z"></path>
+            <path d="M4.4 7.8 12 12l7.6-4.2"></path>
+            <path d="M12 12v8.6"></path>
+          </svg>
+        </div>
+        <div class="empty-title">Товары не найдены</div>
+        <div class="empty-sub">Измените поиск или добавьте товар как складскую сущность</div>
+      </div>
+
+      <section class="warehouse-batches-panel" id="warehouseBatchesPanel" hidden>
+        <div class="section-head">
+          <div>
+            <h2>Партии</h2>
+            <span>{{ batch_count }} партий</span>
+          </div>
+        </div>
+        <div class="batch-history-list">
+          {% for batch in batches %}
+            <details
+              class="batch-history-card"
+              data-warehouse-batch-card
+              data-title="{{ batch.title|lower }}"
+              data-id="{{ batch.id }}"
+              data-date="{{ batch.arrived_at|date:'Y-m-d' }}"
+              data-note="{{ batch.note|default:''|lower }}"
+            >
+              <summary>
+                <span>
+                  <strong>#{{ batch.id }} · {{ batch.title }}</strong>
+                  <small>{{ batch.arrived_at|date:"d.m.Y" }}</small>
+                </span>
+                <em>{{ batch.batch_items.all|length }} поз.</em>
+              </summary>
+              <div class="batch-history-lines">
+                {% for line in batch.batch_items.all %}
+                  <div class="batch-history-line">
+                    <span>{{ line.item_name }}</span>
+                    <strong>{{ line.quantity }}</strong>
+                  </div>
+                {% empty %}
+                  <div class="batch-history-empty">Нет позиций</div>
+                {% endfor %}
+              </div>
+              {% if batch.note %}
+                <p>{{ batch.note }}</p>
+              {% endif %}
+              <div class="batch-history-actions">
+                <button class="btn btn-ghost" type="button" data-close-batch>Свернуть</button>
+              </div>
+            </details>
+          {% empty %}
+            <div class="batch-history-empty">Партии еще не созданы</div>
+          {% endfor %}
+          <div class="batch-history-empty" data-batches-empty hidden>Партии не найдены</div>
+        </div>
+      </section>
+
+      <section class="warehouse-writeoffs-panel" id="warehouseWriteOffsPanel">
+        <div class="section-head">
+          <div>
+            <h2>Списания</h2>
+            <span>{{ writeoffs|length }} документов</span>
+          </div>
+        </div>
+        <div class="batch-history-list">
+          {% for writeoff in writeoffs %}
+            <details class="batch-history-card">
+              <summary>
+                <span>
+                  <strong>#{{ writeoff.id }} · Списание</strong>
+                  <small>{{ writeoff.written_off_at|date:"d.m.Y" }}</small>
+                </span>
+                <em>{{ writeoff.items.all|length }} поз.</em>
+              </summary>
+              <div class="batch-history-lines">
+                {% for line in writeoff.items.all %}
+                  <div class="batch-history-line">
+                    <span>{{ line.item_name }}</span>
+                    <strong>-{{ line.quantity }}</strong>
+                  </div>
+                {% empty %}
+                  <div class="batch-history-empty">Нет позиций</div>
+                {% endfor %}
+              </div>
+              {% if writeoff.note %}
+                <p>{{ writeoff.note }}</p>
+              {% endif %}
+              <div class="batch-history-actions">
+                <button class="btn btn-ghost" type="button" data-close-batch>Свернуть</button>
+              </div>
+            </details>
+          {% empty %}
+            <div class="batch-history-empty">Списаний еще нет</div>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+
+    <div class="modal-backdrop" id="warehouseProductModal" aria-hidden="true">
+      <form class="modal modal-compact" method="post" enctype="multipart/form-data" data-warehouse-product-form>
+        {% csrf_token %}
+        <input type="hidden" name="warehouse_action" value="product" />
+        <div class="modal-header">
+          <h2 class="modal-title">Добавить товар</h2>
+          <button class="modal-close" type="button" data-warehouse-modal-close aria-label="Закрыть">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+          </button>
+        </div>
+        <div class="form-grid">
+          <div class="modal-field span-2">
+            <label for="warehouseProductName">Название <span class="req">*</span></label>
+            <input id="warehouseProductName" name="name" type="text" maxlength="140" autocomplete="off" required />
+          </div>
+          <div class="modal-field span-2">
+            <label for="warehouseProductPrice">Цена</label>
+            <input id="warehouseProductPrice" name="price" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off" />
+          </div>
+          <label class="file-field span-2" data-warehouse-file>
+            <input name="image" type="file" accept="image/*" data-warehouse-file-input />
+            <span class="file-preview" data-warehouse-file-preview aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="M17 8 12 3 7 8"></path><path d="M12 3v12"></path></svg>
+            </span>
+            <span class="file-copy">
+              <strong data-warehouse-file-title>Фото товара</strong>
+              <small data-warehouse-file-name>Файл не выбран</small>
+            </span>
+          </label>
+          <div class="modal-field span-2">
+            <label for="warehouseNote">Заметка</label>
+            <textarea id="warehouseNote" name="note" maxlength="240" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" type="button" data-warehouse-modal-close>Отмена</button>
+          <div class="modal-actions-spacer"></div>
+          <button class="btn btn-primary" type="submit">Создать товар</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-backdrop" id="warehouseBatchModal" aria-hidden="true">
+      <form class="modal modal-wide" method="post" data-warehouse-batch-form>
+        {% csrf_token %}
+        <input type="hidden" name="warehouse_action" value="batch" />
+        <div class="modal-header">
+          <h2 class="modal-title">Сформировать партию</h2>
+          <button class="modal-close" type="button" data-warehouse-modal-close aria-label="Закрыть">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+          </button>
+        </div>
+        <div class="form-grid batch-form-grid">
+          <div class="modal-field">
+            <label for="warehouseBatchTitle">Название партии</label>
+            <input id="warehouseBatchTitle" name="batch_title" type="text" maxlength="120" autocomplete="off" placeholder="" />
+          </div>
+          <div class="modal-field" data-warehouse-date-field>
+            <label for="warehouseReceivedDate">Дата прихода <span class="req">*</span></label>
+            <input id="warehouseReceivedDate" type="text" inputmode="numeric" placeholder="дд.мм.гггг" value="{{ today_display }}" autocomplete="off" data-date-display />
+            <input name="received_at" type="hidden" value="{{ today }}" data-date-value />
+          </div>
+          <div class="modal-field span-2">
+            <label for="warehouseBatchNote">Заметка</label>
+            <input id="warehouseBatchNote" name="batch_note" type="text" maxlength="240" autocomplete="off" />
+          </div>
+          <div class="batch-items-tools span-2">
+            <div class="batch-search-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+              <input id="warehouseBatchProductSearch" type="text" placeholder="Найти товар для партии..." autocomplete="off" data-batch-item-search />
+            </div>
+            <span class="batch-selected-count" data-batch-selected-count>Выбрано 0</span>
+          </div>
+          <div class="batch-items-list span-2" data-batch-items-list>
+            {% for item in items %}
+              <div class="batch-item-row" data-batch-item-row data-batch-name="{{ item.name|lower }} {{ item.id }} {% if item.product_id %}654{{ item.product_id|stringformat:"04d" }}{% endif %}">
+                <input id="warehouseBatchItem{{ item.id }}" class="batch-item-check" type="checkbox" data-batch-item-check />
+                <label class="batch-item-pick" for="warehouseBatchItem{{ item.id }}">
+                  <span class="batch-item-check-ui" aria-hidden="true"></span>
+                  <span class="batch-item-title">
+                    <strong>{{ item.name }}</strong>
+                  </span>
+                </label>
+                <div class="batch-item-meta">
+                  <span>{% if item.product_id %}654{{ item.product_id|stringformat:"04d" }}{% else %}#{{ item.id }}{% endif %}</span>
+                  <strong>{{ item.quantity }} шт.</strong>
+                </div>
+                <input name="batch_quantity_{{ item.id }}" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Кол-во" disabled data-batch-quantity />
+              </div>
+            {% empty %}
+              <div class="batch-history-empty">Сначала добавьте товар</div>
+            {% endfor %}
+            <div class="batch-history-empty" data-batch-items-empty hidden>Товары не найдены</div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" type="button" data-warehouse-modal-close>Отмена</button>
+          <div class="modal-actions-spacer"></div>
+          <button class="btn btn-primary" type="submit">Создать партию</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-backdrop" id="warehouseWriteOffModal" aria-hidden="true">
+      <form class="modal modal-wide" method="post" data-warehouse-writeoff-form>
+        {% csrf_token %}
+        <input type="hidden" name="warehouse_action" value="writeoff" />
+        <div class="modal-header">
+          <h2 class="modal-title">Списание</h2>
+          <button class="modal-close" type="button" data-warehouse-modal-close aria-label="Закрыть">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+          </button>
+        </div>
+        <div class="form-grid batch-form-grid">
+          <div class="modal-field span-2">
+            <label for="warehouseWriteOffNote">Описание</label>
+            <input id="warehouseWriteOffNote" name="writeoff_note" type="text" maxlength="240" autocomplete="off" placeholder="Причина списания или короткая заметка" />
+          </div>
+          <div class="batch-items-tools span-2">
+            <div class="batch-search-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+              <input type="text" placeholder="Найти товар для списания..." autocomplete="off" data-batch-item-search />
+            </div>
+            <span class="batch-selected-count" data-batch-selected-count>Выбрано 0</span>
+          </div>
+          <div class="batch-items-list span-2" data-batch-items-list>
+            {% for item in items %}
+              <div class="batch-item-row" data-batch-item-row data-batch-name="{{ item.name|lower }} {{ item.id }} {% if item.product_id %}654{{ item.product_id|stringformat:"04d" }}{% endif %}">
+                <input id="warehouseWriteOffItem{{ item.id }}" class="batch-item-check" type="checkbox" data-batch-item-check {% if item.available_quantity <= 0 %}disabled{% endif %} />
+                <label class="batch-item-pick" for="warehouseWriteOffItem{{ item.id }}">
+                  <span class="batch-item-check-ui" aria-hidden="true"></span>
+                  <span class="batch-item-title">
+                    <strong>{{ item.name }}</strong>
+                  </span>
+                </label>
+                <div class="batch-item-meta">
+                  <span>{% if item.product_id %}654{{ item.product_id|stringformat:"04d" }}{% else %}#{{ item.id }}{% endif %}</span>
+                  <strong>{{ item.available_quantity }} шт.</strong>
+                </div>
+                <input name="writeoff_quantity_{{ item.id }}" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Кол-во" disabled data-batch-quantity />
+              </div>
+            {% empty %}
+              <div class="batch-history-empty">Сначала добавьте товар</div>
+            {% endfor %}
+            <div class="batch-history-empty" data-batch-items-empty hidden>Товары не найдены</div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" type="button" data-warehouse-modal-close>Отмена</button>
+          <div class="modal-actions-spacer"></div>
+          <button class="btn btn-primary" type="submit">Списать</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script src="{% static 'admin_panel/warehouse/js/warehouse_page.js' %}?v=warehouse-writeoff1" defer></script>
+{% endblock %}

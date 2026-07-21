@@ -1,34 +1,6 @@
-.wave-admin-products-list, .wave-admin-products-list *, .wave-admin-products-list *::before, .wave-admin-products-list *::after { box-sizing: border-box; margin: 0; padding: 0; }
+@import url("../../shared/css/admin_tokens.css?v=admin-tokens1");
 
-      .wave-admin-products-list {
-        --bg: #090909;
-        --card: #111111;
-        --card-hi: #161616;
-        --card-hover: #1c1c1c;
-        --border: #1d1d1d;
-        --border-hi: #2e2e2e;
-        --accent: #ff8a1d;
-        --danger: #ef4444;
-        --buda: #f5c542;
-        --white: #ffffff;
-        --dark: #0b0b0c;
-        --store-badge-accent: #bff747;
-        --store-badge-danger: #ff4b4c;
-        --store-badge-warning: #fce122;
-        --store-badge-white: #ffffff;
-        --store-badge-dark: #0b0b0c;
-        --accent-dim: rgba(255, 138, 29, 0.12);
-        --accent-glow: rgba(255, 138, 29, 0.25);
-        --accent-hover: #e67a12;
-        --text-1: #ffffff;
-        --text-2: #9a9a9a;
-        --text-3: #666666;
-        --radius: 12px;
-        --radius-sm: 8px;
-        --radius-xs: 6px;
-        --shadow: 0 8px 32px rgba(0,0,0,0.6);
-        --font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-      }
+.wave-admin-products-list, .wave-admin-products-list *, .wave-admin-products-list *::before, .wave-admin-products-list *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
       .wave-admin-products-list { font-family: var(--font); font-size: 14px; background: var(--bg); color: var(--text-1); min-height: calc(100vh - 96px); }
 
@@ -591,21 +563,6 @@ body:has(.wave-admin-products-list) .\@container.px-4.pb-4.grow,
 body:has(.wave-admin-products-list) .wave-admin-products-list,
 body:has(.wave-admin-products-list) .wave-admin-products-list .page-body {
   background: #08080a !important;
-}
-
-.wave-admin-products-list {
-  --bg: #08080a;
-  --card: #0f0f12;
-  --card-hi: #17171b;
-  --card-hover: #202025;
-  --border: rgba(255, 255, 255, 0.06);
-  --border-hi: rgba(255, 255, 255, 0.10);
-  --text-1: #f0f0f0;
-  --text-2: #9a9aa0;
-  --text-3: #5c5c64;
-  --accent-dim: rgba(255, 138, 29, 0.10);
-  --accent-glow: rgba(255, 138, 29, 0.18);
-  --danger: #f87171;
 }
 
 /* Product management UX refinement */

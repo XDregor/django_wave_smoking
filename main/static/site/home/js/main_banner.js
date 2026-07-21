@@ -11,14 +11,17 @@
   const SLIDE_REVEAL_DELAY = 700;
   const MANUAL_HOLD_DURATION = 10000;
   const TRANSITION_DELAY = 290;
+  const RESIZE_SETTLE_DELAY = 180;
+  const RESUME_TIMER_DELAY = 600;
+  const IMAGE_LOAD_ATTEMPTS = 3;
+  const IMAGE_RETRY_DELAY = 180;
   const assets = banner.dataset;
   const slides = [
     {
       key: "devices",
       label: "Устройства",
-      title: 'Вкус, который<br><span>держит ритм.</span>',
+      title: ["Вкус, который", "держит ритм."],
       description: "Современные устройства для ровной и контролируемой подачи. Компактный формат, понятное управление и ничего лишнего.",
-      cta: "Смотреть устройства",
       primary: assets.devicesProduct,
       primaryAlt: "Современные устройства для вейпинга",
       secondary: "",
@@ -29,9 +32,8 @@
     {
       key: "cartridges",
       label: "Картриджи",
-      title: 'Чистая тяга.<br><span>Без компромиссов.</span>',
+      title: ["Чистая тяга.", "Без компромиссов."],
       description: "Картриджи с содержанием HHC для совместимых устройств. Стабильная подача и чистый вкус в удобном формате.",
-      cta: "Выбрать картридж",
       primary: assets.cartridgesProduct,
       primaryAlt: "Картриджи для вейп-устройств",
       secondary: "",
@@ -43,9 +45,8 @@
     {
       key: "tastes",
       label: "Вкусы",
-      title: 'Больше вкуса.<br><span>Новые ощущения.</span>',
+      title: ["Больше вкуса.", "Новые ощущения."],
       description: "Ягодные, фруктовые, шоколадные и десертные сочетания с микродозой ТГК. Знакомые вкусы в новом взрослом формате.",
-      cta: "Выбрать вкус",
       primary: assets.tastesProduct,
       primaryAlt: "Ягодный вкус",
       secondary: "",
@@ -60,7 +61,6 @@
     copy: document.getElementById("mainBannerCopy"),
     title: document.getElementById("mainBannerTitle"),
     description: document.getElementById("mainBannerDescription"),
-    ctaText: document.getElementById("mainBannerCtaText"),
     primary: document.getElementById("mainBannerPrimaryVisual"),
     secondary: document.getElementById("mainBannerSecondaryVisual"),
     backdrop: document.getElementById("mainBannerBackdrop"),
@@ -79,28 +79,64 @@
   let touchStartX = 0;
   let transitionRequestId = 0;
   let isInitialized = false;
+  let isInViewport = true;
+  let isPageActive = !document.hidden;
+  let isResizing = false;
+  let resizeTimer = null;
 
-  const preloadPromises = new Map();
+  const imageCache = new Map();
 
   function preloadSource(source) {
-    if (!source) return Promise.resolve();
-    if (preloadPromises.has(source)) return preloadPromises.get(source);
+    if (!source) return Promise.resolve(true);
+    const cached = imageCache.get(source);
+    if (cached?.status === "loaded") return Promise.resolve(true);
+    if (cached?.status === "loading") return cached.promise;
 
-    const preloadPromise = new Promise((resolve) => {
-      const image = new Image();
-      image.decoding = "async";
-      image.onload = () => {
-        if (typeof image.decode === "function") {
-          image.decode().catch(() => {}).finally(resolve);
-        } else {
-          resolve();
-        }
+    const image = new Image();
+    const entry = {
+      image,
+      status: "loading",
+      attempts: (cached?.attempts || 0) + 1,
+      promise: null,
+    };
+
+    entry.promise = new Promise((resolve) => {
+      let settled = false;
+
+      const handleLoad = () => {
+        if (settled) return;
+        settled = true;
+        const decode = typeof image.decode === "function"
+          ? image.decode().catch(() => {})
+          : Promise.resolve();
+        decode.finally(() => {
+          entry.status = "loaded";
+          resolve(true);
+        });
       };
-      image.onerror = resolve;
+
+      const handleError = () => {
+        if (settled) return;
+        settled = true;
+        entry.status = "error";
+        entry.promise = null;
+        if (entry.attempts < IMAGE_LOAD_ATTEMPTS) {
+          window.setTimeout(() => {
+            preloadSource(source).then(resolve);
+          }, IMAGE_RETRY_DELAY * entry.attempts);
+          return;
+        }
+        resolve(false);
+      };
+
+      image.decoding = "async";
+      image.onload = handleLoad;
+      image.onerror = handleError;
       image.src = source;
+      if (image.complete && image.naturalWidth > 0) handleLoad();
     });
-    preloadPromises.set(source, preloadPromise);
-    return preloadPromise;
+    imageCache.set(source, entry);
+    return entry.promise;
   }
 
   function preloadSlide(index) {
@@ -116,18 +152,59 @@
     return Promise.all(sources.map(preloadSource));
   }
 
-  function scheduleSlidePreload(index) {
-    const preload = () => void preloadSlide(index);
-    if ("requestIdleCallback" in window) {
-      window.requestIdleCallback(preload, { timeout: 2000 });
-    } else {
-      window.setTimeout(preload, 600);
-    }
+  function preloadCriticalSlide(index) {
+    const slide = slides[(index + slides.length) % slides.length];
+    return Promise.all([slide.primary, slide.backdrop].filter(Boolean).map(preloadSource))
+      .then((results) => results.every(Boolean));
   }
+
+  function scheduleSlidePreload(index) {
+    void preloadSlide(index);
+  }
+
+  function setImageSource(image, source, alt = "") {
+    if (!image) return;
+    image.alt = alt;
+    if (!source) {
+      image.removeAttribute("src");
+      return;
+    }
+    if (image.getAttribute("src") !== source) image.src = source;
+  }
+
+  function installImageRecovery(image) {
+    if (!image) return;
+    image.addEventListener("load", () => {
+      delete image.dataset.recoveringSource;
+    });
+    image.addEventListener("error", () => {
+      const source = image.getAttribute("src");
+      if (!source || image.dataset.recoveringSource === source) return;
+      image.dataset.recoveringSource = source;
+      imageCache.delete(source);
+      preloadSource(source).then((loaded) => {
+        if (!loaded || image.getAttribute("src") !== source) return;
+        image.removeAttribute("src");
+        requestAnimationFrame(() => {
+          image.src = source;
+        });
+      });
+    });
+  }
+
+  [
+    nodes.primary,
+    nodes.secondary,
+    nodes.backdrop,
+    nodes.smokeVertical,
+    nodes.smokeFloor,
+    ...nodes.backDecor.map((shell) => shell.querySelector("img")),
+    ...nodes.frontDecor.map((shell) => shell.querySelector("img")),
+  ].forEach(installImageRecovery);
 
   slides.forEach((slide, index) => {
     const button = document.createElement("button");
-    button.className = "wave_campaign_dot";
+    button.className = "wave-campaign__dot";
     button.type = "button";
     button.setAttribute("aria-label", `Показать сцену: ${slide.label}`);
     button.innerHTML = '<span></span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle></svg>';
@@ -136,7 +213,43 @@
   });
 
   function getDots() {
-    return Array.from(nodes.dots.querySelectorAll(".wave_campaign_dot"));
+    return Array.from(nodes.dots.querySelectorAll(".wave-campaign__dot"));
+  }
+
+  function commitArtboardSize() {
+    const width = Math.round(banner.getBoundingClientRect().width);
+    if (!width) return;
+    banner.style.setProperty("--campaign-artboard-width", `${width}px`);
+    banner.style.setProperty("--campaign-artboard-height", `${Math.round(width / 2)}px`);
+  }
+
+  function isRuntimeActive() {
+    return isInitialized && isPageActive && isInViewport && !isResizing;
+  }
+
+  function pauseRuntime() {
+    clearTimeout(timer);
+    clearTimeout(swapTimer);
+    timer = null;
+    swapTimer = null;
+    transitionRequestId += 1;
+    banner.classList.add("is-runtime-paused", "is-timer-waiting");
+    banner.classList.remove("is-switching", "is-scene-resetting", "is-copy-resetting");
+    nodes.dotMorph.getAnimations().forEach((animation) => animation.cancel());
+  }
+
+  function resumeRuntime(delay = RESUME_TIMER_DELAY) {
+    banner.classList.remove("is-runtime-paused");
+    if (!isRuntimeActive()) return;
+    startTimerAfterDelay(delay);
+  }
+
+  function syncRuntimeState(delay = RESUME_TIMER_DELAY) {
+    if (!isRuntimeActive()) {
+      pauseRuntime();
+      return;
+    }
+    resumeRuntime(delay);
   }
 
   function resetDotTimer(index, duration = AUTO_SLIDE_DURATION) {
@@ -156,7 +269,9 @@
     clearTimeout(timer);
     banner.classList.add("is-timer-waiting");
     resetDotTimer(activeIndex, AUTO_SLIDE_DURATION);
+    if (!isRuntimeActive()) return;
     timer = window.setTimeout(() => {
+      if (!isRuntimeActive()) return;
       banner.classList.remove("is-timer-waiting");
       resetDotTimer(activeIndex, AUTO_SLIDE_DURATION);
       scheduleNext(AUTO_SLIDE_DURATION);
@@ -173,25 +288,42 @@
         return;
       }
       shell.hidden = false;
-      image.src = source;
+      setImageSource(image, source);
     });
+  }
+
+  function escapeHtml(value) {
+    const div = document.createElement("div");
+    div.textContent = value == null ? "" : String(value);
+    return div.innerHTML;
+  }
+
+  function renderTitleLine(line, lineIndex) {
+    const words = String(line || "").trim().split(/\s+/).filter(Boolean);
+    const lastWordIndex = Math.max(0, words.length - 1);
+    return `
+      <span class="wave-campaign__title-line${lineIndex === 1 ? " wave-campaign__title-line--accent" : ""}" style="--line-index: ${lineIndex}">
+        <span class="wave-campaign__title-text">
+          ${words.map((word, wordIndex) => `
+            <span class="wave-campaign__title-word" style="--word-index: ${wordIndex}; --word-exit-index: ${lastWordIndex - wordIndex}">${escapeHtml(word)}</span>
+          `).join(" ")}
+        </span>
+      </span>
+    `;
   }
 
   function render(index, duration = activeDuration) {
     const slide = slides[index];
     banner.dataset.scene = slide.key;
-    nodes.title.innerHTML = slide.title;
-    nodes.description.textContent = slide.description;
-    nodes.ctaText.textContent = slide.cta;
-    nodes.primary.src = slide.primary;
-    nodes.primary.alt = slide.primaryAlt;
-    nodes.backdrop.src = slide.backdrop;
+    nodes.title.innerHTML = slide.title.map(renderTitleLine).join("");
+    nodes.description.innerHTML = `<span class="wave-campaign__description-inner">${escapeHtml(slide.description)}</span>`;
+    setImageSource(nodes.primary, slide.primary, slide.primaryAlt);
+    setImageSource(nodes.backdrop, slide.backdrop);
     renderDecorations(nodes.backDecor, slide.backDecor);
     renderDecorations(nodes.frontDecor, slide.frontDecor);
 
     if (slide.secondary) {
-      nodes.secondary.src = slide.secondary;
-      nodes.secondary.alt = slide.secondaryAlt;
+      setImageSource(nodes.secondary, slide.secondary, slide.secondaryAlt);
       nodes.secondary.hidden = false;
     } else {
       nodes.secondary.hidden = true;
@@ -237,22 +369,32 @@
     clearTimeout(swapTimer);
     const requestId = ++transitionRequestId;
     if (manualSelection) banner.classList.add("is-timer-waiting");
-    await preloadSlide(nextIndex);
-    if (requestId !== transitionRequestId || document.hidden) return;
+    const [criticalReady] = await Promise.all([
+      preloadCriticalSlide(nextIndex),
+      preloadSlide(nextIndex),
+    ]);
+    if (requestId !== transitionRequestId || !isRuntimeActive()) return;
+    if (!criticalReady) {
+      startTimerAfterDelay(manualSelection ? MANUAL_HOLD_DURATION : 1400);
+      return;
+    }
 
     animateDotMorph(activeIndex, nextIndex);
     banner.classList.add("is-switching");
     swapTimer = window.setTimeout(() => {
       activeIndex = nextIndex;
       banner.classList.add("is-timer-waiting");
-      banner.classList.add("is-scene-resetting");
+      banner.classList.add("is-scene-resetting", "is-copy-resetting");
       render(activeIndex, duration);
       void banner.offsetWidth;
       banner.classList.remove("is-scene-resetting");
       requestAnimationFrame(() => {
         banner.classList.remove("is-switching");
-        if (manualSelection) startTimerAfterDelay(MANUAL_HOLD_DURATION);
-        else startTimerAfterDelay(SLIDE_REVEAL_DELAY);
+        requestAnimationFrame(() => {
+          banner.classList.remove("is-copy-resetting");
+          if (manualSelection) startTimerAfterDelay(MANUAL_HOLD_DURATION);
+          else startTimerAfterDelay(SLIDE_REVEAL_DELAY);
+        });
       });
     }, reducedMotion.matches ? 0 : TRANSITION_DELAY);
   }
@@ -271,7 +413,7 @@
 
   function scheduleNext(duration = activeDuration) {
     clearTimeout(timer);
-    if (reducedMotion.matches || document.hidden) return;
+    if (reducedMotion.matches || !isRuntimeActive()) return;
     timer = window.setTimeout(() => void show(activeIndex + 1, AUTO_SLIDE_DURATION), duration);
   }
   banner.addEventListener("touchstart", (event) => { touchStartX = event.changedTouches[0].clientX; }, { passive: true });
@@ -281,14 +423,46 @@
       void show(activeIndex + (distance < 0 ? 1 : -1), AUTO_SLIDE_DURATION, true);
     }
   }, { passive: true });
-  document.addEventListener("visibilitychange", () => {
-    clearTimeout(timer);
-    if (!document.hidden) {
-      banner.classList.remove("is-timer-waiting");
-      render(activeIndex, AUTO_SLIDE_DURATION);
-      scheduleNext(AUTO_SLIDE_DURATION);
-    }
+  function handleVisibilityChange() {
+    isPageActive = !document.hidden;
+    document.documentElement.classList.toggle("is-page-inactive", !isPageActive);
+    syncRuntimeState();
+  }
+
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+  window.addEventListener("pagehide", () => {
+    isPageActive = false;
+    document.documentElement.classList.add("is-page-inactive");
+    pauseRuntime();
   });
+  window.addEventListener("pageshow", () => {
+    isPageActive = !document.hidden;
+    document.documentElement.classList.toggle("is-page-inactive", !isPageActive);
+    syncRuntimeState();
+  });
+
+  window.addEventListener("resize", () => {
+    if (!isResizing) {
+      isResizing = true;
+      banner.classList.add("is-resizing");
+      pauseRuntime();
+    }
+    clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(() => {
+      commitArtboardSize();
+      isResizing = false;
+      banner.classList.remove("is-resizing");
+      syncRuntimeState();
+    }, RESIZE_SETTLE_DELAY);
+  }, { passive: true });
+
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(([entry]) => {
+      isInViewport = Boolean(entry?.isIntersecting);
+      syncRuntimeState(350);
+    }, { rootMargin: "120px 0px", threshold: 0.01 });
+    observer.observe(banner);
+  }
 
   async function initialize() {
     await Promise.all([
@@ -296,10 +470,11 @@
       preloadSource(assets.smokeFloor),
       preloadSlide(0),
     ]);
-    nodes.smokeVertical.src = assets.smokeVertical;
-    nodes.smokeFloor.src = assets.smokeFloor;
+    setImageSource(nodes.smokeVertical, assets.smokeVertical);
+    setImageSource(nodes.smokeFloor, assets.smokeFloor);
     banner.classList.add("is-timer-waiting");
     render(0, AUTO_SLIDE_DURATION);
+    slides.slice(1).forEach((_, index) => scheduleSlidePreload(index + 1));
     isInitialized = true;
     requestAnimationFrame(() => {
       banner.classList.add("is-ready");
@@ -308,5 +483,7 @@
     });
   }
 
+  commitArtboardSize();
+  document.documentElement.classList.toggle("is-page-inactive", !isPageActive);
   void initialize();
 })();

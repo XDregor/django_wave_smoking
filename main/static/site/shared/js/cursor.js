@@ -2,8 +2,8 @@
     if (window.__waveCursorInitialized) return;
     window.__waveCursorInitialized = true;
 
-    const smallNodes = document.querySelectorAll("#cursor_dot_small_id, #cursorSmall");
-    const largeNodes = document.querySelectorAll("#cursor_dot_large_id, #cursorLarge");
+    const smallNodes = document.querySelectorAll("[data-site-cursor-small], #cursor_dot_small_variant_id, #cursorSmall");
+    const largeNodes = document.querySelectorAll("[data-site-cursor-large], #cursor_dot_large_variant_id, #cursorLarge");
     smallNodes.forEach((node, index) => {
       if (index > 0) node.remove();
     });
@@ -35,13 +35,13 @@
 
     document.addEventListener("mouseover", (event) => {
       if (event.target.closest("a, button, input, textarea, select, [role='button']")) {
-        large.classList.add("cursor_dot_hover_state");
+        large.classList.add("is-hovered");
       }
     });
 
     document.addEventListener("mouseout", (event) => {
       if (event.target.closest("a, button, input, textarea, select, [role='button']")) {
-        large.classList.remove("cursor_dot_hover_state");
+        large.classList.remove("is-hovered");
       }
     });
 

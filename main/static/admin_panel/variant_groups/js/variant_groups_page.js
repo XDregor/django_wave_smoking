@@ -19,6 +19,7 @@
     mode: "create",
     currentId: null,
     isColor: false,
+    isFlavor: false,
     isSystem: false,
     paletteOptionId: null,
     busy: false,
@@ -37,12 +38,14 @@
     name: document.getElementById("variantGroupName"),
     nameLabel: document.getElementById("variantGroupNameLabel"),
     colorGroupIdentity: document.getElementById("colorGroupIdentity"),
+    flavorGroupIdentity: document.getElementById("flavorGroupIdentity"),
     order: document.getElementById("variantGroupOrder"),
     orderField: document.getElementById("variantGroupOrder")?.closest(".group-order-field"),
     groupFields: document.getElementById("variantGroupOrder")?.closest(".group-fields"),
     options: document.getElementById("variantOptionsList"),
     optionsEmpty: document.getElementById("variantOptionsEmpty"),
     optionsColumnHead: document.getElementById("variantOptionsColumnHead"),
+    filterColumnLabel: document.getElementById("variantFilterColumnLabel"),
     addOption: document.getElementById("addVariantOptionBtn"),
     colorPalette: document.getElementById("colorPalettePopover"),
     colorPaletteGrid: document.getElementById("colorPaletteGrid"),
@@ -162,6 +165,7 @@
     state.mode = "create";
     state.currentId = null;
     state.isColor = false;
+    state.isFlavor = false;
     state.isSystem = false;
     editOptions = [];
     els.modalTitle.textContent = "Добавить группу вариантов";
@@ -170,10 +174,12 @@
     els.name.hidden = false;
     els.nameLabel.textContent = "Название группы";
     els.colorGroupIdentity.hidden = true;
+    els.flavorGroupIdentity.hidden = true;
     els.order.value = String(nextDefaultOrder());
     els.order.disabled = false;
     els.orderField.hidden = false;
-    els.groupFields.classList.remove("is-color");
+    els.groupFields.classList.remove("is-system");
+    els.filterColumnLabel.textContent = "Для фильтра";
     els.save.textContent = "Добавить";
     els.delete.hidden = true;
     clearFieldErrors();
@@ -187,18 +193,21 @@
     state.mode = "edit";
     state.currentId = group.id;
     state.isColor = Boolean(group.is_color);
+    state.isFlavor = Boolean(group.is_flavor);
     state.isSystem = Boolean(group.is_system);
     editOptions = cloneOptions(group.options);
     els.modalTitle.textContent = "Редактировать группу вариантов";
     els.name.value = group.name || "";
     els.name.disabled = state.isSystem;
-    els.name.hidden = state.isColor;
-    els.nameLabel.textContent = state.isColor ? "Системная группа" : "Название группы";
+    els.name.hidden = state.isSystem;
+    els.nameLabel.textContent = state.isSystem ? "Системная группа" : "Название группы";
     els.colorGroupIdentity.hidden = !state.isColor;
+    els.flavorGroupIdentity.hidden = !state.isFlavor;
     els.order.value = String(group.order || 0);
-    els.order.disabled = state.isColor;
-    els.orderField.hidden = state.isColor;
-    els.groupFields.classList.toggle("is-color", state.isColor);
+    els.order.disabled = state.isSystem;
+    els.orderField.hidden = state.isSystem;
+    els.groupFields.classList.toggle("is-system", state.isSystem);
+    els.filterColumnLabel.textContent = state.isFlavor ? "Вкус для фильтра" : "Для фильтра";
     els.save.textContent = "Сохранить";
     els.delete.hidden = state.isSystem;
     clearFieldErrors();
@@ -226,14 +235,17 @@
     document.body.style.overflow = "";
     state.currentId = null;
     state.isColor = false;
+    state.isFlavor = false;
     state.isSystem = false;
     els.name.disabled = false;
     els.name.hidden = false;
     els.nameLabel.textContent = "Название группы";
     els.colorGroupIdentity.hidden = true;
+    els.flavorGroupIdentity.hidden = true;
     els.order.disabled = false;
     els.orderField.hidden = false;
-    els.groupFields.classList.remove("is-color");
+    els.groupFields.classList.remove("is-system");
+    els.filterColumnLabel.textContent = "Для фильтра";
   }
 
   function clearFieldErrors() {
@@ -257,6 +269,7 @@
     els.options.hidden = editOptions.length === 0;
     els.options.innerHTML = editOptions.map((option, index) => {
       const colorHex = normalizeColorHex(option.color_hex);
+      const filterPlaceholder = state.isFlavor ? "Например: Малина" : "Как название";
       const colorControl = state.isColor ? `
         <span class="option-color-control${colorHex ? "" : " is-invalid"}">
           <button class="option-color-picker" type="button" style="--option-color:${escHtml(colorHex || "#808080")}" data-option-palette-trigger aria-label="Открыть палитру цвета" aria-haspopup="dialog" aria-expanded="false">
@@ -267,7 +280,7 @@
       return `
       <div class="option-row" data-option-id="${escHtml(option.id)}">
         <input class="option-input" type="text" maxlength="100" value="${escHtml(option.name)}" placeholder="Название для покупателя" data-option-field="name" aria-label="Название варианта" />
-        <input class="option-input" type="text" maxlength="100" value="${escHtml(option.filter_name || "")}" placeholder="Как название" data-option-field="filter_name" aria-label="Значение для фильтра" />
+        <input class="option-input" type="text" maxlength="100" value="${escHtml(option.filter_name || "")}" placeholder="${filterPlaceholder}" data-option-field="filter_name" aria-label="Значение для фильтра" />
         ${colorControl}
         <span class="option-usage${option.is_used ? " is-used" : ""}">${escHtml(optionUsage(option))}</span>
         <span class="option-actions">
@@ -504,6 +517,10 @@
     if (state.busy || !state.currentId) return;
     const group = findGroup(state.currentId);
     if (!group) return;
+    if (group.is_system) {
+      toast(`Системную группу «${group.name}» удалить нельзя`, "error");
+      return;
+    }
     if ((group.options || []).some((option) => option.is_used)) {
       toast("Нельзя удалить группу, пока её варианты используются", "error");
       return;
