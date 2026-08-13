@@ -15,9 +15,18 @@
     const large = largeNodes[0];
     if (!small || !large) return;
 
-    if (window.matchMedia("(pointer: coarse)").matches) {
+    const mobileCursorMedia = window.matchMedia("(hover: none), (pointer: coarse), (max-width: 768px)");
+    const hideCursor = () => {
       small.style.display = "none";
       large.style.display = "none";
+      document.documentElement.classList.add("has-no-site-cursor");
+    };
+    const shouldDisableCursor = () => {
+      return mobileCursorMedia.matches || (navigator.maxTouchPoints > 0 && window.innerWidth <= 1024);
+    };
+
+    if (shouldDisableCursor()) {
+      hideCursor();
       return;
     }
 
@@ -29,8 +38,22 @@
     let largeY = mouseY;
 
     document.addEventListener("mousemove", (event) => {
+      if (shouldDisableCursor()) {
+        hideCursor();
+        return;
+      }
       mouseX = event.clientX;
       mouseY = event.clientY;
+    });
+
+    document.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "touch") hideCursor();
+    }, { passive: true });
+
+    document.addEventListener("touchstart", hideCursor, { passive: true, once: true });
+
+    mobileCursorMedia.addEventListener?.("change", () => {
+      if (shouldDisableCursor()) hideCursor();
     });
 
     document.addEventListener("mouseover", (event) => {

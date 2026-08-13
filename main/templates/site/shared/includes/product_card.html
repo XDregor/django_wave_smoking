@@ -1,6 +1,6 @@
 {% with badge=product.get_badge_data product_variants=product.display_product_variants available_variants=product.available_product_variants product_skus=product.sku_payload discount_percent=product.get_discount_percent key_specifications=product.key_specifications %}
 <article
-  class="product_card_component{% if product.stock <= 0 or product_variants and not available_variants %} product_card_unavailable_state{% endif %}"
+  class="product_card_component{% if product_card_mode == 'recommendation' %} product_card_recommendation_context{% endif %}{% if product.stock <= 0 or product_variants and not available_variants %} product_card_unavailable_state{% endif %}"
   data-product-card-id="{{ product.id }}"
   data-product-card-url="{% url 'main:product_detail' product.id product.slug %}"
   data-product-card-requires-selection="{% if product_skus or product_variants %}true{% else %}false{% endif %}"
@@ -89,13 +89,13 @@
       {% for variant in product_variants %}
         {% if variant.group_kind == 'color' and variant.color_hex %}
           <button
-            class="product_card_color_swatch{% if forloop.first %} is-selected{% endif %}"
+            class="product_card_color_swatch"
             type="button"
             style="--product-swatch-color: {{ variant.color_hex }}"
             data-product-card-color-swatch
             data-product-card-color-image="{{ variant.image_url }}"
             aria-label="{{ variant.name }}"
-            aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}"
+            aria-pressed="false"
             title="{{ variant.name }}"
           ></button>
         {% endif %}

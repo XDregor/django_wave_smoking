@@ -141,18 +141,18 @@
         }
 
         function renderProductColorSwatches(product) {
-          return getProductColorVariants(product).map((variant, index) => {
+          return getProductColorVariants(product).map((variant) => {
             const imageUrl = variant.image_url || variant.thumbnail_url || "";
             const label = variant.name || variant.filter_name || "Цвет";
             return `
               <button
-                class="product_card_color_swatch${index === 0 ? " is-selected" : ""}"
+                class="product_card_color_swatch"
                 type="button"
                 style="--product-swatch-color: ${escapeHtml(variant.color_hex)}"
                 data-product-card-color-swatch
                 data-product-card-color-image="${escapeHtml(imageUrl)}"
                 aria-label="${escapeHtml(label)}"
-                aria-pressed="${index === 0 ? "true" : "false"}"
+                aria-pressed="false"
                 title="${escapeHtml(label)}"
               ></button>
             `;
@@ -1014,6 +1014,8 @@
           const drawer = document.getElementById("filter_drawer_panel_id");
           const overlay = document.getElementById("filter_drawer_overlay_id");
           const arrowBtn = document.getElementById("filter_drawer_arrow_id");
+          const handle = drawer?.querySelector("[data-filter-drawer-handle]");
+          const drawerContent = drawer?.querySelector(".filter-drawer__blocks");
           if (!toggleBtn || !drawer || !overlay) return;
 
           [overlay, drawer, arrowBtn].filter(Boolean).forEach((element) => {
@@ -1021,9 +1023,143 @@
           });
 
           let previousBodyOverflow = "";
+          let collapsedHeight = 0;
+          let scrollTouchY = 0;
+          let scrollFrame = 0;
+          let scrollEndTimer = 0;
+          let closeTimer = 0;
+          let scrollTargetHeight = 0;
+          const mobileDrawerMedia = window.matchMedia("(max-width: 768px)");
+
+          function getDrawerViewportHeight() {
+            return Math.round(window.visualViewport?.height || window.innerHeight || 0);
+          }
+
+          function stopDrawerHeightAnimation() {
+            window.clearTimeout(scrollEndTimer);
+            scrollEndTimer = 0;
+            if (scrollFrame) cancelAnimationFrame(scrollFrame);
+            scrollFrame = 0;
+            scrollTargetHeight = 0;
+          }
+
+          function getDrawerSnapHeights() {
+            const viewportHeight = getDrawerViewportHeight();
+            const baseHeight = Math.min(viewportHeight, collapsedHeight || Math.round(viewportHeight * 0.72));
+            return [0, 0.18, 0.36, 0.54, 0.72, 1]
+              .map((progress) => Math.round(baseHeight + (viewportHeight - baseHeight) * progress))
+              .filter((height, index, heights) => index === 0 || height - heights[index - 1] >= 8);
+          }
+
+          function applyDrawerHeight(height) {
+            if (!drawer) return;
+            const viewportHeight = getDrawerViewportHeight();
+            const nextHeight = Math.max(80, Math.min(viewportHeight, height));
+            drawer.style.height = `${nextHeight}px`;
+            drawer.classList.toggle("is-expanded", nextHeight >= viewportHeight - 2);
+            overlay.classList.toggle("is-expanded", nextHeight >= viewportHeight - 2);
+            handle?.setAttribute(
+              "aria-label",
+              nextHeight >= viewportHeight - 2 ? "Свернуть фильтры" : "Развернуть фильтры"
+            );
+          }
+
+          function snapDrawerToHeight(targetHeight) {
+            if (!mobileDrawerMedia.matches) return;
+            const currentHeight = drawer.getBoundingClientRect().height;
+            const viewportHeight = getDrawerViewportHeight();
+            const nextHeight = Math.max(80, Math.min(viewportHeight, targetHeight));
+            drawer.classList.remove("is-dragging");
+            drawer.style.maxHeight = "100dvh";
+            drawer.style.height = `${currentHeight}px`;
+            drawer.offsetHeight;
+            drawer.classList.toggle("is-expanded", nextHeight >= viewportHeight - 2);
+            overlay.classList.toggle("is-expanded", nextHeight >= viewportHeight - 2);
+            drawer.style.height = `${nextHeight}px`;
+            handle?.setAttribute(
+              "aria-label",
+              nextHeight >= viewportHeight - 2 ? "Свернуть фильтры" : "Развернуть фильтры"
+            );
+          }
+
+          function queueDrawerHeight(height) {
+            if (!mobileDrawerMedia.matches) return;
+            const viewportHeight = getDrawerViewportHeight();
+            scrollTargetHeight = Math.max(80, Math.min(viewportHeight, height));
+            drawer.classList.add("is-dragging");
+            if (scrollFrame) return;
+
+            const animate = () => {
+              if (!scrollTargetHeight) {
+                scrollFrame = 0;
+                return;
+              }
+              const currentHeight = drawer.getBoundingClientRect().height;
+              const distance = scrollTargetHeight - currentHeight;
+              const nextHeight = Math.abs(distance) < 0.75 ? scrollTargetHeight : currentHeight + distance * 0.36;
+              applyDrawerHeight(nextHeight);
+              if (Math.abs(scrollTargetHeight - nextHeight) >= 0.75) {
+                scrollFrame = requestAnimationFrame(animate);
+              } else {
+                scrollFrame = 0;
+              }
+            };
+
+            scrollFrame = requestAnimationFrame(animate);
+          }
+
+          function settleDrawerHeight() {
+            if (!drawer.classList.contains("is-open") || !mobileDrawerMedia.matches) return;
+            stopDrawerHeightAnimation();
+            const currentHeight = drawer.getBoundingClientRect().height;
+            drawer.classList.remove("is-dragging");
+
+            if (collapsedHeight && currentHeight < collapsedHeight * 0.72) {
+              closeDrawer();
+              return;
+            }
+
+            const snapHeights = getDrawerSnapHeights();
+            const nearestHeight = snapHeights.reduce((nearest, height) => (
+              Math.abs(height - currentHeight) < Math.abs(nearest - currentHeight) ? height : nearest
+            ), snapHeights[0]);
+            snapDrawerToHeight(nearestHeight);
+          }
+
+          function resizeDrawerBeforeContentScroll(delta) {
+            if (!mobileDrawerMedia.matches || !drawer.classList.contains("is-open") || !delta) return false;
+            const currentHeight = drawer.getBoundingClientRect().height;
+            const viewportHeight = getDrawerViewportHeight();
+            const shrinkingFromTop = delta < 0 && (drawerContent?.scrollTop || 0) <= 1;
+            const growingBeforeContent = delta > 0 && currentHeight < viewportHeight - 2;
+            if (!shrinkingFromTop && !growingBeforeContent) return false;
+
+            const normalizedDelta = Math.max(-96, Math.min(96, delta)) * 0.9;
+            const baseHeight = scrollTargetHeight || currentHeight;
+            queueDrawerHeight(baseHeight + normalizedDelta);
+            window.clearTimeout(scrollEndTimer);
+            scrollEndTimer = window.setTimeout(settleDrawerHeight, 150);
+            return true;
+          }
 
           function openDrawer() {
+            window.clearTimeout(closeTimer);
             previousBodyOverflow = document.body.style.overflow;
+            if (mobileDrawerMedia.matches) {
+              stopDrawerHeightAnimation();
+              const viewportHeight = getDrawerViewportHeight();
+              collapsedHeight = Math.min(viewportHeight, Math.max(360, Math.round(viewportHeight * 0.72)));
+              drawer.style.height = `${collapsedHeight}px`;
+              drawer.style.maxHeight = "100dvh";
+              drawer.classList.remove("is-expanded", "is-dragging");
+              overlay.classList.remove("is-expanded");
+              if (drawerContent) drawerContent.scrollTop = 0;
+            } else {
+              drawer.style.removeProperty("height");
+              drawer.style.removeProperty("max-height");
+              drawer.classList.remove("is-expanded", "is-dragging");
+              overlay.classList.remove("is-expanded");
+            }
             drawer.classList.add("is-open");
             overlay.classList.add("is-open");
             arrowBtn?.classList.add("is-open");
@@ -1032,12 +1168,20 @@
             document.body.style.overflow = "hidden";
           }
           function closeDrawer() {
+            stopDrawerHeightAnimation();
             drawer.classList.remove("is-open");
             overlay.classList.remove("is-open");
+            drawer.classList.remove("is-expanded", "is-dragging");
+            overlay.classList.remove("is-expanded");
             arrowBtn?.classList.remove("is-open");
             document.body.classList.remove("is-filter-drawer-open");
             drawer.setAttribute("aria-hidden", "true");
             document.body.style.overflow = previousBodyOverflow;
+            closeTimer = window.setTimeout(() => {
+              if (drawer.classList.contains("is-open")) return;
+              drawer.style.removeProperty("height");
+              drawer.style.removeProperty("max-height");
+            }, 430);
           }
 
           drawer.setAttribute("aria-hidden", "true");
@@ -1047,6 +1191,91 @@
           document.addEventListener("keydown", (event) => {
             if (event.key === "Escape" && drawer.classList.contains("is-open")) closeDrawer();
           });
+
+          drawerContent?.addEventListener("wheel", (event) => {
+            const viewportHeight = getDrawerViewportHeight();
+            const delta = event.deltaMode === WheelEvent.DOM_DELTA_LINE
+              ? event.deltaY * 18
+              : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
+                ? event.deltaY * viewportHeight
+                : event.deltaY;
+            if (resizeDrawerBeforeContentScroll(delta)) event.preventDefault();
+          }, { passive: false });
+
+          drawerContent?.addEventListener("touchstart", (event) => {
+            if (!mobileDrawerMedia.matches || !event.touches.length) return;
+            scrollTouchY = event.touches[0].clientY;
+          }, { passive: true });
+
+          drawerContent?.addEventListener("touchmove", (event) => {
+            if (!mobileDrawerMedia.matches || !event.touches.length) return;
+            const nextY = event.touches[0].clientY;
+            const delta = scrollTouchY - nextY;
+            scrollTouchY = nextY;
+            if (resizeDrawerBeforeContentScroll(delta)) event.preventDefault();
+          }, { passive: false });
+
+          drawerContent?.addEventListener("touchend", settleDrawerHeight, { passive: true });
+          drawerContent?.addEventListener("touchcancel", settleDrawerHeight, { passive: true });
+
+          if (handle) {
+            let dragging = false;
+            let pointerId = null;
+            let startY = 0;
+            let startHeight = 0;
+            let didDrag = false;
+
+            handle.addEventListener("pointerdown", (event) => {
+              if (!mobileDrawerMedia.matches) return;
+              event.preventDefault();
+              dragging = true;
+              didDrag = false;
+              pointerId = event.pointerId;
+              startY = event.clientY;
+              startHeight = drawer.getBoundingClientRect().height;
+              drawer.classList.add("is-dragging");
+              handle.setPointerCapture(pointerId);
+            });
+
+            handle.addEventListener("pointermove", (event) => {
+              if (!dragging || event.pointerId !== pointerId) return;
+              event.preventDefault();
+              const distance = startY - event.clientY;
+              if (Math.abs(distance) > 6) didDrag = true;
+              applyDrawerHeight(startHeight + distance);
+            });
+
+            const finishDrag = (event) => {
+              if (!dragging || event.pointerId !== pointerId) return;
+              dragging = false;
+              drawer.classList.remove("is-dragging");
+              if (handle.hasPointerCapture(pointerId)) handle.releasePointerCapture(pointerId);
+              pointerId = null;
+              settleDrawerHeight();
+            };
+
+            handle.addEventListener("pointerup", finishDrag);
+            handle.addEventListener("pointercancel", finishDrag);
+            handle.addEventListener("click", () => {
+              if (didDrag || !mobileDrawerMedia.matches || !drawer.classList.contains("is-open")) return;
+              const currentHeight = drawer.getBoundingClientRect().height;
+              const snapHeights = getDrawerSnapHeights();
+              const nextHeight = snapHeights.find((height) => height > currentHeight + 4) || snapHeights[0];
+              snapDrawerToHeight(nextHeight);
+            });
+          }
+
+          function syncDrawerToViewport() {
+            if (!drawer.classList.contains("is-open") || !mobileDrawerMedia.matches) return;
+            const viewportHeight = getDrawerViewportHeight();
+            const currentHeight = drawer.getBoundingClientRect().height;
+            if (currentHeight > viewportHeight || drawer.classList.contains("is-expanded")) {
+              applyDrawerHeight(viewportHeight);
+            }
+          }
+
+          window.addEventListener("resize", syncDrawerToViewport);
+          window.visualViewport?.addEventListener("resize", syncDrawerToViewport);
         }
 
         function initMobileDrawer() {

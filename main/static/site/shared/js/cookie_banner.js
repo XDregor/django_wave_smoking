@@ -62,11 +62,18 @@
     }
 
     function hideBanner() {
+      if (banner.classList.contains("is-leaving")) return;
+
       storeConsent();
-      banner.classList.remove("visible");
+      banner.classList.add("is-leaving");
+      closeButton.disabled = true;
+      closeButton.setAttribute("aria-busy", "true");
       window.setTimeout(() => {
+        banner.classList.remove("visible", "is-leaving");
         banner.classList.remove("active");
-      }, 260);
+        closeButton.disabled = false;
+        closeButton.removeAttribute("aria-busy");
+      }, 420);
     }
 
     closeButton.addEventListener("click", hideBanner);

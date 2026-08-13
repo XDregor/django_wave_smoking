@@ -85,6 +85,7 @@ def product_detail(request, id, slug):
           sum(review.rating for review in product_reviews) / product_reviews_count,
           1,
       )
+    product_rating_percent = round((product_average_rating or 0) * 20, 1)
     product_rating_summary = {
         "count": product_reviews_count,
         "average": product_average_rating,
@@ -145,6 +146,7 @@ def product_detail(request, id, slug):
         "product_reviews": product_reviews,
         "product_reviews_count": product_reviews_count,
         "product_average_rating": product_average_rating,
+        "product_rating_percent": product_rating_percent,
         "product_rating_summary": product_rating_summary,
         "product_specifications": product_specifications,
         "liked_review_ids": liked_review_ids,

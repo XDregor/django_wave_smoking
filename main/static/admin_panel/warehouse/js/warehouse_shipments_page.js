@@ -28,6 +28,7 @@
     archiveOpen: Boolean(savedStage.archiveOpen),
     archiveFilter: allowedArchiveFilters.has(savedStage.archiveFilter) ? savedStage.archiveFilter : "received",
     expandedOrderKey: "",
+    expandedCounterpartyId: 0,
     lastModalTrigger: null,
     toastTimer: null,
   };
@@ -75,6 +76,7 @@
     phoneModal: root.querySelector("[data-phone-modal]"),
     phoneList: root.querySelector("[data-phone-list]"),
     counterpartySelect: root.querySelector("[data-counterparty-select]"),
+    counterpartyCardSelect: root.querySelector("[data-counterparty-card-select]"),
     phoneSelect: root.querySelector("[data-phone-select]"),
     limitLine: root.querySelector("[data-limit-line]"),
     totalPrice: root.querySelector("[data-total-price]"),
@@ -95,8 +97,25 @@
 
   const parseMoney = (value) => Number(String(value || "0").replace(",", ".")) || 0;
 
+  const formatCardsCount = (value) => {
+    const count = Number(value || 0);
+    const mod100 = count % 100;
+    const mod10 = count % 10;
+    const suffix = mod100 >= 11 && mod100 <= 14
+      ? "\u043a\u0430\u0440\u0442"
+      : mod10 === 1
+        ? "\u043a\u0430\u0440\u0442\u0430"
+        : mod10 >= 2 && mod10 <= 4
+          ? "\u043a\u0430\u0440\u0442\u044b"
+          : "\u043a\u0430\u0440\u0442";
+    return `${count} ${suffix}`;
+  };
+
   const isPhoneInput = (target) => target instanceof HTMLInputElement
     && (target.type === "tel" || target.name === "phone");
+
+  const isCardInput = (target) => target instanceof HTMLInputElement
+    && target.name === "card_number";
 
   const sanitizePhoneValue = (value) => {
     const compact = String(value || "").replace(/\s+/g, "").replace(/[^\d+]/g, "");
@@ -107,6 +126,11 @@
 
   const normalizePhoneInput = (input) => {
     const sanitized = sanitizePhoneValue(input.value);
+    if (input.value !== sanitized) input.value = sanitized;
+  };
+
+  const normalizeCardInput = (input) => {
+    const sanitized = String(input.value || "").replace(/\D+/g, "");
     if (input.value !== sanitized) input.value = sanitized;
   };
 
@@ -194,6 +218,11 @@
     return state.phones.find((phone) => phone.id === id) || null;
   };
 
+  const selectedCounterparty = () => {
+    const id = Number(els.counterpartySelect.value || 0);
+    return state.counterparties.find((counterparty) => counterparty.id === id) || null;
+  };
+
   const selectedTotal = () => Array.from(state.selectedItems.values())
     .reduce((sum, row) => sum + (Number(row.price || 0) * Number(row.quantity || 0)), 0);
 
@@ -204,15 +233,35 @@
     updateLimitLine();
   };
 
-  const fillSelects = (selectedCounterpartyId, selectedPhoneId) => {
+  const fillCounterpartyCards = (selectedCardId = 0) => {
+    const counterparty = selectedCounterparty();
+    const cards = counterparty?.cards || [];
+    els.counterpartyCardSelect.innerHTML = '<option value="">\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u043a\u0430\u0440\u0442\u0443</option>';
+    cards.forEach((card) => {
+      const option = document.createElement("option");
+      option.value = card.id;
+      option.textContent = card.isPrimary
+        ? `${card.number} \u00b7 \u041e\u0441\u043d\u043e\u0432\u043d\u0430\u044f`
+        : card.number;
+      els.counterpartyCardSelect.append(option);
+    });
+    const selectedCard = cards.find((card) => Number(card.id) === Number(selectedCardId));
+    const fallbackCard = selectedCard || cards.find((card) => card.isPrimary) || cards[0];
+    if (fallbackCard) els.counterpartyCardSelect.value = String(fallbackCard.id);
+    els.counterpartyCardSelect.disabled = cards.length === 0;
+  };
+
+  const fillSelects = (selectedCounterpartyId, selectedPhoneId, selectedCardId) => {
+    const preservedCardId = selectedCardId || Number(els.counterpartyCardSelect.value || 0);
     els.counterpartySelect.innerHTML = '<option value="">\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u043a\u043e\u043d\u0442\u0440\u0430\u0433\u0435\u043d\u0442\u0430</option>';
     state.counterparties.forEach((item) => {
       const option = document.createElement("option");
       option.value = item.id;
-      option.textContent = item.cardNumber ? `${item.title} \u00b7 ${item.cardNumber}` : item.title;
+      option.textContent = item.title;
       els.counterpartySelect.append(option);
     });
     if (selectedCounterpartyId) els.counterpartySelect.value = String(selectedCounterpartyId);
+    fillCounterpartyCards(preservedCardId);
 
     els.phoneSelect.innerHTML = '<option value="">\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u043d\u043e\u043c\u0435\u0440</option>';
     state.phones.forEach((item) => {
@@ -248,10 +297,12 @@
     order.recipientPhone,
     order.counterparty?.title,
     order.counterparty?.cardNumber,
+    order.counterpartyCard?.number,
     order.phone?.phone,
     order.phone?.label,
     order.ttn,
     order.deliveryDestination,
+    ...(order.items || []).map((item) => item.name),
   ].join(" ").toLowerCase();
 
   const queryMatches = (order) => !state.query || orderSearchText(order).includes(state.query);
@@ -466,6 +517,86 @@
     `;
   };
 
+  const scrollOrdersChartToLatest = () => {
+    if (!els.ordersChart) return;
+    window.requestAnimationFrame(() => {
+      els.ordersChart.classList.toggle(
+        "is-scrollable",
+        els.ordersChart.scrollWidth > els.ordersChart.clientWidth + 1,
+      );
+      els.ordersChart.scrollLeft = els.ordersChart.scrollWidth;
+    });
+  };
+
+  const setupOrdersChartInteraction = () => {
+    if (!els.ordersChart) return;
+    let pointerId = null;
+    let pointerStartX = 0;
+    let scrollStartX = 0;
+
+    const finishDrag = (event) => {
+      if (pointerId === null || (event && event.pointerId !== pointerId)) return;
+      if (els.ordersChart.hasPointerCapture(pointerId)) {
+        els.ordersChart.releasePointerCapture(pointerId);
+      }
+      pointerId = null;
+      els.ordersChart.classList.remove("is-dragging");
+    };
+
+    els.ordersChart.addEventListener("pointerdown", (event) => {
+      if (!els.ordersChart.classList.contains("is-scrollable")) return;
+      if (event.pointerType === "mouse" && event.button !== 0) return;
+      if (pointerId !== null) return;
+      pointerId = event.pointerId;
+      pointerStartX = event.clientX;
+      scrollStartX = els.ordersChart.scrollLeft;
+      els.ordersChart.setPointerCapture(pointerId);
+      els.ordersChart.classList.add("is-dragging");
+      if (event.pointerType === "mouse") event.preventDefault();
+    });
+
+    els.ordersChart.addEventListener("pointermove", (event) => {
+      if (event.pointerId !== pointerId) return;
+      els.ordersChart.scrollLeft = scrollStartX - (event.clientX - pointerStartX);
+      if (event.cancelable) event.preventDefault();
+    });
+    els.ordersChart.addEventListener("pointerup", finishDrag);
+    els.ordersChart.addEventListener("pointercancel", finishDrag);
+    els.ordersChart.addEventListener("lostpointercapture", finishDrag);
+
+    els.ordersChart.addEventListener("wheel", (event) => {
+      if (!els.ordersChart.classList.contains("is-scrollable")) return;
+      const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY)
+        ? event.deltaX
+        : event.deltaY;
+      if (!delta) return;
+      const atStart = els.ordersChart.scrollLeft <= 0;
+      const atEnd = els.ordersChart.scrollLeft + els.ordersChart.clientWidth >= els.ordersChart.scrollWidth - 1;
+      if ((delta < 0 && atStart) || (delta > 0 && atEnd)) return;
+      event.preventDefault();
+      els.ordersChart.scrollLeft += delta;
+    }, { passive: false });
+
+    els.ordersChart.addEventListener("keydown", (event) => {
+      const steps = {
+        ArrowLeft: -64,
+        ArrowRight: 64,
+        PageUp: -els.ordersChart.clientWidth,
+        PageDown: els.ordersChart.clientWidth,
+      };
+      if (event.key === "Home") {
+        event.preventDefault();
+        els.ordersChart.scrollLeft = 0;
+      } else if (event.key === "End") {
+        event.preventDefault();
+        els.ordersChart.scrollLeft = els.ordersChart.scrollWidth;
+      } else if (steps[event.key]) {
+        event.preventDefault();
+        els.ordersChart.scrollLeft += steps[event.key];
+      }
+    });
+  };
+
   const renderOrdersChart = () => {
     const selectedMonth = state.pointsMonthKey || monthKey(new Date());
     const [year, month] = selectedMonth.split("-").map(Number);
@@ -497,6 +628,7 @@
         </div>
       `;
     }).join("");
+    scrollOrdersChartToLatest();
   };
 
   const renderOverviewPanel = () => {
@@ -611,6 +743,8 @@
       package: '<path d="m3 7 9 5 9-5"></path><path d="M12 22V12"></path><path d="M21 7v10l-9 5-9-5V7l9-5 9 5Z"></path>',
       phone: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.7.6 2.5a2 2 0 0 1-.5 2.1L8 9.5a16 16 0 0 0 6.5 6.5l1.2-1.2a2 2 0 0 1 2.1-.5c.8.3 1.6.5 2.5.6a2 2 0 0 1 1.7 2Z"></path>',
       store: '<path d="M4 10h16"></path><path d="M5 10l1-6h12l1 6"></path><path d="M6 10v10h12V10"></path><path d="M9 20v-5h6v5"></path>',
+      save: '<path d="M5 3h12l2 2v16H5z"></path><path d="M8 3v6h8V3"></path><path d="M8 21v-7h8v7"></path>',
+      star: '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"></path>',
       trash: '<path d="M4 7h16"></path><path d="M10 11v6M14 11v6"></path><path d="M6 7l1 14h10l1-14"></path><path d="M9 7V4h6v3"></path>',
       truck: '<path d="M3 6h11v10H3z"></path><path d="M14 10h4l3 3v3h-7z"></path><circle cx="7" cy="18" r="2"></circle><circle cx="17" cy="18" r="2"></circle>',
     };
@@ -891,22 +1025,60 @@
   const renderCounterparties = () => {
     els.counterpartyList.innerHTML = `
       ${state.counterparties.map((item) => `
-        <details class="directory-card">
+        <details
+          class="directory-card directory-card-counterparty"
+          data-counterparty-id="${escapeHtml(item.id)}"
+          ${Number(state.expandedCounterpartyId) === Number(item.id) ? "open" : ""}
+        >
           <summary>
             <span>
               <strong>${escapeHtml(item.title)}</strong>
-              <small>${escapeHtml(item.cardNumber || "Карта не указана")}</small>
+              <small>${item.primaryCard
+                ? `Основная · ${escapeHtml(item.primaryCard.number)}`
+                : "Карты не добавлены"}</small>
             </span>
-            <em>${escapeHtml(item.ordersCount || 0)} заказов</em>
+            <em>${escapeHtml(formatCardsCount(item.cards?.length || 0))}</em>
           </summary>
-          <form class="directory-edit" data-counterparty-edit-form data-url="${escapeHtml(item.urls.update)}">
-            <label class="field"><span>Наименование</span><input name="title" value="${escapeHtml(item.title)}" maxlength="140" autocomplete="off" required></label>
-            <label class="field"><span>Номер карты</span><input name="card_number" value="${escapeHtml(item.cardNumber)}" maxlength="64" autocomplete="off"></label>
-            <div class="directory-actions">
-              <button class="btn btn-danger-ghost" type="button" data-delete-counterparty data-url="${escapeHtml(item.urls.delete)}">Удалить</button>
-              <button class="btn btn-primary" type="submit">Сохранить</button>
-            </div>
-          </form>
+          <div class="counterparty-editor">
+            <form class="directory-edit counterparty-title-form" data-counterparty-edit-form data-url="${escapeHtml(item.urls.update)}">
+              <div class="counterparty-profile-head">
+                <strong>Контрагент</strong>
+                <div class="directory-actions">
+                  <button class="btn btn-danger-ghost" type="button" data-delete-counterparty data-url="${escapeHtml(item.urls.delete)}">Удалить</button>
+                  <button class="btn btn-primary" type="submit">Сохранить</button>
+                </div>
+              </div>
+              <label class="field"><span>Наименование</span><input name="title" value="${escapeHtml(item.title)}" maxlength="140" autocomplete="off" required></label>
+            </form>
+            <section class="counterparty-cards">
+              <div class="counterparty-cards-title">
+                <strong>Карты</strong>
+                <span>${escapeHtml(item.cards?.length || 0)}</span>
+              </div>
+              <div class="counterparty-card-list">
+                ${(item.cards || []).map((card) => `
+                  <form class="counterparty-card-row${card.isPrimary ? " is-primary" : ""}" data-counterparty-card-edit-form data-url="${escapeHtml(card.urls.update)}">
+                    ${card.isPrimary ? '<input type="hidden" name="is_primary" value="on">' : ""}
+                    <button
+                      class="counterparty-card-primary${card.isPrimary ? " is-active" : ""}"
+                      type="button"
+                      data-set-primary-card
+                      aria-label="${card.isPrimary ? "Основная карта" : "Сделать основной"}"
+                      aria-pressed="${card.isPrimary ? "true" : "false"}"
+                      title="${card.isPrimary ? "Основная карта" : "Сделать основной"}"
+                    >${icon("star")}</button>
+                    <input name="card_number" value="${escapeHtml(card.number)}" inputmode="numeric" maxlength="64" autocomplete="off" aria-label="Номер карты" required>
+                    <button class="counterparty-card-action" type="submit" aria-label="Сохранить карту" title="Сохранить">${icon("save")}</button>
+                    <button class="counterparty-card-action is-danger" type="button" data-delete-counterparty-card data-url="${escapeHtml(card.urls.delete)}" aria-label="Удалить карту" title="Удалить">${icon("trash")}</button>
+                  </form>
+                `).join("")}
+              </div>
+              <form class="counterparty-card-add" data-counterparty-card-create-form data-url="${escapeHtml(item.urls.createCard)}">
+                <input name="card_number" inputmode="numeric" maxlength="64" autocomplete="off" placeholder="Номер новой карты" aria-label="Номер новой карты" required>
+                <button class="btn counterparty-card-add-submit" type="submit">Добавить</button>
+              </form>
+            </section>
+          </div>
         </details>
       `).join("")}
       <details class="directory-card directory-card-add">
@@ -918,7 +1090,7 @@
         </summary>
         <form class="directory-edit" data-counterparty-create-form>
           <label class="field"><span>Наименование</span><input name="title" maxlength="140" autocomplete="off" required></label>
-          <label class="field"><span>Номер карты</span><input name="card_number" maxlength="64" autocomplete="off"></label>
+          <label class="field"><span>Первая карта</span><input name="card_number" inputmode="numeric" maxlength="64" autocomplete="off" required></label>
           <div class="directory-actions">
             <button class="btn btn-primary" type="submit">Создать</button>
           </div>
@@ -1059,6 +1231,7 @@
     if (overviewPanel) {
       state.overviewPanel = overviewPanel.dataset.overviewPanel === "orders" ? "orders" : "limits";
       renderOverviewPanel();
+      if (state.overviewPanel === "orders") scrollOrdersChartToLatest();
       return;
     }
 
@@ -1066,6 +1239,11 @@
     if (directorySummary) {
       const currentCard = directorySummary.closest(".directory-card");
       const list = currentCard?.closest(".directory-list");
+      if (currentCard?.matches("[data-counterparty-id]")) {
+        state.expandedCounterpartyId = currentCard.open
+          ? 0
+          : Number(currentCard.dataset.counterpartyId || 0);
+      }
       if (list && !currentCard.open) {
         list.querySelectorAll(".directory-card[open]").forEach((card) => {
           if (card !== currentCard) card.open = false;
@@ -1083,6 +1261,7 @@
       openModal(els.exportModal, event.target.closest("[data-open-export]"));
     }
     if (event.target.closest("[data-open-counterparty]")) {
+      state.expandedCounterpartyId = 0;
       renderCounterparties();
       openModal(els.counterpartyModal, event.target.closest("[data-open-counterparty]"));
     }
@@ -1136,6 +1315,58 @@
       state.expandedOrderKey = "";
       saveStageState();
       renderOrders();
+      return;
+    }
+
+    const setPrimaryCard = event.target.closest("[data-set-primary-card]");
+    if (setPrimaryCard && !setPrimaryCard.classList.contains("is-active")) {
+      const cardForm = setPrimaryCard.closest("[data-counterparty-card-edit-form]");
+      const counterpartyCard = setPrimaryCard.closest("[data-counterparty-id]");
+      state.expandedCounterpartyId = Number(counterpartyCard?.dataset.counterpartyId || 0);
+      const directoryScrollTop = els.counterpartyList.closest(".modal-body")?.scrollTop || 0;
+      setPrimaryCard.disabled = true;
+      try {
+        const formData = new FormData(cardForm);
+        formData.set("is_primary", "on");
+        const payload = await fetchForm(cardForm.dataset.url, formData);
+        state.counterparties = payload.counterparties;
+        fillSelects(
+          payload.counterparty?.id || Number(els.counterpartySelect.value || 0),
+          Number(els.phoneSelect.value || 0),
+          payload.counterparty?.primaryCard?.id || 0,
+        );
+        renderCounterparties();
+        const modalBody = els.counterpartyList.closest(".modal-body");
+        if (modalBody) modalBody.scrollTop = directoryScrollTop;
+        showToast(payload.message);
+      } catch (error) {
+        showToast(error.message, true);
+      } finally {
+        setPrimaryCard.disabled = false;
+      }
+      return;
+    }
+
+    const deleteCounterpartyCard = event.target.closest("[data-delete-counterparty-card]");
+    if (deleteCounterpartyCard && window.confirm("Удалить карту контрагента?")) {
+      const counterpartyCard = deleteCounterpartyCard.closest("[data-counterparty-id]");
+      state.expandedCounterpartyId = Number(counterpartyCard?.dataset.counterpartyId || 0);
+      deleteCounterpartyCard.disabled = true;
+      try {
+        const payload = await fetchForm(deleteCounterpartyCard.dataset.url, new FormData());
+        state.counterparties = payload.counterparties;
+        fillSelects(
+          payload.counterparty?.id || Number(els.counterpartySelect.value || 0),
+          Number(els.phoneSelect.value || 0),
+          payload.counterparty?.primaryCard?.id || 0,
+        );
+        renderCounterparties();
+        showToast(payload.message);
+      } catch (error) {
+        showToast(error.message, true);
+      } finally {
+        deleteCounterpartyCard.disabled = false;
+      }
       return;
     }
 
@@ -1237,11 +1468,16 @@
   });
 
   root.addEventListener("beforeinput", (event) => {
+    if (isCardInput(event.target) && event.data && /\D/.test(event.data)) {
+      event.preventDefault();
+      return;
+    }
     if (!isPhoneInput(event.target) || !event.data) return;
     if (/[^\d+\s().-]/.test(event.data)) event.preventDefault();
   });
 
   root.addEventListener("input", (event) => {
+    if (isCardInput(event.target)) normalizeCardInput(event.target);
     if (isPhoneInput(event.target)) {
       normalizePhoneInput(event.target);
     }
@@ -1265,6 +1501,7 @@
   });
 
   root.addEventListener("change", (event) => {
+    if (event.target === els.counterpartySelect) fillCounterpartyCards();
     if (event.target === els.phoneSelect) updateLimitLine();
     if (event.target.matches("[data-picker-quantity]")) {
       setSelectedQuantity(Number(event.target.dataset.pickerQuantity), event.target.value, true);
@@ -1335,9 +1572,15 @@
   els.exportForm?.addEventListener("submit", (event) => {
     const dateFrom = els.exportForm.querySelector('input[name="date_from"]')?.value || "";
     const dateTo = els.exportForm.querySelector('input[name="date_to"]')?.value || "";
+    const includeStageJournal = els.exportForm.querySelector('input[name="include_stage_journal"]')?.checked;
     if (dateFrom && dateTo && dateFrom > dateTo) {
       event.preventDefault();
       showToast("Дата начала не может быть позже даты окончания.", true);
+      return;
+    }
+    if (includeStageJournal && (!dateFrom || !dateTo)) {
+      event.preventDefault();
+      showToast("Для журнала стадий выберите дату начала и дату окончания.", true);
       return;
     }
     window.setTimeout(() => closeModal(els.exportModal), 120);
@@ -1347,9 +1590,17 @@
     const ttnForm = event.target.closest("[data-ttn-form]");
     const counterpartyCreateForm = event.target.closest("[data-counterparty-create-form]");
     const counterpartyEditForm = event.target.closest("[data-counterparty-edit-form]");
+    const counterpartyCardCreateForm = event.target.closest("[data-counterparty-card-create-form]");
+    const counterpartyCardEditForm = event.target.closest("[data-counterparty-card-edit-form]");
     const phoneCreateForm = event.target.closest("[data-phone-create-form]");
     const phoneEditForm = event.target.closest("[data-phone-edit-form]");
-    const form = ttnForm || counterpartyCreateForm || counterpartyEditForm || phoneCreateForm || phoneEditForm;
+    const form = ttnForm
+      || counterpartyCreateForm
+      || counterpartyEditForm
+      || counterpartyCardCreateForm
+      || counterpartyCardEditForm
+      || phoneCreateForm
+      || phoneEditForm;
     if (!form) return;
 
     event.preventDefault();
@@ -1376,6 +1627,10 @@
         return;
       }
     }
+    if (counterpartyCreateForm || counterpartyCardCreateForm || counterpartyCardEditForm) {
+      const cardInput = form.querySelector('input[name="card_number"]');
+      if (cardInput) normalizeCardInput(cardInput);
+    }
     const submit = form.querySelector('button[type="submit"]');
     submit.disabled = true;
     try {
@@ -1393,7 +1648,11 @@
       }
       if (payload.counterparties) {
         state.counterparties = payload.counterparties;
-        fillSelects(payload.counterparty?.id || Number(els.counterpartySelect.value || 0), Number(els.phoneSelect.value || 0));
+        fillSelects(
+          payload.counterparty?.id || Number(els.counterpartySelect.value || 0),
+          Number(els.phoneSelect.value || 0),
+          payload.counterparty?.primaryCard?.id || Number(els.counterpartyCardSelect.value || 0),
+        );
         renderCounterparties();
       }
       if (payload.phones) {
@@ -1402,7 +1661,7 @@
         renderPhones();
         renderOverview();
       }
-      if (counterpartyCreateForm || phoneCreateForm) form.reset();
+      if (counterpartyCreateForm || counterpartyCardCreateForm || phoneCreateForm) form.reset();
       renderOrders();
       showToast(payload.message);
     } catch (error) {
@@ -1416,6 +1675,10 @@
     if (event.key === "Escape") closePointsPanel();
   });
 
+  setupOrdersChartInteraction();
+  window.addEventListener("resize", () => {
+    if (state.overviewPanel === "orders") scrollOrdersChartToLatest();
+  });
   fillSelects();
   renderOrders();
   renderItems();

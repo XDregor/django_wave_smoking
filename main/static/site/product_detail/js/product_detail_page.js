@@ -1,4 +1,30 @@
 (() => {
+        window.__waveProductDetailCleanup?.();
+        const productDetailController = new AbortController();
+        const productDetailSignal = productDetailController.signal;
+        const productDetailRoot = document.querySelector("[data-product-detail-id]");
+        let stickyProductObserver = null;
+        let publicProductStateController = null;
+        const cleanupProductDetail = () => {
+          stickyProductObserver?.disconnect();
+          if (window.waveProductDetailState === publicProductStateController) {
+            window.waveProductDetailState = null;
+          }
+          productDetailController.abort();
+          if (window.__waveProductDetailCleanup === cleanupProductDetail) {
+            window.__waveProductDetailCleanup = null;
+          }
+        };
+        window.__waveProductDetailCleanup = cleanupProductDetail;
+        window.addEventListener("wave:page-leave", cleanupProductDetail, {
+          once: true,
+          signal: productDetailSignal,
+        });
+        if (!productDetailRoot) {
+          cleanupProductDetail();
+          return;
+        }
+
         const getCookie = (name) => {
           const value = `; ${document.cookie}`;
           const parts = value.split(`; ${name}=`);
@@ -227,7 +253,7 @@
           if (event.key === "Escape") closeLightbox();
           if (event.key === "ArrowLeft") shiftLightbox(-1);
           if (event.key === "ArrowRight") shiftLightbox(1);
-        });
+        }, { signal: productDetailSignal });
 
         const quantityInput = document.getElementById("input-quantity");
         const quantityMinus = document.getElementById("js_quantity_minus");
@@ -348,7 +374,7 @@
             const panel = document.getElementById(trigger.getAttribute("data-collapsible-trigger"));
             setCollapsibleHeight(panel);
           });
-        });
+        }, { signal: productDetailSignal });
 
         document.querySelectorAll(".product-info__collapsible").forEach((panel) => {
           panel.addEventListener("transitionend", (event) => {
@@ -358,6 +384,7 @@
         });
 
         function syncProductGalleryHeaderState() {
+          if (!productDetailRoot.isConnected) return;
           const header = document.querySelector(".site-header");
           document.body.classList.toggle(
             "is-product-header-hidden",
@@ -366,11 +393,13 @@
         }
 
         syncProductGalleryHeaderState();
-        window.addEventListener("load", syncProductGalleryHeaderState);
-        window.addEventListener("scroll", syncProductGalleryHeaderState, { passive: true });
-        window.addEventListener("resize", syncProductGalleryHeaderState);
+        window.addEventListener("load", syncProductGalleryHeaderState, { signal: productDetailSignal });
+        window.addEventListener("scroll", syncProductGalleryHeaderState, { passive: true, signal: productDetailSignal });
+        window.addEventListener("resize", syncProductGalleryHeaderState, { signal: productDetailSignal });
         document.querySelectorAll(".site-header").forEach((header) => {
-          header.addEventListener("transitionend", syncProductGalleryHeaderState);
+          header.addEventListener("transitionend", syncProductGalleryHeaderState, {
+            signal: productDetailSignal,
+          });
         });
 
         const variantButtons = [...document.querySelectorAll(".product-info__variant")];
@@ -583,6 +612,39 @@
 
         document.getElementById("js_add_to_cart")?.addEventListener("click", () => addToCart());
 
+        publicProductStateController = {
+          getSnapshot() {
+            const cartButton = document.getElementById("js_add_to_cart");
+            return {
+              quantity: normalizeQuantity(quantityInput?.value),
+              currentPriceText: productPriceCurrent?.textContent?.trim() || "",
+              oldPriceText: productPriceOld?.textContent?.trim() || "",
+              discountText: productPricePercent?.textContent?.trim() || "",
+              hasDiscount: Boolean(productPrice?.classList.contains("product-info__price--discount")),
+              disabled: Boolean(cartButton?.disabled || cartButton?.getAttribute("aria-disabled") === "true"),
+              selectedVariantIds: variantButtons
+                .filter((button) => button.classList.contains("is-active"))
+                .map((button) => button.getAttribute("data-variant-id")),
+              unavailableVariantIds: variantButtons
+                .filter((button) => button.disabled)
+                .map((button) => button.getAttribute("data-variant-id")),
+            };
+          },
+          selectVariant(variantId) {
+            const button = variantButtons.find(
+              (candidate) => candidate.getAttribute("data-variant-id") === `${variantId}`
+            );
+            if (!button || button.disabled) return false;
+            button.click();
+            return true;
+          },
+          changeQuantity(delta) {
+            return setQuantity(normalizeQuantity(quantityInput?.value) + delta);
+          },
+          addToCart,
+        };
+        window.waveProductDetailState = publicProductStateController;
+
         document.getElementById("js_wishlist_btn")?.addEventListener("click", async (event) => {
           const button = event.currentTarget;
           const likeUrl = button.getAttribute("data-like-url");
@@ -696,6 +758,7 @@
         }
 
         function syncStickyProductBarVisibility() {
+          if (!productDetailRoot.isConnected) return;
           if (!stickyProductBar || !stickyTriggerSection) {
             const wasActive = document.body.classList.contains("product_sticky_bar_active");
             document.body.classList.remove("product_sticky_bar_active");
@@ -703,7 +766,8 @@
             return;
           }
           const headerHeight = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--header-height")) || 90;
-          const infoLineHeight = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--info-line-height")) || 32;
+          const parsedInfoLineHeight = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--info-line-height"));
+          const infoLineHeight = Number.isFinite(parsedInfoLineHeight) ? parsedInfoLineHeight : 32;
           const triggerTop = stickyTriggerSection.getBoundingClientRect().top + window.scrollY;
           const shouldShow = window.scrollY >= triggerTop - headerHeight - infoLineHeight - 48;
           const wasActive = document.body.classList.contains("product_sticky_bar_active");
@@ -723,14 +787,14 @@
         });
 
         if (stickyProductBar) {
-          const stickyObserver = new MutationObserver(syncStickyProductBar);
+          stickyProductObserver = new MutationObserver(syncStickyProductBar);
           [productPrice, productPriceCurrent, productPriceOld, productPriceSaving, mainCartButton, mainFavoriteButton, mainImage].forEach((target) => {
-            if (target) stickyObserver.observe(target, { attributes: true, childList: true, subtree: true, characterData: true });
+            if (target) stickyProductObserver.observe(target, { attributes: true, childList: true, subtree: true, characterData: true });
           });
           syncStickyProductBar();
           syncStickyProductBarVisibility();
-          window.addEventListener("scroll", syncStickyProductBarVisibility, { passive: true });
-          window.addEventListener("resize", syncStickyProductBarVisibility);
+          window.addEventListener("scroll", syncStickyProductBarVisibility, { passive: true, signal: productDetailSignal });
+          window.addEventListener("resize", syncStickyProductBarVisibility, { signal: productDetailSignal });
         }
 
         const productReviews = document.getElementById("product-reviews");
@@ -819,24 +883,39 @@
         document.querySelectorAll("[data-review-helpful-id]").forEach((button) => {
           button.addEventListener("click", async () => {
             const reviewId = button.getAttribute("data-review-helpful-id");
-            const response = await fetch(`/api/reviews/${reviewId}/vote/`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": csrfToken,
-                "X-Requested-With": "XMLHttpRequest",
-              },
-              body: JSON.stringify({ vote: "up" }),
-            });
-            const data = await response.json().catch(() => ({}));
-            if (!response.ok) {
-              showToast("Не удалось обновить отзыв", true);
-              return;
+            if (button.disabled) return;
+            button.disabled = true;
+            try {
+              const response = await fetch(`/api/reviews/${reviewId}/vote/`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-CSRFToken": csrfToken,
+                  "X-Requested-With": "XMLHttpRequest",
+                },
+                body: JSON.stringify({ vote: "up" }),
+              });
+              const data = await response.json().catch(() => ({}));
+              if (!response.ok) {
+                showToast("Не удалось обновить отзыв", true);
+                return;
+              }
+
+              document.querySelectorAll(`[data-review-helpful-id="${reviewId}"]`).forEach((reviewButton) => {
+                reviewButton.classList.toggle("is-liked", Boolean(data.liked));
+                reviewButton.setAttribute("aria-pressed", data.liked ? "true" : "false");
+                const counter = reviewButton.querySelector("[data-review-helpful-count]");
+                if (counter) counter.textContent = data.helpful;
+              });
+              button.classList.remove("is-vote-changing");
+              void button.offsetWidth;
+              button.classList.add("is-vote-changing");
+              window.setTimeout(() => button.classList.remove("is-vote-changing"), 430);
+            } finally {
+              button.disabled = false;
             }
-            button.classList.toggle("is-liked", Boolean(data.liked));
-            const counter = button.querySelector("span");
-            if (counter) counter.textContent = data.helpful;
           });
         });
+
 
       })();

@@ -7,6 +7,7 @@ from xml.sax.saxutils import escape
 from zipfile import ZIP_DEFLATED, ZipFile
 
 from .shared import *
+from django.db.models import Q
 from django.http import HttpResponse
 
 
@@ -16,11 +17,31 @@ ACTIVE_SHIPMENT_STATUSES = (
 )
 
 
+class WarehouseCounterpartyCardInline(TabularInline):
+    model = WarehouseCounterpartyCard
+    extra = 0
+    fields = ("number", "is_primary", "created")
+    readonly_fields = ("created",)
+
+
 @admin.register(WarehouseCounterparty)
 class WarehouseCounterpartyAdmin(BusinessAdminMixin, ModelAdmin):
-    list_display = ("title", "card_number", "contact_name", "orders_count", "created")
-    search_fields = ("title", "card_number", "contact_name", "note")
+    list_display = ("title", "primary_card_number", "cards_count", "orders_count", "created")
+    search_fields = ("title", "cards__number", "contact_name", "note")
     readonly_fields = ("created", "updated")
+    inlines = (WarehouseCounterpartyCardInline,)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("cards")
+
+    @admin.display(description="Основная карта")
+    def primary_card_number(self, obj):
+        primary_card = next((card for card in obj.cards.all() if card.is_primary), None)
+        return primary_card.number if primary_card else "—"
+
+    @admin.display(description="Карты")
+    def cards_count(self, obj):
+        return len(obj.cards.all())
 
     @admin.display(description="Заказы")
     def orders_count(self, obj):
@@ -75,16 +96,17 @@ class WarehouseWriteOffAdmin(BusinessAdminMixin, ModelAdmin):
 
 @admin.register(WarehouseShipmentOrder)
 class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
-    list_display = ("id", "recipient_full_name", "counterparty", "shipping_phone", "total_price", "status", "ttn", "created_at")
+    list_display = ("id", "recipient_full_name", "counterparty", "counterparty_card", "shipping_phone", "total_price", "status", "ttn", "created_at")
     search_fields = (
         "recipient_last_name",
         "recipient_first_name",
         "recipient_phone",
         "counterparty__title",
+        "counterparty_card__number",
         "shipping_phone__phone",
         "ttn",
     )
-    list_filter = ("status", "delivery_type", "counterparty", "shipping_phone")
+    list_filter = ("status", "delivery_type", "counterparty", "counterparty_card", "shipping_phone")
     readonly_fields = (
         "created_at",
         "ttn_assigned_at",
@@ -137,6 +159,21 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
                 name="main_warehouseshipmentorder_delete_counterparty",
             ),
             path(
+                "shipments/counterparties/<int:counterparty_id>/cards/create/",
+                self.admin_site.admin_view(self.create_counterparty_card_view),
+                name="main_warehouseshipmentorder_create_counterparty_card",
+            ),
+            path(
+                "shipments/counterparty-cards/<int:card_id>/update/",
+                self.admin_site.admin_view(self.update_counterparty_card_view),
+                name="main_warehouseshipmentorder_update_counterparty_card",
+            ),
+            path(
+                "shipments/counterparty-cards/<int:card_id>/delete/",
+                self.admin_site.admin_view(self.delete_counterparty_card_view),
+                name="main_warehouseshipmentorder_delete_counterparty_card",
+            ),
+            path(
                 "shipments/phones/create/",
                 self.admin_site.admin_view(self.create_phone_view),
                 name="main_warehouseshipmentorder_create_phone",
@@ -187,12 +224,12 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
     def shipments_view(self, request):
         self.ensure_single_active_phone()
         orders = (
-            WarehouseShipmentOrder.objects.select_related("counterparty", "shipping_phone")
+            WarehouseShipmentOrder.objects.select_related("counterparty", "counterparty_card", "shipping_phone")
             .prefetch_related("items", "items__warehouse_item")
             .order_by("-created_at", "-id")
         )
         warehouse_items = list(WarehouseItem.objects.select_related("batch", "product").order_by("name", "id"))
-        counterparties = list(WarehouseCounterparty.objects.order_by("title", "id"))
+        counterparties = list(self.counterparty_queryset())
         phones = list(self.phone_queryset())
 
         context = {
@@ -228,15 +265,44 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
             if first_phone:
                 WarehouseShippingPhone.objects.filter(pk=first_phone.pk).update(is_active=True)
 
+    def counterparty_queryset(self):
+        return (
+            WarehouseCounterparty.objects
+            .prefetch_related("cards")
+            .annotate(orders_total=Count("shipment_orders", distinct=True))
+            .order_by("title", "id")
+        )
+
+    def serialize_counterparty_card(self, card):
+        if not card:
+            return None
+        return {
+            "id": card.id,
+            "number": card.number,
+            "isPrimary": card.is_primary,
+            "urls": {
+                "update": reverse("admin:main_warehouseshipmentorder_update_counterparty_card", args=(card.id,)),
+                "delete": reverse("admin:main_warehouseshipmentorder_delete_counterparty_card", args=(card.id,)),
+            },
+        }
+
     def serialize_counterparty(self, counterparty):
+        cards = sorted(counterparty.cards.all(), key=lambda card: card.id)
+        primary_card = next((card for card in cards if card.is_primary), cards[0] if cards else None)
+        orders_count = getattr(counterparty, "orders_total", None)
+        if orders_count is None:
+            orders_count = counterparty.shipment_orders.count()
         return {
             "id": counterparty.id,
             "title": counterparty.title,
-            "cardNumber": counterparty.card_number,
-            "ordersCount": counterparty.shipment_orders.count(),
+            "cardNumber": primary_card.number if primary_card else "",
+            "primaryCard": self.serialize_counterparty_card(primary_card),
+            "cards": [self.serialize_counterparty_card(card) for card in cards],
+            "ordersCount": orders_count,
             "urls": {
                 "update": reverse("admin:main_warehouseshipmentorder_update_counterparty", args=(counterparty.id,)),
                 "delete": reverse("admin:main_warehouseshipmentorder_delete_counterparty", args=(counterparty.id,)),
+                "createCard": reverse("admin:main_warehouseshipmentorder_create_counterparty_card", args=(counterparty.id,)),
             },
         }
 
@@ -477,7 +543,12 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
             "id": order.id,
             "status": order.status,
             "statusLabel": self.get_status_label(order.status),
-            "counterparty": self.serialize_counterparty(order.counterparty),
+            "counterparty": {
+                "id": order.counterparty_id,
+                "title": order.counterparty.title,
+                "cardNumber": order.counterparty_card.number if order.counterparty_card else "",
+            },
+            "counterpartyCard": self.serialize_counterparty_card(order.counterparty_card),
             "phone": self.serialize_phone(order.shipping_phone),
             "recipientLastName": order.recipient_last_name,
             "recipientFirstName": order.recipient_first_name,
@@ -537,6 +608,83 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
         }
         return labels.get(delivery_type, delivery_type)
 
+    def export_period_bounds(self, date_from_value, date_to_value):
+        start_date = date.fromisoformat(date_from_value)
+        end_date = date.fromisoformat(date_to_value)
+        period_start = timezone.make_aware(datetime(start_date.year, start_date.month, start_date.day))
+        next_day = end_date + timedelta(days=1)
+        period_end = timezone.make_aware(datetime(next_day.year, next_day.month, next_day.day))
+        return period_start, period_end
+
+    def format_export_datetime(self, value):
+        return timezone.localtime(value).strftime("%d.%m.%Y %H:%M") if value else ""
+
+    def order_stage_events(self, order):
+        return [
+            ("Создана", order.created_at),
+            ("ТТН присвоена", order.ttn_assigned_at),
+            ("Отправлена", order.shipped_at),
+            ("Возврат открыт", order.return_opened_at),
+            ("Получена", order.received_at),
+            ("Возврат закрыт", order.return_closed_at or order.cancelled_at),
+            ("Неделя закрыта", order.points_closed_at),
+        ]
+
+    def order_stage_events_in_period(self, order, period_start, period_end):
+        return [
+            (label, value)
+            for label, value in self.order_stage_events(order)
+            if value and period_start <= value < period_end
+        ]
+
+    def build_stage_journal_rows(self, orders, period_start, period_end):
+        rows = [[
+            "№",
+            "ID",
+            "ФИО получателя",
+            "Телефон",
+            "Контрагент",
+            "Карта",
+            "Товар",
+            "Цена",
+            "ТТН",
+            "Создана",
+            "ТТН присвоена",
+            "Отправлена",
+            "Возврат открыт",
+            "Получена",
+            "Возврат закрыт",
+            "Неделя закрыта",
+            "Текущий статус",
+            "Движение за период",
+        ]]
+        for index, order in enumerate(orders, start=1):
+            movement = "; ".join(
+                f"{label}: {self.format_export_datetime(value)}"
+                for label, value in self.order_stage_events_in_period(order, period_start, period_end)
+            )
+            rows.append([
+                index,
+                order.id,
+                order.recipient_full_name,
+                order.recipient_phone,
+                order.counterparty.title,
+                order.counterparty_card.number if order.counterparty_card else "",
+                ", ".join(f"{item.item_name} x{item.quantity}" for item in order.items.all()),
+                "Оплачен заранее" if order.total_price == 0 else f"{order.total_price:g} грн",
+                order.ttn,
+                self.format_export_datetime(order.created_at),
+                self.format_export_datetime(order.ttn_assigned_at),
+                self.format_export_datetime(order.shipped_at),
+                self.format_export_datetime(order.return_opened_at),
+                self.format_export_datetime(order.received_at),
+                self.format_export_datetime(order.return_closed_at or order.cancelled_at),
+                self.format_export_datetime(order.points_closed_at),
+                self.shipment_stage_label(order),
+                movement,
+            ])
+        return rows
+
     def normalize_decimal(self, value):
         raw_value = str(value or "0").replace(",", ".").strip()
         try:
@@ -551,13 +699,16 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
             return f"+{compact[1:].replace('+', '')}"
         return compact.replace("+", "")
 
+    def normalize_card_number(self, value):
+        return re.sub(r"\D+", "", strip_tags(str(value or "")))
+
     def parse_items_payload(self, request):
         try:
             rows = json.loads(request.POST.get("items") or "[]")
         except json.JSONDecodeError:
             return None, "Товары указаны неверно."
 
-        items = []
+        items_by_id = {}
         for row in rows:
             try:
                 item_id = int(row.get("id"))
@@ -565,10 +716,17 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
             except (TypeError, ValueError, AttributeError):
                 return None, "Проверьте выбранные товары."
             if item_id > 0 and quantity > 0:
-                items.append({"id": item_id, "quantity": quantity})
+                items_by_id[item_id] = items_by_id.get(item_id, 0) + quantity
+        items = [{"id": item_id, "quantity": quantity} for item_id, quantity in items_by_id.items()]
         if not items:
             return None, "Добавьте хотя бы один товар в отправку."
         return items, ""
+
+    def aggregate_shipment_lines(self, lines):
+        quantities = {}
+        for line in lines:
+            quantities[line.warehouse_item_id] = quantities.get(line.warehouse_item_id, 0) + line.quantity
+        return quantities
 
     def get_selected_counterparty(self, request):
         counterparty_id = str(request.POST.get("counterparty_id") or "").strip()
@@ -578,6 +736,17 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
         if not counterparty:
             return None, "Контрагент не найден."
         return counterparty, ""
+
+    def get_selected_counterparty_card(self, request, counterparty):
+        card_id = str(request.POST.get("counterparty_card_id") or "").strip()
+        cards = counterparty.cards.all()
+        if card_id:
+            card = cards.filter(pk=card_id).first()
+        else:
+            card = cards.filter(is_primary=True).first()
+        if not card:
+            return None, "Выберите карту контрагента."
+        return card, ""
 
     def get_selected_phone(self, request):
         phone_id = str(request.POST.get("shipping_phone_id") or "").strip()
@@ -592,6 +761,7 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
         date_from_raw = str(request.GET.get("date_from") or "").strip()
         date_to_raw = str(request.GET.get("date_to") or "").strip()
         points_open_only = request.GET.get("points_open") == "on"
+        include_stage_journal = request.GET.get("include_stage_journal") == "on"
         counterparty_ids = []
         for value in request.GET.getlist("counterparty_ids"):
             try:
@@ -616,6 +786,8 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
             and filters["created_at__date__gte"] > filters["created_at__date__lte"]
         ):
             return JsonResponse({"success": False, "message": "Дата начала не может быть позже даты окончания."}, status=400)
+        if include_stage_journal and (not date_from_raw or not date_to_raw):
+            return JsonResponse({"success": False, "message": "Для журнала стадий выберите дату начала и дату окончания."}, status=400)
         if counterparty_ids:
             filters["counterparty_id__in"] = counterparty_ids
         if points_open_only:
@@ -630,7 +802,7 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
             filters["shipped_at__isnull"] = False
 
         orders = (
-            WarehouseShipmentOrder.objects.select_related("counterparty", "shipping_phone")
+            WarehouseShipmentOrder.objects.select_related("counterparty", "counterparty_card", "shipping_phone")
             .prefetch_related("items")
             .filter(**filters)
             .order_by("created_at", "id")
@@ -663,6 +835,28 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
             for index, item in enumerate(WarehouseItem.objects.order_by("name", "id"), start=1):
                 stock_rows.append([index, item.name, item.quantity])
             sheets.append(("Остатки", stock_rows))
+
+        if include_stage_journal:
+            period_start, period_end = self.export_period_bounds(date_from_raw, date_to_raw)
+            stage_event_filter = (
+                Q(created_at__gte=period_start, created_at__lt=period_end)
+                | Q(ttn_assigned_at__gte=period_start, ttn_assigned_at__lt=period_end)
+                | Q(shipped_at__gte=period_start, shipped_at__lt=period_end)
+                | Q(return_opened_at__gte=period_start, return_opened_at__lt=period_end)
+                | Q(received_at__gte=period_start, received_at__lt=period_end)
+                | Q(return_closed_at__gte=period_start, return_closed_at__lt=period_end)
+                | Q(cancelled_at__gte=period_start, cancelled_at__lt=period_end)
+                | Q(points_closed_at__gte=period_start, points_closed_at__lt=period_end)
+            )
+            journal_orders = (
+                WarehouseShipmentOrder.objects.select_related("counterparty", "counterparty_card", "shipping_phone")
+                .prefetch_related("items")
+                .filter(stage_event_filter)
+                .order_by("created_at", "id")
+            )
+            if counterparty_ids:
+                journal_orders = journal_orders.filter(counterparty_id__in=counterparty_ids)
+            sheets.append(("Журнал стадий", self.build_stage_journal_rows(journal_orders, period_start, period_end)))
 
         return self.build_xlsx_response("warehouse_shipments_export.xlsx", sheets)
 
@@ -709,7 +903,7 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
             "message": f"Неделя закрыта: {points} баллов.",
             "orders": [
                 self.serialize_order(order)
-                for order in WarehouseShipmentOrder.objects.select_related("counterparty", "shipping_phone")
+                for order in WarehouseShipmentOrder.objects.select_related("counterparty", "counterparty_card", "shipping_phone")
                 .prefetch_related("items", "items__warehouse_item")
                 .order_by("-created_at", "-id")
             ],
@@ -723,16 +917,26 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
         if request.method != "POST":
             return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
         title = strip_tags(str(request.POST.get("title") or "")).strip()
-        card_number = strip_tags(str(request.POST.get("card_number") or "")).strip()
+        card_number = self.normalize_card_number(request.POST.get("card_number"))
         if not title:
             return JsonResponse({"success": False, "message": "Укажите наименование контрагента."}, status=400)
-        counterparty = WarehouseCounterparty.objects.create(title=title, card_number=card_number)
+        if not card_number:
+            return JsonResponse({"success": False, "message": "Укажите номер карты."}, status=400)
+        if WarehouseCounterpartyCard.objects.filter(number=card_number).exists():
+            return JsonResponse({"success": False, "message": "Такая карта уже добавлена."}, status=400)
+        with transaction.atomic():
+            counterparty = WarehouseCounterparty.objects.create(title=title)
+            WarehouseCounterpartyCard.objects.create(
+                counterparty=counterparty,
+                number=card_number,
+                is_primary=True,
+            )
         self.log_addition(request, counterparty, "Создан контрагент для отправок.")
         return JsonResponse({
             "success": True,
             "message": "Контрагент создан.",
-            "counterparty": self.serialize_counterparty(counterparty),
-            "counterparties": [self.serialize_counterparty(item) for item in WarehouseCounterparty.objects.order_by("title", "id")],
+            "counterparty": self.serialize_counterparty(self.counterparty_queryset().get(pk=counterparty.pk)),
+            "counterparties": [self.serialize_counterparty(item) for item in self.counterparty_queryset()],
         })
 
     def update_counterparty_view(self, request, counterparty_id):
@@ -743,14 +947,13 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
         if not title:
             return JsonResponse({"success": False, "message": "Укажите наименование контрагента."}, status=400)
         counterparty.title = title
-        counterparty.card_number = strip_tags(str(request.POST.get("card_number") or "")).strip()
-        counterparty.save(update_fields=("title", "card_number", "updated"))
+        counterparty.save(update_fields=("title", "updated"))
         self.log_change(request, counterparty, "Контрагент обновлен.")
         return JsonResponse({
             "success": True,
             "message": "Контрагент сохранен.",
-            "counterparty": self.serialize_counterparty(counterparty),
-            "counterparties": [self.serialize_counterparty(item) for item in WarehouseCounterparty.objects.order_by("title", "id")],
+            "counterparty": self.serialize_counterparty(self.counterparty_queryset().get(pk=counterparty.pk)),
+            "counterparties": [self.serialize_counterparty(item) for item in self.counterparty_queryset()],
         })
 
     def delete_counterparty_view(self, request, counterparty_id):
@@ -767,7 +970,91 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
         return JsonResponse({
             "success": True,
             "message": "Контрагент удален.",
-            "counterparties": [self.serialize_counterparty(item) for item in WarehouseCounterparty.objects.order_by("title", "id")],
+            "counterparties": [self.serialize_counterparty(item) for item in self.counterparty_queryset()],
+        })
+
+    def create_counterparty_card_view(self, request, counterparty_id):
+        if request.method != "POST":
+            return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
+        counterparty = get_object_or_404(WarehouseCounterparty, pk=counterparty_id)
+        card_number = self.normalize_card_number(request.POST.get("card_number"))
+        if not card_number:
+            return JsonResponse({"success": False, "message": "Укажите номер карты."}, status=400)
+        if WarehouseCounterpartyCard.objects.filter(number=card_number).exists():
+            return JsonResponse({"success": False, "message": "Такая карта уже добавлена."}, status=400)
+        is_primary = not counterparty.cards.exists() or request.POST.get("is_primary") == "on"
+        with transaction.atomic():
+            if is_primary:
+                counterparty.cards.update(is_primary=False)
+            card = WarehouseCounterpartyCard.objects.create(
+                counterparty=counterparty,
+                number=card_number,
+                is_primary=is_primary,
+            )
+        self.log_change(request, counterparty, f"Добавлена карта {card.number}.")
+        return JsonResponse({
+            "success": True,
+            "message": "Карта добавлена.",
+            "counterparty": self.serialize_counterparty(self.counterparty_queryset().get(pk=counterparty.pk)),
+            "counterparties": [self.serialize_counterparty(item) for item in self.counterparty_queryset()],
+        })
+
+    def update_counterparty_card_view(self, request, card_id):
+        if request.method != "POST":
+            return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
+        card = get_object_or_404(WarehouseCounterpartyCard.objects.select_related("counterparty"), pk=card_id)
+        card_number = self.normalize_card_number(request.POST.get("card_number"))
+        if not card_number:
+            return JsonResponse({"success": False, "message": "Укажите номер карты."}, status=400)
+        if WarehouseCounterpartyCard.objects.exclude(pk=card.pk).filter(number=card_number).exists():
+            return JsonResponse({"success": False, "message": "Такая карта уже добавлена."}, status=400)
+        make_primary = request.POST.get("is_primary") == "on"
+        with transaction.atomic():
+            if make_primary:
+                WarehouseCounterpartyCard.objects.filter(
+                    counterparty=card.counterparty,
+                ).exclude(pk=card.pk).update(is_primary=False)
+                card.is_primary = True
+            elif card.is_primary:
+                return JsonResponse({
+                    "success": False,
+                    "message": "Сначала выберите другую основную карту.",
+                }, status=400)
+            card.number = card_number
+            card.save(update_fields=("number", "is_primary", "updated"))
+        self.log_change(request, card.counterparty, f"Карта {card.number} обновлена.")
+        return JsonResponse({
+            "success": True,
+            "message": "Карта сохранена.",
+            "counterparty": self.serialize_counterparty(self.counterparty_queryset().get(pk=card.counterparty_id)),
+            "counterparties": [self.serialize_counterparty(item) for item in self.counterparty_queryset()],
+        })
+
+    def delete_counterparty_card_view(self, request, card_id):
+        if request.method != "POST":
+            return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
+        card = get_object_or_404(WarehouseCounterpartyCard.objects.select_related("counterparty"), pk=card_id)
+        if card.shipment_orders.exists():
+            return JsonResponse({
+                "success": False,
+                "message": "Карту нельзя удалить: она уже используется в отправках.",
+            }, status=400)
+        counterparty = card.counterparty
+        was_primary = card.is_primary
+        card_number = card.number
+        with transaction.atomic():
+            card.delete()
+            if was_primary:
+                replacement = counterparty.cards.order_by("id").first()
+                if replacement:
+                    replacement.is_primary = True
+                    replacement.save(update_fields=("is_primary", "updated"))
+        self.log_change(request, counterparty, f"Карта {card_number} удалена.")
+        return JsonResponse({
+            "success": True,
+            "message": "Карта удалена.",
+            "counterparty": self.serialize_counterparty(self.counterparty_queryset().get(pk=counterparty.pk)),
+            "counterparties": [self.serialize_counterparty(item) for item in self.counterparty_queryset()],
         })
 
     def create_phone_view(self, request):
@@ -853,6 +1140,9 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
         counterparty, error = self.get_selected_counterparty(request)
         if error:
             return JsonResponse({"success": False, "message": error}, status=400)
+        counterparty_card, error = self.get_selected_counterparty_card(request, counterparty)
+        if error:
+            return JsonResponse({"success": False, "message": error}, status=400)
         phone, error = self.get_selected_phone(request)
         if error:
             return JsonResponse({"success": False, "message": error}, status=400)
@@ -926,6 +1216,7 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
             now = timezone.now()
             order = WarehouseShipmentOrder.objects.create(
                 counterparty=counterparty,
+                counterparty_card=counterparty_card,
                 shipping_phone=phone,
                 recipient_last_name=cleaned["recipient_full_name"],
                 recipient_first_name="",
@@ -950,7 +1241,7 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
                 )
 
         order = (
-            WarehouseShipmentOrder.objects.select_related("counterparty", "shipping_phone")
+            WarehouseShipmentOrder.objects.select_related("counterparty", "counterparty_card", "shipping_phone")
             .prefetch_related("items", "items__warehouse_item")
             .get(pk=order.pk)
         )
@@ -963,7 +1254,7 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
             "order": self.serialize_order(order),
             "items": self.serialize_warehouse_items(WarehouseItem.objects.select_related("batch", "product").order_by("name", "id")),
             "phones": [self.serialize_phone(phone) for phone in self.phone_queryset()],
-            "counterparties": [self.serialize_counterparty(counterparty) for counterparty in WarehouseCounterparty.objects.order_by("title", "id")],
+            "counterparties": [self.serialize_counterparty(counterparty) for counterparty in self.counterparty_queryset()],
         })
 
     def assign_ttn_view(self, request, order_id):
@@ -975,7 +1266,7 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
 
         with transaction.atomic():
             order = get_object_or_404(
-                WarehouseShipmentOrder.objects.select_for_update().select_related("counterparty", "shipping_phone"),
+                WarehouseShipmentOrder.objects.select_for_update(),
                 pk=order_id,
             )
             if order.status == WarehouseShipmentOrder.Status.SHIPPED:
@@ -986,20 +1277,21 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
                 return JsonResponse({"success": False, "message": "Такая ТТН уже используется в другой заявке."}, status=400)
 
             lines = list(order.items.select_related("warehouse_item"))
+            line_quantities = self.aggregate_shipment_lines(lines)
             warehouse_items = {
                 item.id: item
-                for item in WarehouseItem.objects.select_for_update().filter(id__in=[line.warehouse_item_id for line in lines])
+                for item in WarehouseItem.objects.select_for_update().filter(id__in=line_quantities.keys())
             }
-            for line in lines:
-                item = warehouse_items[line.warehouse_item_id]
-                if item.quantity < line.quantity:
+            for item_id, quantity in line_quantities.items():
+                item = warehouse_items[item_id]
+                if item.quantity < quantity:
                     return JsonResponse({
                         "success": False,
                         "message": f"Недостаточно фактического остатка: {item.name}.",
                     }, status=400)
-            for line in lines:
-                item = warehouse_items[line.warehouse_item_id]
-                item.quantity -= line.quantity
+            for item_id, quantity in line_quantities.items():
+                item = warehouse_items[item_id]
+                item.quantity -= quantity
                 item.save(update_fields=("quantity", "updated"))
 
             now = timezone.now()
@@ -1010,7 +1302,7 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
             order.save(update_fields=("ttn", "status", "ttn_assigned_at", "shipped_at", "updated"))
 
         order = (
-            WarehouseShipmentOrder.objects.select_related("counterparty", "shipping_phone")
+            WarehouseShipmentOrder.objects.select_related("counterparty", "counterparty_card", "shipping_phone")
             .prefetch_related("items", "items__warehouse_item")
             .get(pk=order.pk)
         )
@@ -1029,7 +1321,7 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
 
         with transaction.atomic():
             order = get_object_or_404(
-                WarehouseShipmentOrder.objects.select_for_update().select_related("counterparty", "shipping_phone"),
+                WarehouseShipmentOrder.objects.select_for_update(),
                 pk=order_id,
             )
             if order.status == WarehouseShipmentOrder.Status.SHIPPED:
@@ -1037,20 +1329,21 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
             if order.status != WarehouseShipmentOrder.Status.TTN_ASSIGNED or not order.ttn:
                 return JsonResponse({"success": False, "message": "Сначала присвойте ТТН."}, status=400)
             lines = list(order.items.select_related("warehouse_item"))
+            line_quantities = self.aggregate_shipment_lines(lines)
             warehouse_items = {
                 item.id: item
-                for item in WarehouseItem.objects.select_for_update().filter(id__in=[line.warehouse_item_id for line in lines])
+                for item in WarehouseItem.objects.select_for_update().filter(id__in=line_quantities.keys())
             }
-            for line in lines:
-                item = warehouse_items[line.warehouse_item_id]
-                if item.quantity < line.quantity:
+            for item_id, quantity in line_quantities.items():
+                item = warehouse_items[item_id]
+                if item.quantity < quantity:
                     return JsonResponse({
                         "success": False,
                         "message": f"Недостаточно фактического остатка: {item.name}.",
                     }, status=400)
-            for line in lines:
-                item = warehouse_items[line.warehouse_item_id]
-                item.quantity -= line.quantity
+            for item_id, quantity in line_quantities.items():
+                item = warehouse_items[item_id]
+                item.quantity -= quantity
                 item.save(update_fields=("quantity", "updated"))
 
             order.status = WarehouseShipmentOrder.Status.SHIPPED
@@ -1058,7 +1351,7 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
             order.save(update_fields=("status", "shipped_at", "updated"))
 
         order = (
-            WarehouseShipmentOrder.objects.select_related("counterparty", "shipping_phone")
+            WarehouseShipmentOrder.objects.select_related("counterparty", "counterparty_card", "shipping_phone")
             .prefetch_related("items", "items__warehouse_item")
             .get(pk=order.pk)
         )
@@ -1076,7 +1369,7 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
             return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
 
         order = get_object_or_404(
-            WarehouseShipmentOrder.objects.select_related("counterparty", "shipping_phone").prefetch_related("items", "items__warehouse_item"),
+            WarehouseShipmentOrder.objects.select_related("counterparty", "counterparty_card", "shipping_phone").prefetch_related("items", "items__warehouse_item"),
             pk=order_id,
         )
         if order.status != WarehouseShipmentOrder.Status.SHIPPED:
@@ -1098,7 +1391,7 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
             return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
 
         order = get_object_or_404(
-            WarehouseShipmentOrder.objects.select_related("counterparty", "shipping_phone").prefetch_related("items", "items__warehouse_item"),
+            WarehouseShipmentOrder.objects.select_related("counterparty", "counterparty_card", "shipping_phone").prefetch_related("items", "items__warehouse_item"),
             pk=order_id,
         )
         if order.status != WarehouseShipmentOrder.Status.SHIPPED:
@@ -1121,20 +1414,21 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
 
         with transaction.atomic():
             order = get_object_or_404(
-                WarehouseShipmentOrder.objects.select_for_update().select_related("counterparty", "shipping_phone"),
+                WarehouseShipmentOrder.objects.select_for_update(),
                 pk=order_id,
             )
             if order.status != WarehouseShipmentOrder.Status.RETURN_OPEN:
                 return JsonResponse({"success": False, "message": "Закрыть можно только открытый возврат."}, status=400)
 
             lines = list(order.items.select_related("warehouse_item"))
+            line_quantities = self.aggregate_shipment_lines(lines)
             warehouse_items = {
                 item.id: item
-                for item in WarehouseItem.objects.select_for_update().filter(id__in=[line.warehouse_item_id for line in lines])
+                for item in WarehouseItem.objects.select_for_update().filter(id__in=line_quantities.keys())
             }
-            for line in lines:
-                item = warehouse_items[line.warehouse_item_id]
-                item.quantity += line.quantity
+            for item_id, quantity in line_quantities.items():
+                item = warehouse_items[item_id]
+                item.quantity += quantity
                 item.save(update_fields=("quantity", "updated"))
 
             order.status = WarehouseShipmentOrder.Status.RETURN_CLOSED
@@ -1142,7 +1436,7 @@ class WarehouseShipmentOrderAdmin(BusinessAdminMixin, ModelAdmin):
             order.save(update_fields=("status", "return_closed_at", "updated"))
 
         order = (
-            WarehouseShipmentOrder.objects.select_related("counterparty", "shipping_phone")
+            WarehouseShipmentOrder.objects.select_related("counterparty", "counterparty_card", "shipping_phone")
             .prefetch_related("items", "items__warehouse_item")
             .get(pk=order.pk)
         )

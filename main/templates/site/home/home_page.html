@@ -5,10 +5,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Главная вейп-шоп WAVE</title>
+    <script>
+      try {
+        if (window.sessionStorage.getItem("wave:home-intro-shown") === "1") {
+          document.documentElement.classList.add("has-seen-home-intro");
+        }
+      } catch (error) {
+        // The in-memory flag in home_page.js remains available when storage is blocked.
+      }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="{% static 'site/shared/css/theme.css' %}?v=site-tokens1" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/theme.css' %}?v=site-scrollbar-stable1" />
     <link rel="icon" type="image/png" href="{% static 'site/shared/img/mini_logo.png' %}" />
     <link rel="preload" as="image" type="image/png" href="{% static 'site/shared/img/mini_logo.png' %}" fetchpriority="high" />
     <link rel="stylesheet" href="{% static 'site/shared/css/product_card.css' %}?v=product-card-data-bem1" />
@@ -24,8 +33,8 @@
     <link rel="preload" as="image" type="image/webp" href="{% static 'site/shared/img/main_banner/tastes-product.webp' %}" />
     <link rel="preload" as="image" type="image/webp" href="{% static 'site/shared/img/main_banner/tastes-splash-bottom.webp' %}" />
       <link rel="stylesheet" href="{% static 'site/catalog/css/catalog_page.css' %}?v=site-tokens1" />
-    <link rel="stylesheet" href="{% static 'site/home/css/home_page.css' %}?v=review-scroll1" />
-    <link rel="stylesheet" href="{% static 'site/home/css/main_banner.css' %}?v=site-tokens1" />
+    <link rel="stylesheet" href="{% static 'site/home/css/home_page.css' %}?v=home-intro-session1" />
+    <link rel="stylesheet" href="{% static 'site/home/css/main_banner.css' %}?v=home-intro-session1" />
   </head>
   <body>
     <div class="page-preloader" data-page-preloader role="status" aria-live="polite" aria-label="Загрузка страницы">
@@ -121,10 +130,10 @@
     <!-- ==================== SCRIPTS ==================== -->
     {{ products_json|json_script:"productsData" }}
     {{ categories_json|json_script:"categoriesData" }}
-    <script src="{% static 'site/shared/js/product_card.js' %}?v=product-card-data-bem1"></script>
+    <script src="{% static 'site/shared/js/product_card.js' %}?v=product-card-side-close1"></script>
     <script src="{% static 'site/catalog/js/catalog_page.js' %}?v=filter-bem1"></script>
-    <script src="{% static 'site/home/js/main_banner.js' %}?v=banner-message-flow1"></script>
-    <script src="{% static 'site/home/js/home_page.js' %}?v=review-scroll1"></script>
+    <script src="{% static 'site/home/js/main_banner.js' %}?v=home-intro-session1"></script>
+    <script src="{% static 'site/home/js/home_page.js' %}?v=home-intro-session1"></script>
     </div>
   </body>
 </html>

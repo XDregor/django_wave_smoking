@@ -125,6 +125,16 @@
         will-change: auto;
       }
 
+      html.has-no-site-cursor .page-cursor {
+        display: none !important;
+      }
+
+      @media (hover: none), (pointer: coarse), (max-width: 768px) {
+        .page-cursor {
+          display: none !important;
+        }
+      }
+
       /* ===================== PRELOADER ===================== */
       .page-preloader {
         position: fixed;
@@ -149,6 +159,10 @@
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
+      }
+
+      html.has-seen-home-intro .page-preloader {
+        display: none;
       }
 
       .page-preloader__visual {

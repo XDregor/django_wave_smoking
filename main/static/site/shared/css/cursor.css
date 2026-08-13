@@ -33,8 +33,12 @@
     border-color: var(--accent, #bff747);
     opacity: 0.3;
   }
-  @media (pointer: coarse) {
+  html.has-no-site-cursor .site-cursor {
+    display: none !important;
+  }
+
+  @media (hover: none), (pointer: coarse), (max-width: 768px) {
     .site-cursor {
-      display: none;
+      display: none !important;
     }
   }

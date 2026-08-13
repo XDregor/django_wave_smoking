@@ -1,0 +1,191 @@
+<section class="product-mobile-v3" data-product-mobile-v3 aria-label="{{ product.name }}">
+  <div class="screen">
+    <div class="gallery">
+      <button class="top-btn top-btn--back" type="button" data-mobile-product-back data-fallback-url="{% url 'main:home' %}#products" aria-label="Назад">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+      </button>
+      <button class="top-btn top-btn--cart" type="button" data-mobile-product-cart aria-label="Корзина">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+        <span class="cart-badge mobile-dock__badge" data-mobile-product-cart-badge hidden aria-hidden="true"></span>
+      </button>
+
+      <div class="gallery-frame">
+        <div class="gallery-viewport">
+          <div class="gallery-track" data-mobile-product-gallery>
+          {% if product.promo_video %}
+            <div class="gallery-slide gallery-slide--video">
+              <video src="{{ product.promo_video.url }}" muted loop playsinline preload="metadata" {% if product.promo_video_poster %}poster="{{ product.promo_video_poster.url }}"{% elif product.image %}poster="{{ product.image.url }}"{% endif %}></video>
+            </div>
+          {% endif %}
+          {% if gallery_start_image_url and initial_gallery_variant %}
+            <div class="gallery-slide" data-mobile-gallery-primary>
+              <img src="{{ gallery_start_image_url }}" alt="{{ gallery_start_image_alt }}" draggable="false" />
+            </div>
+          {% elif gallery_start_image_url and not additional_images %}
+            <div class="gallery-slide" data-mobile-gallery-primary>
+              <img src="{{ gallery_start_image_url }}" alt="{{ gallery_start_image_alt }}" draggable="false" />
+            </div>
+          {% endif %}
+          {% for image in additional_images %}
+            <div class="gallery-slide" {% if not initial_gallery_variant and forloop.first %}data-mobile-gallery-primary{% endif %}>
+              <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy" draggable="false" />
+            </div>
+          {% endfor %}
+          {% if not product.promo_video and not gallery_start_image_url and product.image %}
+            <div class="gallery-slide" data-mobile-gallery-primary>
+              <img src="{{ product.image.url }}" alt="{{ product.name }}" draggable="false" />
+            </div>
+          {% endif %}
+          {% if not product.promo_video and not gallery_start_image_url and not product.image %}
+            <div class="gallery-slide gallery-slide--empty">Нет изображения</div>
+          {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="gallery-dots" data-mobile-product-gallery-dots role="group" aria-label="Выбор изображения товара"></div>
+    </div>
+
+    <div class="content">
+      <div class="brand-row">
+        <span class="brand">{% if product.brand %}{{ product.brand.name }}{% else %}WAVE{% endif %}</span>
+        <span class="code">Код: 654{{ product.id|stringformat:"04d" }}</span>
+      </div>
+      <h1 class="title">{{ product.name }}</h1>
+
+      {% for variant_group in display_variant_groups %}
+        <div class="variant-group" data-mobile-variant-group>
+          <div class="variant-label">{{ variant_group.name }}: <b data-mobile-selected-variant>не выбрано</b></div>
+          <div class="chip-scroll">
+            {% for product_variant in variant_group.variants %}
+              <button
+                class="vchip{% if variant_group.has_images %} vchip--image{% endif %}"
+                type="button"
+                data-mobile-variant-id="{{ product_variant.id }}"
+                data-mobile-variant-name="{{ product_variant.name }}"
+                data-mobile-variant-image="{{ product_variant.image_url }}"
+                {% if not product_variant.available %}disabled{% endif %}
+              >
+                {% if variant_group.has_images %}
+                  <span class="vthumb">
+                    {% if product_variant.image_url %}
+                      <img src="{{ product_variant.thumbnail_url|default:product_variant.image_url }}" alt="" loading="lazy" draggable="false" />
+                    {% endif %}
+                  </span>
+                  <span class="vlabel">{{ product_variant.name }}</span>
+                {% else %}
+                  <span class="vlabel">{{ product_variant.name }}</span>
+                {% endif %}
+                <span class="vchip-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l6 6L20 6"></path></svg></span>
+              </button>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+
+      <div class="info-list">
+        <button class="info-card" type="button" data-mobile-sheet-trigger="description">
+          <span class="info-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"></path><path d="M9 12h6M9 16h6M9 8h2"></path></svg></span>
+          <span class="info-card__text"><span class="info-card__title">Описание</span><span class="info-card__sub">Подробности о товаре</span></span>
+          <span class="info-card__chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></span>
+        </button>
+        {% if product_specifications %}
+          <button class="info-card" type="button" data-mobile-sheet-trigger="specifications">
+            <span class="info-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"></path></svg></span>
+            <span class="info-card__text"><span class="info-card__title">Характеристики</span><span class="info-card__sub">Основные параметры</span></span>
+            <span class="info-card__chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></span>
+          </button>
+        {% endif %}
+        <button class="info-card" type="button" data-mobile-sheet-trigger="warranty">
+          <span class="info-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z"></path><path d="m9.5 12 2 2 3.5-4"></path></svg></span>
+          <span class="info-card__text"><span class="info-card__title">Гарантия и возврат</span><span class="info-card__sub">Обмен 14 дней</span></span>
+          <span class="info-card__chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></span>
+        </button>
+      </div>
+
+      {% if product_reviews_count %}
+        <div class="reviews-block">
+          <button class="reviews-teaser" type="button" data-mobile-reviews-toggle aria-expanded="false">
+            <span class="rt-score" style="--product-rating-percent: {{ product_rating_percent }}">
+              <svg width="58" height="58" viewBox="0 0 58 58" aria-hidden="true">
+                <circle class="rt-score-track" cx="29" cy="29" r="25" pathLength="100"></circle>
+                <circle class="rt-score-fill" cx="29" cy="29" r="25" pathLength="100"></circle>
+              </svg>
+              <strong>{{ product_average_rating|floatformat:1 }}</strong>
+            </span>
+            <span class="rt-mid">
+              <span class="rt-label">Отзывы покупателей</span>
+              <span class="rt-sub"><b>{{ product_reviews_count }}</b> отзывов</span>
+            </span>
+            <span class="rt-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></span>
+          </button>
+          <div class="reviews-panel" data-mobile-reviews-panel>
+            <div class="reviews-panel-inner">
+              <div class="product-review-list" data-mobile-product-review-list>
+              {% for review in product_reviews %}
+                <div class="product-review-entry" {% if forloop.counter > 3 %}hidden data-mobile-product-review-extra{% endif %}>
+                  {% include 'site/shared/includes/review_card.html' with review=review show_product=False mobile=True %}
+                </div>
+              {% endfor %}
+              </div>
+              {% if product_reviews_count > 3 %}
+                <button class="reviews-more" type="button" data-mobile-reviews-more aria-expanded="false">
+                  Все отзывы
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+                </button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div
+    class="purchase-dock{% if has_product_skus %} is-hint{% elif is_product_available %} is-buy{% endif %}"
+    data-mobile-product-purchase
+  >
+    <div class="purchase-dock__surface">
+      {% if has_product_skus %}
+        <div class="hint-pill" data-mobile-product-hint><span>Выберите вариант товара, чтобы продолжить</span></div>
+      {% endif %}
+
+      <div class="buy-bar" data-mobile-product-buy-bar>
+      <div class="buy-price{% if product.is_on_sale %} has-discount{% endif %}">
+        <div class="buy-price__col">
+          <span class="buy-price__old" data-mobile-price-old {% if not product.is_on_sale %}hidden{% endif %}>{{ product.old_price|floatformat:0 }}₴</span>
+          <span class="buy-price__current" data-mobile-price-current>{{ product.price|floatformat:0 }}₴</span>
+        </div>
+        <span class="buy-price__badge" data-mobile-price-badge {% if not product.get_discount_percent %}hidden{% endif %}>-{{ product.get_discount_percent }}%</span>
+      </div>
+      <div class="buy-qty">
+        <button type="button" data-mobile-quantity-minus aria-label="Уменьшить количество">−</button>
+        <span data-mobile-quantity-value>1</span>
+        <button type="button" data-mobile-quantity-plus aria-label="Увеличить количество">+</button>
+      </div>
+      <button class="buy-btn" type="button" data-mobile-product-buy {% if not is_product_available or has_product_skus %}disabled{% endif %}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+        Купить
+      </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet-backdrop" data-mobile-product-sheet aria-hidden="true" inert>
+    <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="mobile-product-sheet-title">
+      <button class="sheet-handle-area" type="button" data-mobile-sheet-handle aria-label="Развернуть окно информации"><span class="sheet-handle"></span></button>
+      <h2 class="sheet-title" id="mobile-product-sheet-title" data-mobile-sheet-title></h2>
+      <div class="sheet-body" data-mobile-sheet-body></div>
+    </section>
+  </div>
+
+  <template data-mobile-sheet-content="description">
+    {% if product.description %}{{ product.description|safe }}{% else %}<p>Описание товара пока не добавлено.</p>{% endif %}
+  </template>
+  <template data-mobile-sheet-content="specifications">
+    <dl class="specs-list">{% for specification in product_specifications %}<div class="specs-row"><dt>{{ specification.name }}</dt><dd>{{ specification.value }}</dd></div>{% endfor %}</dl>
+  </template>
+  <template data-mobile-sheet-content="warranty">
+    <p>Обмен и возврат в течение 14 дней для товаров, не бывших в употреблении.</p>
+    <p style="margin-top:12px">Картриджи, испарители и жидкости не подлежат обмену и возврату.</p>
+  </template>
+</section>

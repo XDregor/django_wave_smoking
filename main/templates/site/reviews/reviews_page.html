@@ -8,20 +8,42 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="{% static 'site/shared/css/theme.css' %}?v=site-tokens1" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/theme.css' %}?v=site-scrollbar-stable1" />
     <link rel="icon" type="image/png" href="{% static 'site/shared/img/mini_logo.png' %}" />
-    <link rel="stylesheet" href="{% static 'site/shared/css/review_card.css' %}?v=mobile-adapt2" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/review_card.css' %}?v=review-product-link1" />
 
     
-      <link rel="stylesheet" href="{% static 'site/reviews/css/reviews_page.css' %}?v=mobile-modal2" />
+    <link rel="stylesheet" href="{% static 'site/reviews/css/reviews_page.css' %}?v=reviews-responsive-sidebar7" />
   </head>
   <body>
     {% include 'site/shared/header.html' %}
     <div id="site-content" class="site-content" data-site-content data-wave-page="reviews">
     <div class="reviews-page">
+      <h1 class="reviews-page__mobile-title">Отзывы</h1>
       <div class="reviews-page__layout">
         <aside class="reviews-page__sidebar">
-          <div class="reviews-page__sidebar-inner">
+          <div class="reviews-page__sidebar-inner rating-module" id="ratingModule">
+            <div class="reviews-mobile-rating" data-mobile-rating-module>
+              <div class="reviews-mobile-rating__top" data-mobile-rating-toggle>
+                <div class="reviews-mobile-rating__ring">
+                  <svg width="72" height="72" viewBox="0 0 72 72" aria-hidden="true">
+                    <circle class="reviews-mobile-rating__ring-track" cx="36" cy="36" r="31.5" pathLength="100"></circle>
+                    <circle class="reviews-mobile-rating__ring-fill" cx="36" cy="36" r="31.5" pathLength="100"></circle>
+                  </svg>
+                  <span class="reviews-mobile-rating__score" data-mobile-rating-score>{{ rating_summary.average|floatformat:1 }}</span>
+                </div>
+                <div class="reviews-mobile-rating__info">
+                  <div class="reviews-mobile-rating__head">
+                    <span class="reviews-mobile-rating__label">Общий рейтинг</span>
+                    <span class="reviews-mobile-rating__chev" aria-hidden="true">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#9a9aa2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                    </span>
+                  </div>
+                  <p class="reviews-mobile-rating__sub" data-mobile-rating-sub><b>{{ rating_summary.total }}</b> отзывов</p>
+                </div>
+              </div>
+              <div class="reviews-mobile-rating__distribution" id="mobileRatingBars"></div>
+            </div>
             <div class="reviews-summary">
               <p class="reviews-summary__label">Общий рейтинг</p>
               <div class="reviews-summary__score-row">
@@ -31,42 +53,80 @@
                   <p class="reviews-summary__sub">&middot; {{ rating_summary.total }} отзывов</p>
                 </div>
               </div>
+              <div class="bars" id="ratingBars"></div>
             </div>
 
-            <button class="reviews-page__sidebar-add-btn" id="openModalBtn2">
-              <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M4 13.5V16h2.5l7.37-7.37-2.5-2.5L4 13.5zM15.71 6.29a1 1 0 000-1.41l-1.59-1.59a1 1 0 00-1.41 0l-1.24 1.24 2.5 2.5 1.24-1.24z" fill="currentColor" /></svg>
+            <button class="reviews-page__sidebar-add-btn reviews-page__mobile-add-card" id="openModalBtn2">
+              <span class="reviews-page__mobile-add-icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20" fill="none"><path d="M4 13.5V16h2.5l7.37-7.37-2.5-2.5L4 13.5zM15.71 6.29a1 1 0 000-1.41l-1.59-1.59a1 1 0 00-1.41 0l-1.24 1.24 2.5 2.5 1.24-1.24z" fill="currentColor"></path></svg>
+              </span>
+              <span class="reviews-page__mobile-add-text">
+                <strong>Оставьте свой отзыв</strong>
+                <small>Это займёт меньше минуты</small>
+              </span>
+              <span class="reviews-page__mobile-add-arrow" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              </span>
               Оставить отзыв
             </button>
 
             <div class="reviews-filters">
               <p class="reviews-filters__label">Фильтр</p>
               <div class="reviews-filters__list" id="filterBtns">
-                <button class="reviews-filters__button is-active" data-filter="all">Все отзывы <span class="reviews-filters__badge">{{ rating_summary.total }}</span></button>
-                <button class="reviews-filters__button" data-filter="5"><span class="reviews-filters__stars" id="fs5"></span><span class="reviews-filters__badge">{{ rating_summary.count_5 }}</span></button>
-                <button class="reviews-filters__button" data-filter="4"><span class="reviews-filters__stars" id="fs4"></span><span class="reviews-filters__badge">{{ rating_summary.count_4 }}</span></button>
-                <button class="reviews-filters__button" data-filter="3"><span class="reviews-filters__stars" id="fs3"></span><span class="reviews-filters__badge">{{ rating_summary.count_3 }}</span></button>
-                <button class="reviews-filters__button" data-filter="2"><span class="reviews-filters__stars" id="fs2"></span><span class="reviews-filters__badge">{{ rating_summary.count_2 }}</span></button>
-                <button class="reviews-filters__button" data-filter="1"><span class="reviews-filters__stars" id="fs1"></span><span class="reviews-filters__badge">{{ rating_summary.count_1 }}</span></button>
-                <div class="reviews-filters__divider"></div>
-                <button class="reviews-filters__button" data-filter="verified">
-                  <span style="display: flex; align-items: center; gap: 6px">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M13 19L16 22L21 17" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                      <path
-                        d="M9 22H7C5.89543 22 5 21.1046 5 20V11.1817C5 11.0632 4.96494 10.9474 4.89923 10.8488L3.10077 8.15115C3.03506 8.05259 3 7.93679 3 7.81833V2.6C3 2.26863 3.26863 2 3.6 2H5.4C5.73137 2 6 2.26863 6 2.6V4.4C6 4.73137 6.26863 5 6.6 5H9.4C9.73137 5 10 4.73137 10 4.4V2.6C10 2.26863 10.2686 2 10.6 2H13.4C13.7314 2 14 2.26863 14 2.6V4.4C14 4.73137 14.2686 5 14.6 5H17.4C17.7314 5 18 4.73137 18 4.4V2.6C18 2.26863 18.2686 2 18.6 2H20.4C20.7314 2 21 2.26863 21 2.6V7.81833C21 7.93679 20.9649 8.05259 20.8992 8.15115L19.1008 10.8488C19.0351 10.9474 19 11.0632 19 11.1817V13.5"
-                        stroke="var(--accent)"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      ></path>
-                    </svg>
-                    Проверенные
-                  </span>
-                  <span class="reviews-filters__badge">{{ rating_summary.verified }}</span>
-                </button>
+                <div class="reviews-filters__desktop-list">
+                  <button class="reviews-filters__button is-active" type="button" data-filter="all" onclick="return window.waveReviewsFilterClick && window.waveReviewsFilterClick(event, this)">Все отзывы <span class="reviews-filters__badge">{{ rating_summary.total }}</span></button>
+                  <button class="reviews-filters__button" type="button" data-filter="5" onclick="return window.waveReviewsFilterClick && window.waveReviewsFilterClick(event, this)"><span class="reviews-filters__stars" id="fs5"></span><span class="reviews-filters__badge">{{ rating_summary.count_5 }}</span></button>
+                  <button class="reviews-filters__button" type="button" data-filter="4" onclick="return window.waveReviewsFilterClick && window.waveReviewsFilterClick(event, this)"><span class="reviews-filters__stars" id="fs4"></span><span class="reviews-filters__badge">{{ rating_summary.count_4 }}</span></button>
+                  <button class="reviews-filters__button" type="button" data-filter="3" onclick="return window.waveReviewsFilterClick && window.waveReviewsFilterClick(event, this)"><span class="reviews-filters__stars" id="fs3"></span><span class="reviews-filters__badge">{{ rating_summary.count_3 }}</span></button>
+                  <button class="reviews-filters__button" type="button" data-filter="2" onclick="return window.waveReviewsFilterClick && window.waveReviewsFilterClick(event, this)"><span class="reviews-filters__stars" id="fs2"></span><span class="reviews-filters__badge">{{ rating_summary.count_2 }}</span></button>
+                  <button class="reviews-filters__button" type="button" data-filter="1" onclick="return window.waveReviewsFilterClick && window.waveReviewsFilterClick(event, this)"><span class="reviews-filters__stars" id="fs1"></span><span class="reviews-filters__badge">{{ rating_summary.count_1 }}</span></button>
+                  <div class="reviews-filters__divider"></div>
+                  <button class="reviews-filters__button" type="button" data-filter="verified" onclick="return window.waveReviewsFilterClick && window.waveReviewsFilterClick(event, this)">
+                    <span style="display: flex; align-items: center; gap: 6px">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13 19L16 22L21 17" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                        <path d="M9 22H7C5.89543 22 5 21.1046 5 20V11.1817C5 11.0632 4.96494 10.9474 4.89923 10.8488L3.10077 8.15115C3.03506 8.05259 3 7.93679 3 7.81833V2.6C3 2.26863 3.26863 2 3.6 2H5.4C5.73137 2 6 2.26863 6 2.6V4.4C6 4.73137 6.26863 5 6.6 5H9.4C9.73137 5 10 4.73137 10 4.4V2.6C10 2.26863 10.2686 2 10.6 2H13.4C13.7314 2 14 2.26863 14 2.6V4.4C14 4.73137 14.2686 5 14.6 5H17.4C17.7314 5 18 4.73137 18 4.4V2.6C18 2.26863 18.2686 2 18.6 2H20.4C20.7314 2 21 2.26863 21 2.6V7.81833C21 7.93679 20.9649 8.05259 20.8992 8.15115L19.1008 10.8488C19.0351 10.9474 19 11.0632 19 11.1817V13.5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                      </svg>
+                      Проверенные
+                    </span>
+                    <span class="reviews-filters__badge">{{ rating_summary.verified }}</span>
+                  </button>
+                </div>
+
+                <div class="reviews-filter-segment" data-mobile-review-filter>
+                  <div class="reviews-filter-segment__pill">
+                    <button class="reviews-filter-segment__all is-active" type="button" data-mobile-filter-all aria-pressed="true">Все</button>
+                    <div class="reviews-filter-segment__stars" role="group" aria-label="Фильтр по оценке">
+                      {% for rating in "12345" %}
+                        <button class="reviews-filter-segment__star" type="button" data-mobile-filter-rating="{{ rating }}" aria-pressed="false" aria-label="{{ rating }} из 5 звёзд">
+                          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                        </button>
+                      {% endfor %}
+                    </div>
+                    <button class="reviews-filter-segment__verified" type="button" data-mobile-filter-verified aria-pressed="false" aria-label="Только проверенные отзывы">
+                      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M13 19L16 22L21 17" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                        <path d="M9 22H7C5.9 22 5 21.1 5 20V11.2C5 11.1 5 11 4.9 10.9L3.1 8.2C3 8.1 3 8 3 7.8V2.6C3 2.3 3.3 2 3.6 2H5.4C5.7 2 6 2.3 6 2.6V4.4C6 4.7 6.3 5 6.6 5H9.4C9.7 5 10 4.7 10 4.4V2.6C10 2.3 10.3 2 10.6 2H13.4C13.7 2 14 2.3 14 2.6V4.4C14 4.7 14.3 5 14.6 5H17.4C17.7 5 18 4.7 18 4.4V2.6C18 2.3 18.3 2 18.6 2H20.4C20.7 2 21 2.3 21 2.6V7.8C21 8 21 8.1 20.9 8.2L19.1 10.9C19 11 19 11.1 19 11.2V13.5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                      </svg>
+                      <span class="reviews-filter-segment__tooltip" role="tooltip">Проверенные отзывы</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+          <button class="reviews-page__mobile-add-card-outside" id="openModalBtnMobile" type="button">
+            <span class="reviews-page__mobile-add-icon" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="none"><path d="M4 13.5V16h2.5l7.37-7.37-2.5-2.5L4 13.5zM15.71 6.29a1 1 0 000-1.41l-1.59-1.59a1 1 0 00-1.41 0l-1.24 1.24 2.5 2.5 1.24-1.24z" fill="currentColor"></path></svg>
+            </span>
+            <span class="reviews-page__mobile-add-text">
+              <strong>Оставьте свой отзыв</strong>
+              <small>Это займёт меньше минуты</small>
+            </span>
+            <span class="reviews-page__mobile-add-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </span>
+          </button>
         </aside>
 
         <main class="reviews-page__main">
@@ -79,11 +139,14 @@
       </div>
     </div>
 
-    <div class="modal-backdrop" id="modalBackdrop">
-      <div class="modal">
+    <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true" inert>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="review-modal-title">
+        <button class="modal-drag-handle" type="button" aria-label="Развернуть окно отзыва" data-review-modal-handle>
+          <span></span>
+        </button>
         <div class="modal-head">
-          <h2 class="modal-title">Написать отзыв</h2>
-          <button class="modal-close" id="closeModalBtn">
+          <h2 class="modal-title" id="review-modal-title">Написать отзыв</h2>
+          <button class="modal-close" id="closeModalBtn" type="button">
             <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>
           </button>
         </div>
@@ -97,7 +160,12 @@
         </div>
         <div class="modal-row">
           <div class="field"><label for="formName">Имя</label><input type="text" placeholder="Аноним" id="formName" /></div>
-          <div class="field"><label for="formProduct">Товар</label><input type="text" placeholder="Название товара" id="formProduct" /></div>
+          <div class="field review-form__product">
+            <label for="formProduct">Товар</label>
+            <input type="hidden" id="formProductId" />
+            <input type="text" placeholder="Название товара" id="formProduct" autocomplete="off" />
+            <div id="reviewProductMenu" class="review-form__product-menu" aria-live="polite"></div>
+          </div>
         </div>
         <div class="field"><label for="formText">Комментарий</label><textarea placeholder="Расскажите подробнее..." id="formText"></textarea></div>
         <button class="modal-submit" id="submitReviewBtn">
@@ -116,7 +184,7 @@
     {{ products_json|json_script:"reviewProductsData" }}
     {{ rating_summary|json_script:"ratingSummaryData" }}
 
-    <script src="{% static 'site/reviews/js/reviews_page.js' %}?v=reviews-footer-polish1"></script>
+    <script src="{% static 'site/reviews/js/reviews_page.js' %}?v=reviews-responsive-sidebar3"></script>
     </div>
   </body>
 </html>

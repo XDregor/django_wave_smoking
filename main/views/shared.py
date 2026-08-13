@@ -391,7 +391,12 @@ def serialize_review(review, liked_review_ids=None):
         "verified": review.is_verified,
         "product_id": review.product_id,
         "product": review.product.name,
-        "product_url": f"/products/{review.product.id}/{review.product.slug}/",
+        "product_available": review.product.available,
+        "product_url": (
+            f"/products/{review.product.id}/{review.product.slug}/"
+            if review.product.available
+            else ""
+        ),
         "text": review.text,
         "helpful": review.display_helpful_count,
         "liked": review.id in liked_review_ids,

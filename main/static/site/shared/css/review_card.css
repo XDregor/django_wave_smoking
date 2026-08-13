@@ -87,16 +87,56 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  padding: 0;
   overflow: hidden;
+  border: 0;
+  background: transparent;
   color: var(--muted, var(--detail-muted, rgba(241, 241, 241, 0.58)));
+  cursor: pointer;
+  font-family: inherit;
   font-size: 10px;
+  line-height: inherit;
+  text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color 180ms ease;
 }
 
 .review-card__product-tag::before {
   content: "·";
   color: var(--muted, var(--detail-muted, rgba(241, 241, 241, 0.58)));
+}
+
+.review-card__product-tag::after {
+  content: "↗";
+  flex: 0 0 auto;
+  opacity: 0;
+  transform: translate(-2px, 2px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.review-card__product-tag:hover,
+.review-card__product-tag:focus-visible {
+  color: var(--buda, var(--color-warning, #fce122));
+}
+
+.review-card__product-tag:hover::after,
+.review-card__product-tag:focus-visible::after {
+  opacity: 0.8;
+  transform: translate(0, 0);
+}
+
+.review-card__product-tag:focus-visible {
+  outline: 1px solid color-mix(in srgb, var(--buda, #fce122) 55%, transparent);
+  outline-offset: 3px;
+}
+
+.review-card__product-tag.is-unavailable {
+  cursor: help;
+}
+
+.review-card__product-tag.is-unavailable::after {
+  content: none;
 }
 
 .review-card__stars {

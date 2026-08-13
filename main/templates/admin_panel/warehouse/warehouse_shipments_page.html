@@ -8,7 +8,7 @@
   {{ block.super }}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{% static 'admin_panel/warehouse/css/warehouse_shipments_page.css' %}?v=shipments-responsive1" />
+  <link rel="stylesheet" href="{% static 'admin_panel/warehouse/css/warehouse_shipments_page.css' %}?v=export-stage-journal1" />
 {% endblock %}
 
 {% block content %}
@@ -119,7 +119,7 @@
                 <button class="active" type="button" data-overview-panel="orders">&#1047;&#1072;&#1082;&#1072;&#1079;&#1099;</button>
               </div>
             </div>
-            <div class="orders-chart-scroll" data-orders-chart></div>
+            <div class="orders-chart-scroll" data-orders-chart tabindex="0" aria-label="График заказов по дням"></div>
           </div>
           <div class="overview-card limit-card is-active" data-overview-card="limits">
           <div class="limit-card-head">
@@ -146,7 +146,7 @@
       <div class="toolbar">
         <div class="search-wrap">
           <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
-          <input class="search-input" type="text" data-search placeholder="Поиск по фамилии, телефону, контрагенту или ТТН..." autocomplete="off" />
+          <input class="search-input" type="text" data-search placeholder="Поиск по фамилии, телефону, товару, контрагенту или ТТН..." autocomplete="off" />
         </div>
         <div class="stage-tabs">
           <button class="stage-tab active" type="button" data-filter="formed">Формирование <span class="count" data-metric-formed>0</span></button>
@@ -224,10 +224,11 @@
             <div class="section-title">Оформление</div>
             <div class="form-grid two">
               <label class="field"><span>Контрагент *</span><select name="counterparty_id" data-counterparty-select required></select></label>
+              <label class="field"><span>Карта контрагента *</span><select name="counterparty_card_id" data-counterparty-card-select required></select></label>
               <label class="field"><span>Номер отправки *</span><select name="shipping_phone_id" data-phone-select required></select></label>
-              <div class="field span-2"><span>&nbsp;</span><div class="limit-line" data-limit-line>Выберите номер отправки.</div></div>
               <label class="field"><span>Цена заказа</span><input name="total_price" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" data-total-price /></label>
-              <label class="field"><span>ТТН</span><input name="ttn" type="text" maxlength="64" autocomplete="off" placeholder="Если уже отправлено" /></label>
+              <div class="field span-2"><span>&nbsp;</span><div class="limit-line" data-limit-line>Выберите номер отправки.</div></div>
+              <label class="field span-2"><span>ТТН</span><input name="ttn" type="text" maxlength="64" autocomplete="off" placeholder="Если уже отправлено" /></label>
             </div>
           </section>
         </div>
@@ -282,6 +283,11 @@
             <span class="export-check-ui" aria-hidden="true"></span>
             <span>Остатки на складе</span>
           </label>
+          <label class="export-stock-toggle">
+            <input name="include_stage_journal" type="checkbox" />
+            <span class="export-check-ui" aria-hidden="true"></span>
+            <span>Журнал стадий</span>
+          </label>
         </div>
         <div class="modal-actions">
           <button class="btn" type="button" data-close-export>Отмена</button>
@@ -307,5 +313,5 @@
 
 {% block extrahead %}
   {{ block.super }}
-  <script src="{% static 'admin_panel/warehouse/js/warehouse_shipments_page.js' %}?v=overview-toggle2" defer></script>
+  <script src="{% static 'admin_panel/warehouse/js/warehouse_shipments_page.js' %}?v=export-stage-journal1" defer></script>
 {% endblock %}

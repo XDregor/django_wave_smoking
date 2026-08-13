@@ -1,6 +1,8 @@
 (function () {
   if (window.__productCardComponentReady) return;
   window.__productCardComponentReady = true;
+  const specsClosingTimers = new WeakMap();
+  const mobileProductCardMedia = window.matchMedia("(max-width: 640px)");
 
   function getCookie(name) {
     return document.cookie
@@ -62,6 +64,19 @@
     if (!card) return;
     const button = card.querySelector("[data-product-card-specs-toggle]");
     const panel = card.querySelector(".product_card_specs_panel");
+    const usesSidePanel = mobileProductCardMedia.matches && card.classList.contains("product_card_recommendation_context");
+    const previousTimer = specsClosingTimers.get(card);
+    if (previousTimer) window.clearTimeout(previousTimer);
+    if (usesSidePanel && card.classList.contains("is-specs-open")) {
+      card.classList.add("is-specs-closing");
+      const timer = window.setTimeout(() => {
+        card.classList.remove("is-specs-closing");
+        specsClosingTimers.delete(card);
+      }, 400);
+      specsClosingTimers.set(card, timer);
+    } else {
+      card.classList.remove("is-specs-closing");
+    }
     card.classList.remove("is-specs-open");
     button?.setAttribute("aria-expanded", "false");
     button?.setAttribute("aria-label", "Показать ключевые характеристики");
@@ -78,7 +93,15 @@
     });
 
     card.classList.add("has-specs-interacted");
-    card.classList.toggle("is-specs-open", shouldOpen);
+    if (!shouldOpen) {
+      closeProductCardSpecs(card);
+      return;
+    }
+    const closingTimer = specsClosingTimers.get(card);
+    if (closingTimer) window.clearTimeout(closingTimer);
+    specsClosingTimers.delete(card);
+    card.classList.remove("is-specs-closing");
+    card.classList.add("is-specs-open");
     button.setAttribute("aria-expanded", String(shouldOpen));
     button.setAttribute("aria-label", shouldOpen ? "Скрыть ключевые характеристики" : "Показать ключевые характеристики");
     const specsPanel = card.querySelector(".product_card_specs_panel");

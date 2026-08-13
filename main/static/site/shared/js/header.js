@@ -370,6 +370,9 @@ class AdaptiveAccountButton {
 
       class InfoLineController {
         constructor() {
+          this.infoLine = document.querySelector("[data-info-line]");
+          this.mobileCloseButton = document.querySelector("[data-info-line-mobile-close]");
+          this.mobileBreakpoint = 900;
           this.items = document.querySelectorAll(".promo_banner_item");
           this.items.forEach((item) => {
             if (item.querySelector(":scope > .promo_banner_content")) return;
@@ -402,16 +405,27 @@ class AdaptiveAccountButton {
           this.waitingForCycleEnd = false;
           this.handleTrackMouseEnter = null;
           this.handleTrackMouseLeave = null;
+          this.mobileDismissTimer = null;
+          this.mobileDismissedForScroll = false;
           this.runtimePaused = document.hidden;
           this.handleRuntimeChange = (event) => {
-            this.setRuntimePaused(Boolean(event.detail?.paused) || document.hidden);
+            this.setRuntimePaused(document.hidden);
           };
           this.handleVisibilityChange = () => {
-            const headerPaused = document.body.classList.contains("is-runtime-paused");
-            this.setRuntimePaused(document.hidden || headerPaused);
+            this.setRuntimePaused(document.hidden);
           };
+          this.handlePageMounted = () => {
+            window.clearTimeout(this.mobileDismissTimer);
+            document.body.classList.remove("is-mobile-info-line-dismissing");
+            document.body.classList.remove("is-mobile-info-line-dismissed");
+            if (this.infoLine) this.infoLine.style.visibility = "";
+            this.syncInfoLineHeight();
+          };
+          this.handlePageReady = () => this.syncInfoLineHeight();
 
           window.addEventListener("header-runtime-change", this.handleRuntimeChange);
+          window.addEventListener("wave:page-mounted", this.handlePageMounted);
+          window.addEventListener("wave:page-ready", this.handlePageReady);
           document.addEventListener("visibilitychange", this.handleVisibilityChange);
 
           if (this.iconContainers.length && !this.runtimePaused) {
@@ -421,6 +435,63 @@ class AdaptiveAccountButton {
           if (this.track) {
             this.bindHoverPause();
           }
+
+          this.bindMobileClose();
+        }
+
+        isMobileViewport() {
+          return window.innerWidth <= this.mobileBreakpoint;
+        }
+
+        bindMobileClose() {
+          this.mobileCloseButton?.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            if (!this.isMobileViewport() || !document.body.classList.contains("is-header-hidden")) return;
+            window.clearTimeout(this.mobileDismissTimer);
+            this.mobileDismissedForScroll = true;
+            document.body.classList.add("is-mobile-info-line-dismissed-for-scroll");
+            document.body.classList.add("is-mobile-info-line-dismissing");
+            document.body.classList.add("is-mobile-info-line-dismissed");
+            this.mobileDismissTimer = window.setTimeout(() => {
+              this.syncInfoLineHeight();
+              document.body.classList.remove("is-mobile-info-line-dismissing");
+            }, 320);
+          });
+
+          window.addEventListener("resize", () => {
+            if (this.isMobileViewport()) return;
+            window.clearTimeout(this.mobileDismissTimer);
+            this.mobileDismissedForScroll = false;
+            document.body.classList.remove("is-mobile-info-line-dismissed-for-scroll");
+            document.body.classList.remove("is-mobile-info-line-dismissing");
+            document.body.classList.remove("is-mobile-info-line-dismissed");
+            this.syncInfoLineHeight();
+          });
+
+          window.addEventListener("info-line-header-hidden", () => {
+            if (!this.isMobileViewport() || (!this.mobileDismissedForScroll && !document.body.classList.contains("is-mobile-info-line-dismissed-for-scroll"))) return;
+            document.body.classList.add("is-mobile-info-line-dismissed");
+            this.syncInfoLineHeight();
+          });
+
+          window.addEventListener("info-line-restore", () => {
+            window.clearTimeout(this.mobileDismissTimer);
+            document.body.classList.remove("is-mobile-info-line-dismissing");
+            document.body.classList.remove("is-mobile-info-line-dismissed");
+            this.syncInfoLineHeight();
+          });
+        }
+
+        syncInfoLineHeight() {
+          window.requestAnimationFrame(() => {
+            const height = document.body.classList.contains("is-header-hidden")
+              && document.body.classList.contains("is-mobile-info-line-dismissed")
+              ? 0
+              : (this.infoLine?.offsetHeight || 32);
+            document.documentElement.style.setProperty("--info-line-height", `${height}px`);
+            window.dispatchEvent(new CustomEvent("info-line-layout-change"));
+          });
         }
 
         startAnimation() {
@@ -543,6 +614,8 @@ class AdaptiveAccountButton {
           }
 
           window.removeEventListener("header-runtime-change", this.handleRuntimeChange);
+          window.removeEventListener("wave:page-mounted", this.handlePageMounted);
+          window.removeEventListener("wave:page-ready", this.handlePageReady);
           document.removeEventListener("visibilitychange", this.handleVisibilityChange);
         }
       }
@@ -1727,6 +1800,8 @@ class AdaptiveAccountButton {
           this.pageHidden = document.hidden;
           this.runtimePaused = false;
           this.resizeTimer = null;
+          this.lastMeasuredHeaderHeight = 0;
+          this.lastMeasuredInfoLineHeight = 32;
 
           if (!this.header) {
             return;
@@ -1756,6 +1831,12 @@ class AdaptiveAccountButton {
               this.syncPositions();
             }, 40);
           });
+          window.addEventListener("info-line-layout-change", () => {
+            this.updateLayoutVariables();
+            this.syncPositions();
+          });
+          window.addEventListener("wave:page-mounted", () => this.resetAfterNavigation());
+          window.addEventListener("wave:page-ready", () => this.scheduleLayoutSync());
           document.addEventListener("visibilitychange", () => {
             this.pageHidden = document.hidden;
             this.syncRuntimeState();
@@ -1773,6 +1854,21 @@ class AdaptiveAccountButton {
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             const scrollDelta = scrollTop - this.lastScrollTop;
 
+            if (this.header.classList.contains("is-mobile-search-open")) {
+              document.body.classList.add("scrolled");
+              this.showHeader();
+              this.lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+              this.frameScheduled = false;
+              return;
+            }
+
+            if (document.body.classList.contains("is-mobile-info-line-dismissing")) {
+              document.body.classList.add("scrolled");
+              this.lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+              this.frameScheduled = false;
+              return;
+            }
+
             if (scrollTop > 120) {
               document.body.classList.add("scrolled");
 
@@ -1789,11 +1885,16 @@ class AdaptiveAccountButton {
         }
 
         hideHeader() {
+          if (this.header.classList.contains("is-mobile-search-open")) return;
           if (this.headerHidden) return;
 
           this.headerHidden = true;
+          if (document.body.classList.contains("is-mobile-info-line-dismissed-for-scroll")) {
+            document.body.classList.add("is-mobile-info-line-dismissed");
+          }
           document.body.classList.add("is-header-hidden");
           this.header.classList.add("is-hidden");
+          window.dispatchEvent(new CustomEvent("info-line-header-hidden"));
           this.megaMenuController?.hide(true);
           this.shopPanelController?.forceHide();
           this.syncPositions();
@@ -1801,14 +1902,47 @@ class AdaptiveAccountButton {
         }
 
         showHeader() {
-          if (!this.headerHidden) return;
+          const needsSync = this.headerHidden
+            || document.body.classList.contains("is-header-hidden")
+            || this.header.classList.contains("is-hidden");
+          if (!needsSync) return;
 
           this.headerHidden = false;
           document.body.classList.remove("is-header-hidden");
+          document.body.classList.remove("is-mobile-info-line-dismissed");
+          window.dispatchEvent(new CustomEvent("info-line-restore"));
           this.header.classList.remove("is-hidden");
           this.syncRuntimeState();
           this.updateLayoutVariables();
           this.syncPositions();
+        }
+
+        resetAfterNavigation() {
+          this.headerHidden = false;
+          this.lastScrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
+          document.body.classList.remove(
+            "is-header-hidden",
+            "is-mobile-info-line-dismissing",
+            "is-mobile-info-line-dismissed"
+          );
+          document.body.classList.toggle("scrolled", this.lastScrollTop > 120);
+          this.header.classList.remove("is-hidden");
+          if (this.infoLine) this.infoLine.style.visibility = "";
+          this.syncRuntimeState();
+          this.updateLayoutVariables();
+          this.syncPositions();
+          this.scheduleLayoutSync();
+        }
+
+        scheduleLayoutSync() {
+          window.requestAnimationFrame(() => {
+            this.updateLayoutVariables();
+            this.syncPositions();
+            window.requestAnimationFrame(() => {
+              this.updateLayoutVariables();
+              this.syncPositions();
+            });
+          });
         }
 
         syncRuntimeState() {
@@ -1824,10 +1958,26 @@ class AdaptiveAccountButton {
         }
 
         updateLayoutVariables() {
-          const headerHeight = this.header.offsetHeight;
-          const infoLineHeight = this.infoLine?.offsetHeight || 32;
-          document.documentElement.style.setProperty("--header-height", `${headerHeight}px`);
-          document.documentElement.style.setProperty("--info-line-height", `${infoLineHeight}px`);
+          const measuredHeaderHeight = this.header.offsetHeight;
+          const measuredInfoLineHeight = this.infoLine?.offsetHeight || 0;
+          const infoLineDismissed = document.body.classList.contains("is-header-hidden")
+            && document.body.classList.contains("is-mobile-info-line-dismissed");
+
+          if (measuredHeaderHeight > 0) {
+            this.lastMeasuredHeaderHeight = measuredHeaderHeight;
+            document.documentElement.style.setProperty("--header-height", `${measuredHeaderHeight}px`);
+          } else if (this.lastMeasuredHeaderHeight > 0) {
+            document.documentElement.style.setProperty("--header-height", `${this.lastMeasuredHeaderHeight}px`);
+          }
+
+          if (infoLineDismissed) {
+            document.documentElement.style.setProperty("--info-line-height", "0px");
+          } else if (measuredInfoLineHeight > 0) {
+            this.lastMeasuredInfoLineHeight = measuredInfoLineHeight;
+            document.documentElement.style.setProperty("--info-line-height", `${measuredInfoLineHeight}px`);
+          } else {
+            document.documentElement.style.setProperty("--info-line-height", `${this.lastMeasuredInfoLineHeight}px`);
+          }
         }
 
         syncPositions() {
@@ -1851,12 +2001,23 @@ class AdaptiveAccountButton {
           this.overlay = document.getElementById("mobileMenuOverlay");
           this.burgerBtn = document.getElementById("burgerBtn");
           this.searchBtn = document.getElementById("mobileSearchBtn");
+          this.mobileFavBtn = document.getElementById("mobileFavBtn");
           this.mobileBasketBtn = document.getElementById("mobileBasketBtn");
           this.searchOverlay = document.getElementById("mobileSearchOverlay");
           this.searchInput = document.getElementById("mobileSearchInput");
           this.searchCloseBtn = document.getElementById("mobileSearchClose");
           this.searchResults = document.getElementById("mobileSearchResults");
           this.mobileBasketBadge = document.getElementById("mobileBasketBadge");
+          this.menuTriggers = Array.from(document.querySelectorAll("[data-mobile-menu-trigger]"));
+          this.searchTriggers = Array.from(document.querySelectorAll("[data-mobile-search-trigger]"));
+          this.favoriteTriggers = Array.from(document.querySelectorAll("[data-mobile-favorites-trigger]"));
+          this.cartTriggers = Array.from(document.querySelectorAll("[data-mobile-cart-trigger]"));
+          this.mobileBasketBadges = Array.from(document.querySelectorAll("[data-mobile-basket-badge], #mobileBasketBadge"));
+          this.dockItems = Array.from(document.querySelectorAll(".mobile-dock__item"));
+          this.dockMain = document.querySelector("[data-mobile-dock-main]");
+          this.dockPill = document.querySelector("[data-mobile-dock-pill]");
+          this.mobileBreakpoint = 900;
+          this.dockReady = false;
 
           // Accordion items
           this.accordionLinks = document.querySelectorAll("[data-accordion]");
@@ -1869,8 +2030,12 @@ class AdaptiveAccountButton {
         }
 
         bindEvents() {
-          // Burger toggles menu (becomes X when open)
+          // Mobile dock/menu triggers.
           this.burgerBtn?.addEventListener("click", () => this.toggleMenu());
+          this.menuTriggers.forEach((button) => {
+            if (button === this.burgerBtn) return;
+            button.addEventListener("click", () => this.toggleMenu());
+          });
 
           // Click on dim overlay closes menu
           this.overlay?.addEventListener("click", () => this.closeMenu());
@@ -1898,14 +2063,53 @@ class AdaptiveAccountButton {
 
           // Mobile header-search__shell
           this.searchBtn?.addEventListener("click", () => this.openSearch());
-          this.searchCloseBtn?.addEventListener("click", () => this.closeSearch());
+          this.searchTriggers.forEach((button) => {
+            if (button === this.searchBtn) return;
+            button.addEventListener("click", () => this.openSearch());
+          });
+          this.searchCloseBtn?.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            this.closeSearch();
+          });
+          this.searchInput?.addEventListener("click", (event) => event.stopPropagation());
+          this.searchInput?.addEventListener("input", () => {
+            if (!this.searchInput.value.trim()) {
+              window.setTimeout(() => this.renderMobileSearchSuggestions(), 0);
+            }
+          });
           this.searchOverlay?.addEventListener("click", (e) => {
             if (e.target === this.searchOverlay) this.closeSearch();
           });
 
-          // Mobile cart_widget btn (header)
+          // Mobile favorites/cart buttons.
+          this.mobileFavBtn?.addEventListener("click", () => {
+            this.shopPanelController?.toggle("favorites_widget");
+          });
+          this.favoriteTriggers.forEach((button) => {
+            button.addEventListener("click", () => this.shopPanelController?.toggle("favorites_widget"));
+          });
+
           this.mobileBasketBtn?.addEventListener("click", () => {
             this.shopPanelController?.toggle("cart_widget");
+          });
+          this.cartTriggers.forEach((button) => {
+            button.addEventListener("click", () => this.shopPanelController?.toggle("cart_widget"));
+          });
+
+          this.syncActiveDockItem();
+          this.dockItems.forEach((item) => {
+            item.addEventListener("click", () => {
+              if (item.matches("[data-mobile-favorites-trigger], [data-mobile-cart-trigger], [data-mobile-menu-trigger]")) {
+                return;
+              }
+              if (!item.matches("[data-mobile-dock-link]")) {
+                return;
+              }
+              this.dockItems.forEach((button) => button.classList.remove("is-active"));
+              item.classList.add("is-active");
+              this.updateDockPill();
+            });
           });
 
           // Mobile cart_widget btn (drawer footer)
@@ -1919,6 +2123,87 @@ class AdaptiveAccountButton {
             this.closeMenu();
             window.setTimeout(() => this.shopPanelController?.toggle("favorites_widget"), 300);
           });
+
+          window.addEventListener("resize", () => this.handleViewportChange());
+          window.addEventListener("load", () => this.syncActiveDockItem());
+          window.addEventListener("pageshow", () => this.syncActiveDockItem());
+          window.addEventListener("popstate", () => window.setTimeout(() => this.syncActiveDockItem(), 0));
+          window.addEventListener("wave:page-mounted", () => {
+            this.syncActiveDockItem();
+            this.restartBasketBadgeAttention();
+          });
+          window.addEventListener("wave:page-ready", () => this.syncActiveDockItem());
+          this.handleViewportChange();
+        }
+
+        isMobileViewport() {
+          return window.innerWidth <= this.mobileBreakpoint;
+        }
+
+        handleViewportChange() {
+          if (this.isMobileViewport()) {
+            this.syncActiveDockItem();
+            return;
+          }
+          this.closeMenu();
+          this.resetMobileSearchState();
+        }
+
+        resetMobileSearchState() {
+          window.clearTimeout(this.searchCloseTimer);
+          document.querySelector("[data-header]")?.classList.remove("is-mobile-search-open");
+          this.searchBtn?.classList.remove("is-open");
+          this.searchOverlay?.classList.remove("is-open");
+          if (this.searchInput) this.searchInput.value = "";
+          this.searchResultsController?.clear();
+          this.renderMobileSearchSuggestions();
+        }
+
+        syncActiveDockItem() {
+          const path = window.location.pathname;
+          const hash = window.location.hash;
+          this.dockItems.forEach((item) => item.classList.remove("is-active"));
+          const reviewsItem = this.dockItems.find((item) => item.getAttribute("href")?.includes("/reviews"));
+          const catalogItem = this.dockItems.find((item) => item.getAttribute("href")?.includes("#products"));
+          if (path.includes("/reviews") && reviewsItem) {
+            reviewsItem.classList.add("is-active");
+            this.updateDockPill();
+            return;
+          }
+          if (
+            path === "/" ||
+            path.includes("/catalog") ||
+            path.includes("/products") ||
+            hash === "#products"
+          ) {
+            catalogItem?.classList.add("is-active");
+          }
+          this.updateDockPill();
+        }
+
+        updateDockPill() {
+          if (!this.dockMain || !this.dockPill || !this.isMobileViewport()) return;
+          const activeItem = this.dockMain.querySelector(".mobile-dock__item.is-active");
+          if (!activeItem) {
+            this.dockPill.classList.remove("is-ready");
+            this.dockMain.classList.remove("is-dock-ready");
+            this.dockReady = false;
+            return;
+          }
+          const dockRect = this.dockMain.getBoundingClientRect();
+          const itemRect = activeItem.getBoundingClientRect();
+          if (!this.dockReady) {
+            this.dockMain.classList.remove("is-dock-ready");
+          }
+          this.dockPill.style.left = `${itemRect.left - dockRect.left}px`;
+          this.dockPill.style.width = `${itemRect.width}px`;
+          this.dockPill.classList.add("is-ready");
+          if (!this.dockReady) {
+            this.dockReady = true;
+            requestAnimationFrame(() => {
+              this.dockMain?.classList.add("is-dock-ready");
+            });
+          }
         }
 
         toggleMenu() {
@@ -1926,10 +2211,17 @@ class AdaptiveAccountButton {
         }
 
         openMenu() {
+          if (this.isMobileViewport()) {
+            return;
+          }
           this.isOpen = true;
           this.menu.classList.add("is-open");
-          this.burgerBtn.classList.add("is-open");
-          this.burgerBtn.setAttribute("aria-expanded", "true");
+          this.burgerBtn?.classList.add("is-open");
+          this.burgerBtn?.setAttribute("aria-expanded", "true");
+          this.menuTriggers.forEach((button) => {
+            button.classList.add("is-open");
+            button.setAttribute("aria-expanded", "true");
+          });
           document.querySelector("[data-header]")?.classList.add("is-mobile-menu-open");
           document.querySelector("[data-info-line]")?.style.setProperty("visibility", "hidden");
 
@@ -1948,8 +2240,12 @@ class AdaptiveAccountButton {
         closeMenu() {
           this.isOpen = false;
           this.menu.classList.remove("is-open");
-          this.burgerBtn.classList.remove("is-open");
-          this.burgerBtn.setAttribute("aria-expanded", "false");
+          this.burgerBtn?.classList.remove("is-open");
+          this.burgerBtn?.setAttribute("aria-expanded", "false");
+          this.menuTriggers.forEach((button) => {
+            button.classList.remove("is-open");
+            button.setAttribute("aria-expanded", "false");
+          });
           document.querySelector("[data-header]")?.classList.remove("is-mobile-menu-open");
           document.querySelector("[data-info-line]")?.style.setProperty("visibility", "visible");
 
@@ -1966,29 +2262,318 @@ class AdaptiveAccountButton {
         }
 
         openSearch() {
-          this.searchOverlay.classList.add("is-open");
+          if (!this.isMobileViewport()) {
+            this.resetMobileSearchState();
+            return;
+          }
+          window.clearTimeout(this.searchCloseTimer);
+          const header = document.querySelector("[data-header]");
+          header?.classList.remove("is-hidden");
+          document.body.classList.remove("is-header-hidden");
+          header?.classList.add("is-mobile-search-open");
+          this.searchBtn?.classList.add("is-open");
+          this.searchOverlay?.classList.add("is-open");
+          if (!this.searchInput?.value.trim()) {
+            this.renderMobileSearchSuggestions();
+          }
           window.setTimeout(() => this.searchInput?.focus(), 120);
         }
 
         closeSearch(clearInput = true) {
-          this.searchOverlay.classList.remove("is-open");
-          if (clearInput) {
-            this.searchResultsController?.clear();
-          } else {
-            this.searchResultsController?.hide();
-          }
-          if (this.searchInput && clearInput) this.searchInput.value = "";
+          document.querySelector("[data-header]")?.classList.remove("is-mobile-search-open");
+          this.searchBtn?.classList.remove("is-open");
+          this.searchOverlay?.classList.remove("is-open");
+          window.clearTimeout(this.searchCloseTimer);
+          this.searchCloseTimer = window.setTimeout(() => {
+            if (clearInput) {
+              this.searchResultsController?.clear();
+              if (this.searchInput) this.searchInput.value = "";
+              this.renderMobileSearchSuggestions();
+            } else {
+              this.searchResultsController?.hide();
+            }
+          }, 260);
+        }
+
+        renderMobileSearchSuggestions() {
+          if (!this.searchResults) return;
+          this.searchResults.innerHTML = `
+            <div class="search-results__hint">Популярные запросы</div>
+            <a class="search-results__item" href="/#products"><i class="fa-solid fa-microchip"></i><div><b>POD-системы</b><small>Каталог устройств</small></div></a>
+            <a class="search-results__item" href="/#products"><i class="fa-solid fa-flask"></i><div><b>Жидкости</b><small>Вкусы и наборы</small></div></a>
+            <a class="search-results__item" href="/#products"><i class="fa-solid fa-gear"></i><div><b>Комплектующие</b><small>Картриджи и расходники</small></div></a>
+            <a class="search-results__item" href="/?sort=hit#products"><i class="fa-solid fa-fire"></i><div><b>Хиты продаж</b><small>Популярные товары</small></div></a>
+          `;
+          this.searchResults.classList.add("is-open");
         }
 
         // Called by ShopPanelController to sync cart_widget site-nav__badge
         updateBasketBadge(count) {
-          if (!this.mobileBasketBtn || !this.mobileBasketBadge) return;
-          this.mobileBasketBadge.textContent = count > 9 ? "9+" : String(count);
-          if (count > 0) {
-            this.mobileBasketBtn.classList.add("has_items");
-          } else {
-            this.mobileBasketBtn.classList.remove("has_items");
+          const value = count > 9 ? "9+" : String(count);
+          this.mobileBasketBadges.forEach((badge) => {
+            if (!badge) return;
+            badge.textContent = value;
+            badge.hidden = count <= 0;
+            badge.classList.toggle("is-attention-active", count > 0);
+          });
+          this.mobileBasketBtn?.classList.toggle("has_items", count > 0);
+          this.cartTriggers.forEach((button) => button.classList.toggle("has_items", count > 0));
+        }
+
+        restartBasketBadgeAttention() {
+          if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+          const activeBadges = this.mobileBasketBadges.filter((badge) => badge && !badge.hidden);
+          activeBadges.forEach((badge) => badge.classList.remove("is-attention-active"));
+          if (!activeBadges.length) return;
+          window.requestAnimationFrame(() => {
+            activeBadges.forEach((badge) => {
+              if (badge.isConnected && !badge.hidden) badge.classList.add("is-attention-active");
+            });
+          });
+        }
+      }
+
+      class MobileBottomDialogController {
+        constructor({ overlay, panel, handle, isOpen, close }) {
+          this.overlay = overlay;
+          this.panel = panel;
+          this.handle = handle;
+          this.isOpen = isOpen;
+          this.close = close;
+          this.mediaQuery = window.matchMedia("(max-width: 900px)");
+          this.collapsedHeight = 0;
+          this.startY = 0;
+          this.startHeight = 0;
+          this.lastTouchY = 0;
+          this.isDragging = false;
+          this.hasMoved = false;
+          this.raf = 0;
+
+          this.bindEvents();
+        }
+
+        bindEvents() {
+          if (!this.overlay || !this.panel || !this.handle) return;
+
+          this.handle.addEventListener("pointerdown", (event) => this.onPointerDown(event));
+          this.handle.addEventListener("click", (event) => this.onHandleClick(event));
+          this.panel.addEventListener("wheel", (event) => this.onWheel(event), { passive: false });
+          this.panel.addEventListener("touchstart", (event) => this.onTouchStart(event), { passive: true });
+          this.panel.addEventListener("touchmove", (event) => this.onTouchMove(event), { passive: false });
+
+          this.mediaQuery.addEventListener?.("change", () => {
+            if (!this.mediaQuery.matches) this.reset();
+            else if (this.isOpen?.()) this.syncOpen();
+          });
+          window.addEventListener("resize", () => {
+            if (!this.isMobileOpen()) return;
+            this.snapTo(Math.min(this.getCurrentHeight(), this.getMaxHeight()));
+          });
+        }
+
+        isMobileOpen() {
+          return this.mediaQuery.matches && Boolean(this.isOpen?.());
+        }
+
+        getViewportHeight() {
+          return Math.round(window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight || 0);
+        }
+
+        getMaxHeight() {
+          return Math.max(320, this.getViewportHeight() - 12);
+        }
+
+        getCurrentHeight() {
+          return Math.round(this.panel.getBoundingClientRect().height || 0);
+        }
+
+        getCollapsedHeight() {
+          if (this.collapsedHeight > 0) return Math.min(this.collapsedHeight, this.getMaxHeight());
+          return Math.min(this.getCurrentHeight(), this.getMaxHeight());
+        }
+
+        syncOpen() {
+          if (!this.mediaQuery.matches || !this.panel) return;
+          this.panel.style.removeProperty("height");
+          this.panel.style.removeProperty("--mobile-sheet-progress");
+          this.overlay.classList.remove("is-mobile-sheet-expanded", "is-mobile-sheet-dragging");
+
+          window.requestAnimationFrame(() => {
+            if (!this.isMobileOpen()) return;
+            this.collapsedHeight = Math.min(this.getCurrentHeight(), this.getMaxHeight());
+            this.panel.style.maxHeight = "calc(100dvh - 12px)";
+            this.updateState(this.collapsedHeight);
+          });
+        }
+
+        reset() {
+          window.cancelAnimationFrame(this.raf);
+          this.isDragging = false;
+          this.hasMoved = false;
+          this.collapsedHeight = 0;
+          this.overlay?.classList.remove("is-mobile-sheet-expanded", "is-mobile-sheet-dragging");
+          this.panel?.style.removeProperty("height");
+          this.panel?.style.removeProperty("--mobile-sheet-progress");
+        }
+
+        clampHeight(height) {
+          const minHeight = Math.min(this.getCollapsedHeight(), this.getMaxHeight());
+          return Math.min(Math.max(height, 96), this.getMaxHeight(), Math.max(minHeight, height));
+        }
+
+        applyHeight(height) {
+          const maxHeight = this.getMaxHeight();
+          const collapsed = this.getCollapsedHeight();
+          const nextHeight = Math.min(Math.max(height, 96), maxHeight);
+          const progress = maxHeight > collapsed ? (nextHeight - collapsed) / (maxHeight - collapsed) : 1;
+
+          this.panel.style.height = `${Math.round(nextHeight)}px`;
+          this.panel.style.maxHeight = "calc(100dvh - 12px)";
+          this.panel.style.setProperty("--mobile-sheet-progress", Math.max(0, Math.min(1, progress)).toFixed(3));
+          this.updateState(nextHeight);
+        }
+
+        updateState(height) {
+          const expanded = height >= this.getMaxHeight() - 24;
+          this.overlay.classList.toggle("is-mobile-sheet-expanded", expanded);
+          this.handle?.setAttribute("aria-label", expanded ? "Свернуть окно" : "Развернуть окно");
+        }
+
+        getSnapHeights() {
+          const collapsed = this.getCollapsedHeight();
+          const max = this.getMaxHeight();
+          const raw = [collapsed, max * 0.52, max * 0.66, max * 0.8, max * 0.92, max];
+          return raw
+            .map((height) => Math.round(Math.min(Math.max(height, collapsed), max)))
+            .filter((height, index, list) => index === 0 || Math.abs(height - list[index - 1]) > 16);
+        }
+
+        snapTo(height) {
+          if (!this.isMobileOpen()) return;
+          this.overlay.classList.remove("is-mobile-sheet-dragging");
+          this.applyHeight(height);
+        }
+
+        settle() {
+          const current = this.getCurrentHeight();
+          const collapsed = this.getCollapsedHeight();
+          if (current < collapsed * 0.78) {
+            this.close?.();
+            return;
           }
+
+          const target = this.getSnapHeights().reduce((nearest, height) => {
+            return Math.abs(height - current) < Math.abs(nearest - current) ? height : nearest;
+          }, collapsed);
+          this.snapTo(target);
+        }
+
+        onPointerDown(event) {
+          if (!this.isMobileOpen()) return;
+          event.preventDefault();
+          this.isDragging = true;
+          this.hasMoved = false;
+          this.startY = event.clientY;
+          this.startHeight = this.getCurrentHeight();
+          this.overlay.classList.add("is-mobile-sheet-dragging");
+          this.handle.setPointerCapture?.(event.pointerId);
+
+          const onMove = (moveEvent) => {
+            if (!this.isDragging) return;
+            const delta = this.startY - moveEvent.clientY;
+            if (Math.abs(delta) > 4) this.hasMoved = true;
+            this.applyHeight(this.startHeight + delta);
+          };
+
+          const onUp = (upEvent) => {
+            this.isDragging = false;
+            this.handle.releasePointerCapture?.(upEvent.pointerId);
+            window.removeEventListener("pointermove", onMove);
+            window.removeEventListener("pointerup", onUp);
+            this.settle();
+          };
+
+          window.addEventListener("pointermove", onMove);
+          window.addEventListener("pointerup", onUp);
+        }
+
+        onHandleClick(event) {
+          if (!this.isMobileOpen()) return;
+          event.preventDefault();
+          if (this.hasMoved) {
+            this.hasMoved = false;
+            return;
+          }
+
+          const current = this.getCurrentHeight();
+          const collapsed = this.getCollapsedHeight();
+          const max = this.getMaxHeight();
+          this.snapTo(current >= max - 24 ? collapsed : max);
+        }
+
+        onWheel(event) {
+          if (!this.isMobileOpen()) return;
+          const delta = event.deltaY;
+          if (!delta) return;
+
+          const current = this.getCurrentHeight();
+          const max = this.getMaxHeight();
+          const collapsed = this.getCollapsedHeight();
+          const canGrow = delta > 0 && current < max - 2;
+          const canShrink = delta < 0 && current > collapsed + 2 && !this.hasScrollableParent(event.target, "up");
+
+          if (!canGrow && !canShrink) return;
+
+          event.preventDefault();
+          const factor = canGrow ? 0.72 : 0.64;
+          this.queueHeight(current + delta * factor);
+        }
+
+        onTouchStart(event) {
+          if (!this.isMobileOpen() || !event.touches?.length) return;
+          this.lastTouchY = event.touches[0].clientY;
+        }
+
+        onTouchMove(event) {
+          if (!this.isMobileOpen() || !event.touches?.length) return;
+          const nextY = event.touches[0].clientY;
+          const delta = this.lastTouchY - nextY;
+          this.lastTouchY = nextY;
+          if (!delta) return;
+
+          const current = this.getCurrentHeight();
+          const max = this.getMaxHeight();
+          const collapsed = this.getCollapsedHeight();
+          const canGrow = delta > 0 && current < max - 2;
+          const canShrink = delta < 0 && current > collapsed + 2 && !this.hasScrollableParent(event.target, "up");
+
+          if (!canGrow && !canShrink) return;
+
+          event.preventDefault();
+          this.queueHeight(current + delta);
+        }
+
+        queueHeight(height) {
+          window.cancelAnimationFrame(this.raf);
+          this.raf = window.requestAnimationFrame(() => this.applyHeight(height));
+        }
+
+        hasScrollableParent(target, direction) {
+          let node = target instanceof Element ? target : null;
+          while (node && node !== this.panel) {
+            const style = window.getComputedStyle(node);
+            const canScroll = /(auto|scroll)/.test(style.overflowY) && node.scrollHeight > node.clientHeight + 1;
+            if (canScroll) {
+              if (direction === "up" && node.scrollTop > 1) return true;
+              if (direction === "down" && node.scrollTop + node.clientHeight < node.scrollHeight - 1) return true;
+            }
+            node = node.parentElement;
+          }
+
+          const panelCanScroll = this.panel.scrollHeight > this.panel.clientHeight + 1;
+          if (!panelCanScroll) return false;
+          if (direction === "up") return this.panel.scrollTop > 1;
+          return this.panel.scrollTop + this.panel.clientHeight < this.panel.scrollHeight - 1;
         }
       }
 
@@ -2013,6 +2598,14 @@ class AdaptiveAccountButton {
           this.headerSubtitle = document.getElementById("delivery_header_subtitle");
           this.headerIcon = document.getElementById("delivery_header_icon_slot");
           this.closeButton = document.getElementById("delivery_close_button");
+          this.sheetHandle = this.overlay.querySelector("[data-delivery-sheet-handle]");
+          this.sheetController = new MobileBottomDialogController({
+            overlay: this.overlay,
+            panel: this.overlay.querySelector(".delivery_modal_window"),
+            handle: this.sheetHandle,
+            isOpen: () => this.overlay.classList.contains("delivery_overlay_open"),
+            close: () => this.close(),
+          });
           this.lastTrigger = null;
 
           this.panelData = [
@@ -2129,10 +2722,12 @@ class AdaptiveAccountButton {
           this.backdrop?.classList.add("delivery_backdrop_open");
           this.overlay.setAttribute("aria-hidden", "false");
           document.body.style.overflow = "hidden";
+          this.sheetController?.syncOpen();
           requestAnimationFrame(() => this.closeButton?.focus({ preventScroll: true }));
         }
 
         close() {
+          this.sheetController?.reset();
           this.moveFocusOutside();
           this.overlay.classList.remove("delivery_overlay_open");
           this.backdrop?.classList.remove("delivery_backdrop_open");
@@ -2166,6 +2761,14 @@ class AdaptiveAccountButton {
           this.backdrop = document.getElementById("contactsBackdrop");
           if (!this.overlay) return;
           this.closeButton = this.overlay.querySelector("[data-contacts-close]");
+          this.sheetHandle = this.overlay.querySelector("[data-contacts-sheet-handle]");
+          this.sheetController = new MobileBottomDialogController({
+            overlay: this.overlay,
+            panel: this.overlay.querySelector(".contacts_modal"),
+            handle: this.sheetHandle,
+            isOpen: () => this.overlay.classList.contains("is-open"),
+            close: () => this.close(),
+          });
           this.lastTrigger = null;
 
           this.bindEvents();
@@ -2205,10 +2808,12 @@ class AdaptiveAccountButton {
           this.backdrop?.classList.add("is-open");
           this.overlay.setAttribute("aria-hidden", "false");
           document.body.style.overflow = "hidden";
+          this.sheetController?.syncOpen();
           requestAnimationFrame(() => this.closeButton?.focus({ preventScroll: true }));
         }
 
         close() {
+          this.sheetController?.reset();
           this.moveFocusOutside();
           this.overlay.classList.remove("is-open");
           this.backdrop?.classList.remove("is-open");

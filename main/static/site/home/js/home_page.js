@@ -1,7 +1,27 @@
 // ===== PRELOADER =====
       (function () {
+        const introStorageKey = "wave:home-intro-shown";
+        let hasShownIntro = window.__waveHomeIntroShown === true;
+        try {
+          hasShownIntro = hasShownIntro || window.sessionStorage.getItem(introStorageKey) === "1";
+        } catch (error) {
+          // Keep the flag in memory when session storage is unavailable.
+        }
+
+        window.__waveHomeIntroShown = true;
+        try {
+          window.sessionStorage.setItem(introStorageKey, "1");
+        } catch (error) {
+          // The window flag still covers seamless navigation in this document.
+        }
+
         const preloader = document.querySelector("[data-page-preloader]");
         if (!preloader) return;
+        if (hasShownIntro) {
+          preloader.remove();
+          return;
+        }
+
         const mainBanner = document.getElementById("mainBanner");
         const startedAt = performance.now();
         const minimumVisibleTime = 850;
@@ -77,7 +97,18 @@
       (function () {
         const smallCircle = document.getElementById("smallCircle");
         const largeCircle = document.getElementById("largeCircle");
-        if (!smallCircle || !largeCircle || window.matchMedia("(pointer: coarse)").matches) return;
+        const mobileCursorMedia = window.matchMedia("(hover: none), (pointer: coarse), (max-width: 768px)");
+        const hideCursor = () => {
+          if (smallCircle) smallCircle.style.display = "none";
+          if (largeCircle) largeCircle.style.display = "none";
+          document.documentElement.classList.add("has-no-site-cursor");
+        };
+        const shouldDisableCursor = () => mobileCursorMedia.matches || (navigator.maxTouchPoints > 0 && window.innerWidth <= 1024);
+        if (!smallCircle || !largeCircle) return;
+        if (shouldDisableCursor()) {
+          hideCursor();
+          return;
+        }
         let mouseX = 0,
           mouseY = 0;
         let smallX = 0,
@@ -99,6 +130,10 @@
         }
 
         document.addEventListener("mousemove", (e) => {
+          if (shouldDisableCursor()) {
+            hideCursor();
+            return;
+          }
           mouseX = e.clientX;
           mouseY = e.clientY;
           startAnimation();
@@ -113,6 +148,16 @@
             smallCircle.classList.remove("is-hovered");
             largeCircle.style.opacity = "1";
           }
+        });
+
+        document.addEventListener("pointerdown", (event) => {
+          if (event.pointerType === "touch") hideCursor();
+        }, { passive: true });
+
+        document.addEventListener("touchstart", hideCursor, { passive: true, once: true });
+
+        mobileCursorMedia.addEventListener?.("change", () => {
+          if (shouldDisableCursor()) hideCursor();
         });
 
         function animate() {

@@ -21,8 +21,48 @@ from .models import (
     SiteVisit,
     VariantGroup,
     VariantOption,
+    WarehouseCounterparty,
+    WarehouseShipmentOrder,
+    WarehouseShippingPhone,
     sanitize_product_description,
 )
+
+
+class WarehouseShippingPhoneLimitTests(TestCase):
+    def setUp(self):
+        self.counterparty = WarehouseCounterparty.objects.create(title="Limit test counterparty")
+        self.phone = WarehouseShippingPhone.objects.create(
+            phone="0500000000",
+            pin_code="0000",
+        )
+
+    def create_order(self, *, price, age_days=0, status=WarehouseShipmentOrder.Status.CREATED):
+        return WarehouseShipmentOrder.objects.create(
+            counterparty=self.counterparty,
+            shipping_phone=self.phone,
+            recipient_last_name="Test",
+            recipient_first_name="Recipient",
+            recipient_phone="0500000001",
+            delivery_destination="Test destination",
+            total_price=price,
+            status=status,
+            created_at=timezone.now() - timedelta(days=age_days),
+        )
+
+    def test_used_limit_contains_only_orders_from_last_31_days(self):
+        self.create_order(price=Decimal("1200.00"), age_days=10)
+        self.create_order(price=Decimal("800.00"), age_days=32)
+
+        self.assertEqual(self.phone.used_limit_amount, Decimal("1200.00"))
+        self.assertEqual(self.phone.remaining_limit_amount, Decimal("28800.00"))
+
+    def test_cancelled_order_does_not_use_limit(self):
+        self.create_order(
+            price=Decimal("1500.00"),
+            status=WarehouseShipmentOrder.Status.CANCELLED,
+        )
+
+        self.assertEqual(self.phone.used_limit_amount, 0)
 
 
 class ProductInputSafetyTests(SimpleTestCase):

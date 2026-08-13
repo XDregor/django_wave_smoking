@@ -1,4 +1,4 @@
-<article class="review-card" data-id="{{ review.id }}">
+<article class="review-card{% if mobile %} review-card--mobile{% endif %}" data-id="{{ review.id }}">
   <div class="review-card__top">
     <div class="review-card__avatar c1">
       {% if review.avatar %}{{ review.avatar }}{% elif review.author_name %}{{ review.author_name|slice:":1" }}{% else %}{{ review.name|slice:":1" }}{% endif %}
@@ -18,9 +18,15 @@
       <div class="review-card__meta-row">
         <span class="review-card__date">{% if review.date %}{{ review.date }}{% else %}{{ review.created|date:"d.m.Y" }}{% endif %}</span>
         {% if show_product %}
-          <span class="review-card__product-tag">
-            {% if review.product.name %}{{ review.product.name }}{% else %}{{ review.product }}{% endif %}
-          </span>
+          {% if review.product.available %}
+            <a class="review-card__product-tag" href="{% url 'main:product_detail' id=review.product.id slug=review.product.slug %}">
+              {{ review.product.name }}
+            </a>
+          {% else %}
+            <button class="review-card__product-tag is-unavailable" type="button" data-review-product-unavailable>
+              {{ review.product.name }}
+            </button>
+          {% endif %}
         {% endif %}
       </div>
     </div>
@@ -39,9 +45,10 @@
     <div class="review-card__helpful">
       <span class="review-card__helpful-label">Полезно?</span>
       <div class="review-card__vote-actions">
-        <button class="review-card__vote{% if review.liked or review.id in liked_review_ids %} is-liked{% endif %}" type="button" data-review-helpful-id="{{ review.id }}">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10v12M15 5.88L14 10h5.83a2 2 0 011.92 2.56l-2.33 8A2 2 0 0117.5 22H4a2 2 0 01-2-2v-8a2 2 0 012-2h2.76a2 2 0 001.79-1.11L12 2a3.13 3.13 0 013 3.88z"></path></svg>
-          <span>{{ review.helpful|default:review.display_helpful_count }}</span>
+        <button class="{% if mobile %}helpful-btn {% endif %}review-card__vote{% if review.liked or review.id in liked_review_ids %} is-liked{% endif %}" type="button" data-review-helpful-id="{{ review.id }}" aria-pressed="{% if review.liked or review.id in liked_review_ids %}true{% else %}false{% endif %}">
+          {% if mobile %}<span class="helpful-btn__icon">{% endif %}
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10v12M15 5.88L14 10h5.83a2 2 0 011.92 2.56l-2.33 8A2 2 0 0117.5 22H4a2 2 0 01-2-2v-8a2 2 0 012-2h2.76a2 2 0 001.79-1.11L12 2a3.13 3.13 0 013 3.88z"></path></svg>
+          {% if mobile %}</span><span>Полезно</span>{% else %}<span data-review-helpful-count>{{ review.helpful|default:review.display_helpful_count }}</span>{% endif %}
         </button>
       </div>
     </div>

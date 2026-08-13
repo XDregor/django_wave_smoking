@@ -9,6 +9,27 @@
 html {
   overflow-y: scroll;
   scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(241, 241, 241, 0.28) #09090b;
+}
+
+html::-webkit-scrollbar {
+  width: 8px;
+}
+
+html::-webkit-scrollbar-track {
+  background: #09090b;
+}
+
+html::-webkit-scrollbar-thumb {
+  min-height: 48px;
+  border: 2px solid #09090b;
+  border-radius: 999px;
+  background: rgba(241, 241, 241, 0.28);
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background: rgba(241, 241, 241, 0.42);
 }
 
 body {

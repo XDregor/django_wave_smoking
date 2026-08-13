@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.db import models
 from django.db.models import Q, Sum
 from django.utils import timezone
@@ -164,7 +166,6 @@ class WarehouseWriteOffItem(models.Model):
 
 class WarehouseCounterparty(models.Model):
     title = models.CharField(max_length=140, db_index=True, verbose_name="Counterparty")
-    card_number = models.CharField(max_length=64, blank=True, verbose_name="Card number")
     contact_name = models.CharField(max_length=140, blank=True, verbose_name="Contact name")
     note = models.CharField(max_length=240, blank=True, verbose_name="Note")
     created = models.DateTimeField(auto_now_add=True)
@@ -179,8 +180,37 @@ class WarehouseCounterparty(models.Model):
         return self.title
 
 
+class WarehouseCounterpartyCard(models.Model):
+    counterparty = models.ForeignKey(
+        WarehouseCounterparty,
+        related_name="cards",
+        on_delete=models.CASCADE,
+        verbose_name="Counterparty",
+    )
+    number = models.CharField(max_length=64, unique=True, db_index=True, verbose_name="Card number")
+    is_primary = models.BooleanField(default=False, db_index=True, verbose_name="Primary")
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("id",)
+        constraints = [
+            models.UniqueConstraint(
+                fields=("counterparty",),
+                condition=Q(is_primary=True),
+                name="unique_primary_card_per_warehouse_counterparty",
+            ),
+        ]
+        verbose_name = "Warehouse counterparty card"
+        verbose_name_plural = "Warehouse counterparty cards"
+
+    def __str__(self):
+        return f"{self.counterparty}: {self.number}"
+
+
 class WarehouseShippingPhone(models.Model):
     LIMIT_AMOUNT = 30000
+    LIMIT_WINDOW_DAYS = 31
 
     label = models.CharField(max_length=120, blank=True, verbose_name="Label")
     phone = models.CharField(max_length=32, unique=True, db_index=True, verbose_name="Phone")
@@ -197,9 +227,12 @@ class WarehouseShippingPhone(models.Model):
 
     @property
     def used_limit_amount(self):
-        total = self.shipment_orders.exclude(status=WarehouseShipmentOrder.Status.CANCELLED).aggregate(
-            total=Sum("total_price")
-        )["total"]
+        limit_started_at = timezone.now() - timedelta(days=self.LIMIT_WINDOW_DAYS)
+        total = (
+            self.shipment_orders.exclude(status=WarehouseShipmentOrder.Status.CANCELLED)
+            .filter(created_at__gte=limit_started_at)
+            .aggregate(total=Sum("total_price"))["total"]
+        )
         return total or 0
 
     @property
@@ -230,6 +263,14 @@ class WarehouseShipmentOrder(models.Model):
         related_name="shipment_orders",
         on_delete=models.PROTECT,
         verbose_name="Counterparty",
+    )
+    counterparty_card = models.ForeignKey(
+        WarehouseCounterpartyCard,
+        related_name="shipment_orders",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        verbose_name="Counterparty card",
     )
     shipping_phone = models.ForeignKey(
         WarehouseShippingPhone,

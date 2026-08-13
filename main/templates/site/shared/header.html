@@ -1,5 +1,5 @@
 {% load static %}
-<link rel="stylesheet" href="{% static 'site/shared/css/header.css' %}?v=cart-low-height2" />
+<link rel="stylesheet" href="{% static 'site/shared/css/header.css' %}?v=mobile-bottom-sheets3" />
 <link rel="stylesheet" href="{% static 'site/shared/css/site_navigation.css' %}?v=seamless2" />
 <link rel="stylesheet" href="{% static 'site/shared/css/site_errors.css' %}?v=public-errors2" />
 
@@ -20,9 +20,13 @@
 
           <!-- Mobile right actions (search + favorites + cart + burger, mobile only) -->
           <div class="site-header__mobile-actions">
-            <button class="site-header__mobile-action" id="mobileSearchBtn" aria-label="Поиск">
+            <div class="site-header__mobile-action site-header__mobile-search-shell" id="mobileSearchBtn" role="search" data-mobile-search-trigger aria-label="Поиск">
               <i class="fa-solid fa-magnifying-glass"></i>
-            </button>
+              <input type="text" class="site-header__mobile-search-input" placeholder="Поиск товаров..." id="mobileSearchInput" autocomplete="off" />
+              <button class="site-header__mobile-search-close" id="mobileSearchClose" type="button" aria-label="Закрыть поиск">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
             <button class="site-header__mobile-action" id="mobileFavBtn" data-shop-trigger="favorites_widget" aria-label="Избранное">
               <i class="fa-solid fa-heart"></i>
               <span class="site-header__mobile-badge" id="mobileFavBadge">0</span>
@@ -147,6 +151,38 @@
         </header>
       </div>
 
+      <div class="mobile-dock-wrap" data-mobile-dock>
+        <nav class="mobile-dock mobile-dock--main" aria-label="Мобильная навигация" data-mobile-dock-main>
+          <span class="mobile-dock__pill" data-mobile-dock-pill aria-hidden="true"></span>
+          <a class="mobile-dock__item" href="{% url 'main:home' %}#products" data-mobile-dock-link>
+            <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+            <span>Каталог</span>
+          </a>
+          <button class="mobile-dock__item" type="button" data-contacts-open>
+            <i class="fa-solid fa-comment-dots" aria-hidden="true"></i>
+            <span>Контакты</span>
+          </button>
+          <button class="mobile-dock__item" type="button" data-delivery-open>
+            <i class="fa-solid fa-truck-fast" aria-hidden="true"></i>
+            <span>Доставка</span>
+          </button>
+          <a class="mobile-dock__item" href="{% url 'main:reviews' %}" data-mobile-dock-link>
+            <i class="fa-solid fa-star" aria-hidden="true"></i>
+            <span>Отзывы</span>
+          </a>
+        </nav>
+
+        <nav class="mobile-dock mobile-dock--actions" aria-label="Избранное и корзина">
+          <button class="mobile-dock__item mobile-dock__item--icon" type="button" data-mobile-favorites-trigger aria-label="Избранное">
+            <i class="fa-regular fa-heart" aria-hidden="true"></i>
+          </button>
+          <button class="mobile-dock__item mobile-dock__item--icon" type="button" data-mobile-cart-trigger aria-label="Корзина">
+            <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
+            <span class="mobile-dock__badge" data-mobile-basket-badge hidden>0</span>
+          </button>
+        </nav>
+      </div>
+
       <!-- ===== MOBILE MENU DRAWER ===== -->
       <div class="mobile-menu" id="mobileMenu" role="dialog" aria-modal="true" aria-label="Навигационное меню">
         <div class="mobile-menu__backdrop" id="mobileMenuOverlay"></div>
@@ -238,14 +274,13 @@
       <!-- ===== MOBILE SEARCH OVERLAY ===== -->
       <div class="mobile-search" id="mobileSearchOverlay">
         <div class="mobile-search__box">
-          <div class="mobile-search__inner">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" class="mobile-search__input" placeholder="Поиск товаров..." id="mobileSearchInput" />
-            <button class="mobile-search__close" id="mobileSearchClose">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
+          <div class="header-search-results mobile-search__results is-open" id="mobileSearchResults" aria-live="polite">
+            <div class="search-results__hint">Популярные запросы</div>
+            <a class="search-results__item" href="{% url 'main:home' %}#products"><i class="fa-solid fa-microchip"></i><div><b>POD-системы</b><small>Каталог устройств</small></div></a>
+            <a class="search-results__item" href="{% url 'main:home' %}#products"><i class="fa-solid fa-flask"></i><div><b>Жидкости</b><small>Вкусы и наборы</small></div></a>
+            <a class="search-results__item" href="{% url 'main:home' %}#products"><i class="fa-solid fa-gear"></i><div><b>Комплектующие</b><small>Картриджи и расходники</small></div></a>
+            <a class="search-results__item" href="{% url 'main:home' %}?sort=hit#products"><i class="fa-solid fa-fire"></i><div><b>Хиты продаж</b><small>Популярные товары</small></div></a>
           </div>
-          <div class="header-search-results mobile-search__results" id="mobileSearchResults" aria-live="polite"></div>
         </div>
       </div>
 
@@ -296,6 +331,9 @@
             <span>Появились вопросы? Напиши нам!</span>
           </div>
         </div>
+        <button class="promo_banner_mobile_close" type="button" data-info-line-mobile-close aria-label="Скрыть инфолинию">
+          <span aria-hidden="true"></span>
+        </button>
         <div class="sticky_product_bar" data-sticky_product_bar hidden>
           <div class="sticky_product_bar__inner">
             <div class="sticky_product_bar__left">
@@ -338,10 +376,11 @@
     <div id="deliveryBackdrop" class="delivery_backdrop"></div>
     <div id="deliveryModal" class="delivery_overlay" role="dialog" aria-modal="true" aria-labelledby="delivery_header_title" aria-describedby="delivery_header_subtitle" aria-hidden="true">
       <div class="delivery_modal_window">
+        <button class="mobile-dialog-handle" type="button" data-delivery-sheet-handle aria-label="Развернуть окно доставки">
+          <span aria-hidden="true"></span>
+        </button>
         <button class="delivery_close_button" id="delivery_close_button" aria-label="Закрыть" type="button">
-          <svg viewBox="0 0 16 16" fill="currentColor">
-            <path d="m8.94 8 2.867-2.86a.67.67 0 1 0-.947-.947L8 7.06 5.14 4.193a.67.67 0 0 0-.947.947L7.06 8l-2.867 2.86a.667.667 0 0 0 .217 1.093.667.667 0 0 0 .73-.146L8 8.94l2.86 2.867a.667.667 0 0 0 1.093-.217.667.667 0 0 0-.146-.73L8.94 8Z" />
-          </svg>
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>
         </button>
 
         <div class="delivery_progress_list" id="delivery_progress_list">
@@ -420,10 +459,11 @@
     <div id="contactsBackdrop" class="contacts_backdrop"></div>
     <div id="contactsModal" class="contacts_overlay" role="dialog" aria-modal="true" aria-labelledby="contactsModalTitle" aria-describedby="contactsModalDescription" aria-hidden="true">
       <div class="contacts_modal">
+        <button class="mobile-dialog-handle" type="button" data-contacts-sheet-handle aria-label="Развернуть окно контактов">
+          <span aria-hidden="true"></span>
+        </button>
         <button class="contacts_close" type="button" data-contacts-close aria-label="Закрыть">
-          <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor">
-            <path d="m8.94 8 2.867-2.86a.67.67 0 1 0-.947-.947L8 7.06 5.14 4.193a.67.67 0 0 0-.947.947L7.06 8l-2.867 2.86a.667.667 0 0 0 .217 1.093.667.667 0 0 0 .73-.146L8 8.94l2.86 2.867a.667.667 0 0 0 1.093-.217.667.667 0 0 0-.146-.73L8.94 8Z" />
-          </svg>
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>
         </button>
 
         <div class="contacts_header">
@@ -641,8 +681,8 @@
       </div>
     </div>
 
-    <script src="{% static 'site/shared/js/header.js' %}?v=cart-low-height2"></script>
-    <script src="{% static 'site/shared/js/site_navigation.js' %}?v=seamless6"></script>
+    <script src="{% static 'site/shared/js/header.js' %}?v=mobile-bottom-sheets2"></script>
+    <script src="{% static 'site/shared/js/site_navigation.js' %}?v=mobile-info-line-nav1"></script>
     {% include 'site/shared/includes/cookie_banner.html' %}
     {% if not disable_header_cursor %}
       {% include 'site/shared/includes/cursor.html' %}

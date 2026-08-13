@@ -8,11 +8,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="{% static 'site/shared/css/theme.css' %}?v=site-tokens1" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/theme.css' %}?v=site-scrollbar-stable1" />
     <link rel="icon" type="image/png" href="{% static 'site/shared/img/mini_logo.png' %}" />
-    <link rel="stylesheet" href="{% static 'site/shared/css/product_card.css' %}?v=mobile-adapt1" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/product_card.css' %}?v=catalog-mobile-pass3" />
     
-      <link rel="stylesheet" href="{% static 'site/catalog/css/catalog_page.css' %}?v=mobile-adapt1" />
+      <link rel="stylesheet" href="{% static 'site/catalog/css/catalog_page.css' %}?v=catalog-mobile-pass4" />
   </head>
   <body{% if catalog_search_mode %} class="is-catalog-search"{% endif %}>
     {% include 'site/shared/header.html' %}
@@ -74,6 +74,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
     </button>
     <div class="filter-drawer" id="filter_drawer_panel_id">
+      <button class="filter-drawer__handle" type="button" data-filter-drawer-handle aria-label="Развернуть фильтры"><span></span></button>
       <div class="filter-drawer__header">
         <div class="filter-drawer__header-left">
           <span class="filter-drawer__title">Фильтры и сортировка</span>
@@ -244,8 +245,8 @@
     {{ products_json|json_script:"productsData" }}
     {{ categories_json|json_script:"categoriesData" }}
 
-    <script src="{% static 'site/shared/js/product_card.js' %}?v=product-card-data-bem1"></script>
-    <script src="{% static 'site/catalog/js/catalog_page.js' %}?v=catalog-bem2"></script>
+    <script src="{% static 'site/shared/js/product_card.js' %}?v=product-card-side-close1"></script>
+    <script src="{% static 'site/catalog/js/catalog_page.js' %}?v=catalog-mobile-pass3"></script>
     </div>
   </body>
 </html>

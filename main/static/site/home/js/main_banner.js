@@ -5,6 +5,15 @@
   const banner = document.getElementById("mainBanner");
   if (!banner) return;
 
+  let skipInitialReveal = window.__waveHomeIntroShown === true;
+  try {
+    skipInitialReveal = skipInitialReveal
+      || window.sessionStorage.getItem("wave:home-intro-shown") === "1";
+  } catch (error) {
+    // The in-memory flag still covers seamless navigation in this document.
+  }
+  if (skipInitialReveal) banner.classList.add("is-intro-skipped");
+
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const AUTO_SLIDE_DURATION = 7000;
   const INITIAL_TIMER_DELAY = 800;
@@ -478,6 +487,9 @@
     isInitialized = true;
     requestAnimationFrame(() => {
       banner.classList.add("is-ready");
+      if (skipInitialReveal) {
+        requestAnimationFrame(() => banner.classList.remove("is-intro-skipped"));
+      }
       window.dispatchEvent(new CustomEvent("wave:main-banner-ready"));
       startTimerAfterDelay(INITIAL_TIMER_DELAY);
     });

@@ -8,10 +8,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="{% static 'site/shared/css/theme.css' %}?v=site-tokens1" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/theme.css' %}?v=site-scrollbar-stable1" />
     <link rel="icon" type="image/png" href="{% static 'site/shared/img/mini_logo.png' %}" />
-    <link rel="stylesheet" href="{% static 'site/shared/css/product_card.css' %}?v=mobile-adapt1" />
-    <link rel="stylesheet" href="{% static 'site/catalog/css/catalog_page.css' %}?v=mobile-adapt1" />
+    <link rel="stylesheet" href="{% static 'site/shared/css/product_card.css' %}?v=catalog-mobile-pass3" />
+    <link rel="stylesheet" href="{% static 'site/catalog/css/catalog_page.css' %}?v=catalog-mobile-pass4" />
   </head>
   <body class="is-catalog-search">
     {% include 'site/shared/header.html' %}
@@ -24,8 +24,8 @@
     {% include 'site/shared/includes/scroll_to_top.html' %}
     {{ products_json|json_script:"productsData" }}
     {{ categories_json|json_script:"categoriesData" }}
-    <script src="{% static 'site/shared/js/product_card.js' %}?v=product-card-data-bem1"></script>
-    <script src="{% static 'site/catalog/js/catalog_page.js' %}?v=catalog-bem2"></script>
+    <script src="{% static 'site/shared/js/product_card.js' %}?v=product-card-side-close1"></script>
+    <script src="{% static 'site/catalog/js/catalog_page.js' %}?v=catalog-mobile-pass3"></script>
     </div>
   </body>
 </html>

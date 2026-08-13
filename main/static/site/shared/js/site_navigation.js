@@ -11,7 +11,7 @@
     "#filter_drawer_arrow_id",
   ];
   const TRANSITION_MS = 180;
-  const PAGE_BODY_CLASSES = ["is-catalog-search"];
+  const PAGE_BODY_CLASSES = ["is-catalog-search", "product-detail-page"];
   const scrollPositions = new Map();
   let currentController = null;
   let isNavigating = false;
@@ -91,7 +91,7 @@
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }
 
-  function updateHead(nextDocument) {
+  async function updateHead(nextDocument) {
     const nextTitle = nextDocument.querySelector("title");
     if (nextTitle) document.title = nextTitle.textContent;
 
@@ -107,15 +107,43 @@
       });
     });
 
-    nextDocument.head.querySelectorAll('link[rel="stylesheet"]').forEach((link) => {
+    const isPageStylesheet = (link) => {
+      const href = link.getAttribute("href");
+      if (!href) return false;
+      const url = new URL(href, window.location.href);
+      return url.pathname.includes("/static/site/") && !url.pathname.includes("/static/site/shared/");
+    };
+    const nextStylesheets = [...nextDocument.head.querySelectorAll('link[rel="stylesheet"]')];
+    const nextPageStyles = new Set(
+      nextStylesheets
+        .filter(isPageStylesheet)
+        .map((link) => new URL(link.getAttribute("href"), window.location.href).href)
+    );
+    const pendingStyles = [];
+
+    nextStylesheets.forEach((link) => {
       const href = link.getAttribute("href");
       if (!href) return;
       const absoluteHref = new URL(href, window.location.href).href;
       const alreadyLoaded = [...document.head.querySelectorAll('link[rel="stylesheet"]')]
         .some((item) => new URL(item.getAttribute("href"), window.location.href).href === absoluteHref);
       if (alreadyLoaded) return;
-      document.head.appendChild(link.cloneNode(true));
+      const clone = link.cloneNode(true);
+      pendingStyles.push(new Promise((resolve) => {
+        clone.addEventListener("load", resolve, { once: true });
+        clone.addEventListener("error", resolve, { once: true });
+      }));
+      document.head.appendChild(clone);
     });
+
+    await Promise.all(pendingStyles);
+
+    [...document.head.querySelectorAll('link[rel="stylesheet"]')]
+      .filter(isPageStylesheet)
+      .forEach((link) => {
+        const absoluteHref = new URL(link.getAttribute("href"), window.location.href).href;
+        if (!nextPageStyles.has(absoluteHref)) link.remove();
+      });
   }
 
   function syncBodyClasses(nextBody) {
@@ -125,6 +153,9 @@
   }
 
   function cleanupPageState() {
+    window.dispatchEvent(new CustomEvent("wave:page-leave", {
+      detail: { page: getContent()?.dataset.wavePage || "" },
+    }));
     document.body.classList.remove(
       "is-filter-drawer-open",
       "product_sticky_bar_active",
@@ -285,7 +316,7 @@
       const nextContent = nextDocument.querySelector(CONTENT_SELECTOR);
       if (!nextContent) throw new Error("Missing data-site-content in response");
 
-      updateHead(nextDocument);
+      await updateHead(nextDocument);
       syncBodyClasses(nextDocument.body);
 
       nextContent.classList.add("is-page-entering");
@@ -297,6 +328,12 @@
 
       restoreScroll(window.location.href, options.scrollMode);
       updateActiveNavigation();
+      window.dispatchEvent(new CustomEvent("wave:page-mounted", {
+        detail: {
+          url: window.location.href,
+          page: nextContent.dataset.wavePage || "",
+        },
+      }));
       await executeContentScripts(nextContent);
 
       requestAnimationFrame(() => {

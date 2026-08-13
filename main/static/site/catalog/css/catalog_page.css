@@ -480,15 +480,8 @@
           gap: 6px;
         }
       }
-      @media (max-width: 480px) {
-        .product-browser-controls__filter {
-          padding: 8px 10px;
-        }
-        /* Скрыть текст, оставить иконку */
-        .product-browser-controls__filter-text {
-          display: none;
-        }
-      }
+      /* Мобильные размеры .product-browser-controls__filter/-view-button
+         консолидированы ниже, в блоке MOBILE REDESIGN v3. */
 
       /* Счётчик результатов */
       .product-browser__result-count {
@@ -563,16 +556,8 @@
         opacity: 1;
       }
 
-      @media (max-width: 600px) {
-        .product-browser-controls__view-button {
-          width: 32px;
-          height: 32px;
-        }
-        .product-browser-controls__view-button svg {
-          width: 14px;
-          height: 14px;
-        }
-      }
+      /* Мобильные размеры .product-browser-controls__view-button
+         консолидированы ниже, в блоке MOBILE REDESIGN v3. */
 
       /* ===================== PRODUCT GRID ===================== */
       .product-browser__grid {
@@ -1045,208 +1030,376 @@
         }
       }
 
-      /* ===================== MOBILE UX PASS ===================== */
-      @media (max-width: 768px) {
+      /* Старые фрагментированные мобильные правки (toolbar / grid / filter-drawer
+         v1 и v2) удалены — единая версия ниже, в блоке MOBILE REDESIGN v3. */
+      .filter-drawer__handle {
+        display: none;
+      }
+
+      /* =====================================================================
+         MOBILE REDESIGN v3 — единая мобильная версия каталога.
+         Всё, что ниже, идёт последним по порядку в файле и переопределяет
+         старые фрагментированные мобильные правки выше (при равной
+         специфичности побеждает последнее по каскаду правило).
+         Карточка товара (.product-card и её содержимое) не переопределяется —
+         только контейнеры вокруг неё.
+         ===================================================================== */
+
+      @media (max-width: 900px) {
+        :root {
+          --m-radius-s: 10px;
+          --m-radius-m: 14px;
+          --m-radius-l: 20px;
+          --m-gap: 10px;
+        }
+
+        /* ---------- Обёртка страницы ---------- */
         .product-browser {
           max-width: none;
           min-height: 0;
-          padding: 18px max(12px, env(safe-area-inset-left)) 64px max(12px, env(safe-area-inset-right));
+          padding: 16px max(var(--site-pad), env(safe-area-inset-left)) 56px max(var(--site-pad), env(safe-area-inset-right));
         }
 
+        .catalog-search-summary {
+          padding: 18px var(--site-pad) 4px;
+        }
+        .catalog-search-summary__title {
+          font-size: clamp(17px, 5vw, 22px);
+        }
+        .catalog-search-summary__text {
+          font-size: 12.5px;
+        }
+
+        /* ---------- Тулбар ---------- */
         .product-browser__toolbar {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) auto;
+          display: flex;
+          flex-wrap: nowrap;
           align-items: center;
-          gap: 10px;
-          margin-bottom: 14px;
+          justify-content: space-between;
+          gap: 8px;
+          margin: 0 0 14px;
         }
-
         .product-browser__toolbar-left {
           min-width: 0;
+          flex: 1 1 auto;
         }
-
         .product-browser__result-count {
-          display: inline-flex;
-          min-width: 0;
-          max-width: 100%;
-          align-items: center;
-          height: 38px;
-          padding: 0 12px;
+          display: block;
+          width: 100%;
           overflow: hidden;
-          border: 1px solid rgba(255, 255, 255, 0.07);
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.035);
-          color: rgba(241, 241, 241, 0.54);
-          font-size: 12px;
           text-overflow: ellipsis;
+          white-space: nowrap;
+          font-size: 12px;
+          color: rgba(241, 241, 241, 0.42);
         }
-
+        .product-browser__result-count strong {
+          color: rgba(241, 241, 241, 0.72);
+        }
         .product-browser-controls {
-          justify-content: flex-end;
-        }
-
-        .product-browser-controls__filter,
-        .product-browser-controls__view-button {
-          min-width: 42px;
-          height: 42px;
+          flex: 0 0 auto;
+          gap: 8px;
         }
 
         .product-browser-controls__filter {
-          justify-content: center;
-          padding: 0 13px;
-          border-radius: 14px;
-          background: rgba(255, 255, 255, 0.055);
+          height: 40px;
+          padding: 0 14px;
+          gap: 7px;
+          border-radius: var(--m-radius-s);
+          background: rgba(255, 255, 255, 0.045);
+          border-color: rgba(255, 255, 255, 0.09);
+          font-size: 12.5px;
+        }
+        .product-browser-controls__filter:active {
+          background: rgba(255, 255, 255, 0.09);
+        }
+        .product-browser-controls__filter svg {
+          width: 15px;
+          height: 15px;
         }
 
         .product-browser-controls__view-toggle {
-          border-radius: 14px;
-          background: rgba(255, 255, 255, 0.035);
+          height: 40px;
+          border-radius: var(--m-radius-s);
+          border-color: rgba(255, 255, 255, 0.09);
+          background: rgba(255, 255, 255, 0.03);
         }
-
         .product-browser-controls__view-button {
-          width: 42px;
+          width: 40px;
+          height: 38px;
+          color: rgba(255, 255, 255, 0.34);
         }
-
+        .product-browser-controls__view-button.is-active {
+          background: var(--buda);
+          color: #0b0b0c;
+        }
+        .product-browser-controls__view-button + .product-browser-controls__view-button {
+          border-left-color: rgba(255, 255, 255, 0.09);
+        }
+        /* На тач-устройствах подсказки-тултипы только мешают */
         .product-browser-controls__view-button[data-view-button-label]::after {
           display: none;
         }
 
+        /* ---------- Сетка карточек ---------- */
         .product-browser__grid,
         .product-browser__grid.product-browser__grid--five,
         .product-browser__grid.product-browser__grid--four,
         .product-browser__grid.product-browser__grid--three,
         .product-browser__grid.product-browser__grid--two {
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 10px;
+          gap: var(--m-gap);
         }
-
         .product-browser__grid.product-browser__grid--one {
           grid-template-columns: minmax(0, 1fr);
           gap: 12px;
         }
+        /* Контейнер сетки никогда не должен сам себе резать скролл */
+        .product-browser__content,
+        .product-browser__grid {
+          overflow: visible;
+          overscroll-behavior-y: auto;
+          contain: none;
+        }
+
+        /* ---------- Пустое состояние ---------- */
+        .catalog-empty {
+          grid-template-columns: 46px minmax(0, 1fr);
+          gap: 14px;
+          min-height: 0;
+          margin: 10px 0 40px;
+          padding: 20px;
+          border-radius: var(--m-radius-m);
+        }
+        .catalog-empty__icon {
+          width: 46px;
+          height: 46px;
+          border-radius: var(--m-radius-s);
+        }
+        .catalog-empty__icon-svg {
+          width: 22px;
+          height: 22px;
+        }
+        .catalog-empty__title {
+          font-size: 15.5px;
+        }
+        .catalog-empty__description {
+          margin-top: 5px;
+          font-size: 12.5px;
+        }
+        .catalog-empty__reset {
+          grid-column: 1 / -1;
+          width: 100%;
+          margin-top: 2px;
+          height: 46px;
+          border-radius: var(--m-radius-s);
+        }
+
+        /* =================================================================
+           ШТОРКА ФИЛЬТРОВ — единая версия (bottom sheet)
+           ================================================================= */
+        .filter-drawer__overlay {
+          background: rgba(6, 6, 7, 0.6);
+          backdrop-filter: blur(10px) saturate(140%);
+          -webkit-backdrop-filter: blur(10px) saturate(140%);
+        }
 
         .filter-drawer {
           top: auto;
+          left: 0;
           right: 0;
           bottom: 0;
-          left: 0;
           width: 100%;
-          max-height: min(84dvh, 680px);
-          padding-bottom: max(22px, env(safe-area-inset-bottom));
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
-          border-left: 0;
-          border-radius: 24px 24px 0 0;
-          box-shadow: 0 -24px 70px rgba(0, 0, 0, 0.6);
-          transform: translateY(104%);
-          transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+          max-width: none;
+          height: min(78dvh, 640px);
+          max-height: 100dvh;
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
+          padding: 0;
+          overflow: hidden;
+          border: 1px solid rgba(255, 255, 255, 0.09);
+          border-bottom: 0;
+          border-radius: var(--m-radius-l) var(--m-radius-l) 0 0;
+          background: #111113;
+          box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.55);
+          transform: translate3d(0, calc(100% + 24px), 0);
+          transition:
+            transform 0.36s cubic-bezier(0.16, 1, 0.3, 1),
+            height 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+          will-change: transform, height;
+          overscroll-behavior: contain;
         }
-
         .filter-drawer.is-open {
           right: 0;
-          transform: translateY(0);
+          transform: translate3d(0, 0, 0);
+        }
+        .filter-drawer.is-dragging {
+          transition: none;
+        }
+        .filter-drawer.is-expanded {
+          border-radius: 0;
         }
 
-        .filter-drawer__float-close {
-          top: auto;
-          right: 16px;
-          bottom: calc(min(84dvh, 680px) + 10px);
-          width: 44px;
-          height: 44px;
-          transform: translateY(10px) scale(0.94);
-          background: rgba(20, 20, 22, 0.94);
+        .filter-drawer__handle {
+          display: flex;
+          flex: 0 0 auto;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 26px;
+          padding: 9px 0 8px;
+          color: rgba(255, 255, 255, 0.3);
+          cursor: grab;
+          touch-action: none;
         }
-
-        .filter-drawer__float-close.is-open {
-          right: 16px;
-          opacity: 1;
-          transform: translateY(0) scale(1);
+        .filter-drawer__handle span {
+          width: 38px;
+          height: 4px;
+          border-radius: 999px;
+          background: currentColor;
+          transition: width 0.2s ease, background-color 0.2s ease;
+        }
+        .filter-drawer__handle:active span,
+        .filter-drawer.is-expanded .filter-drawer__handle span {
+          width: 48px;
+          background: rgba(255, 255, 255, 0.5);
         }
 
         .filter-drawer__header {
-          padding: 18px 18px 15px;
-          border-radius: 24px 24px 0 0;
+          position: relative;
+          top: auto;
+          flex: 0 0 auto;
+          margin: 0 14px 8px;
+          padding: 10px 4px 14px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+          background: transparent;
+        }
+        .filter-drawer__title {
+          font-size: 13px;
+        }
+        .filter-drawer__reset {
+          width: 36px;
+          height: 36px;
+          border-radius: var(--m-radius-s);
         }
 
-        .filter-drawer__title {
-          font-size: 14px;
-          letter-spacing: 0.08em;
+        .filter-drawer__float-close,
+        .filter-drawer__float-close.is-open {
+          display: none;
         }
 
         .filter-drawer__blocks {
-          padding: 6px 18px 0;
+          flex: 1 1 auto;
+          min-height: 0;
+          padding: 0 14px calc(20px + env(safe-area-inset-bottom));
+          overflow-x: hidden;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior: contain;
+          gap: 10px;
+          scrollbar-width: none;
+        }
+        .filter-drawer__blocks::-webkit-scrollbar {
+          display: none;
         }
 
+        .filter-panel {
+          border-bottom: 0;
+          border-radius: var(--m-radius-m);
+          padding: 0 14px;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+        }
         .filter-panel__header {
           min-height: 50px;
-          padding: 12px 0;
+          padding: 13px 0;
+        }
+        .filter-panel__content {
+          padding-bottom: 14px;
         }
 
+        .filter-chip-list {
+          gap: 8px;
+        }
+        .filter-chip,
         .filter-checkbox,
-        .sort-options__button,
+        .sort-options__button {
+          min-height: 44px;
+        }
         .filter-chip {
-          min-height: 42px;
+          padding: 8px 14px;
         }
 
         .price-filter {
-          gap: 8px;
+          gap: 10px;
+          margin-bottom: 18px;
+        }
+        .price-filter__input {
+          height: 44px;
+          font-size: 13px;
+        }
+        .range-filter {
+          height: 26px;
+        }
+        .range-filter__input::-webkit-slider-thumb {
+          width: 24px;
+          height: 24px;
         }
 
-        .price-filter__input {
-          min-width: 0;
-          height: 42px;
+        .sort-options {
+          gap: 4px;
+        }
+        .sort-options__button {
+          padding: 9px 6px;
+          border-radius: var(--m-radius-s);
+        }
+
+        .filter-checkbox-list {
+          gap: 4px;
+        }
+        .filter-checkbox {
+          padding: 9px 6px;
+          border-radius: var(--m-radius-s);
         }
       }
 
-      @media (max-width: 480px) {
-        .product-browser {
-          padding-top: 14px;
-          padding-inline: max(10px, env(safe-area-inset-left)) max(10px, env(safe-area-inset-right));
+      /* ---------- Совсем маленькие экраны ---------- */
+      @media (max-width: 380px) {
+        .product-browser-controls__filter-text {
+          display: none;
+        }
+        .product-browser-controls__filter {
+          padding: 0 12px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .product-browser__toolbar {
+          width: 100%;
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 10px;
         }
 
-        .product-browser__toolbar {
-          grid-template-columns: 1fr;
-          gap: 9px;
+        .product-browser__toolbar-left {
+          width: 100%;
         }
 
         .product-browser-controls {
           width: 100%;
+          display: flex;
+          align-items: center;
           justify-content: space-between;
+          gap: 12px;
         }
 
         .product-browser-controls__filter {
-          min-width: 46px;
-          height: 44px;
-          padding: 0 14px;
+          flex: 0 0 auto;
+          justify-content: center;
         }
 
-        .product-browser-controls__filter-text {
-          display: inline;
-          font-size: 12px;
-        }
-
-        .product-browser-controls__view-button {
-          width: 44px;
-          height: 44px;
-        }
-
-        .product-browser__grid,
-        .product-browser__grid.product-browser__grid--five,
-        .product-browser__grid.product-browser__grid--four,
-        .product-browser__grid.product-browser__grid--three,
-        .product-browser__grid.product-browser__grid--two {
-          gap: 8px;
-        }
-
-        .filter-drawer {
-          max-height: 86dvh;
-          border-radius: 22px 22px 0 0;
-        }
-
-        .filter-drawer__float-close {
-          bottom: calc(86dvh + 8px);
-        }
-
-        .catalog-search-summary {
-          padding-inline: 12px;
+        .product-browser-controls__view-toggle {
+          flex: 0 0 auto;
+          margin-left: auto;
         }
       }

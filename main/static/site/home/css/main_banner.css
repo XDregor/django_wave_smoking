@@ -622,6 +622,15 @@
   transform: translateX(0);
 }
 
+.wave-campaign.is-intro-skipped .wave-campaign__backdrop-image,
+.wave-campaign.is-intro-skipped .wave-campaign__smoke,
+.wave-campaign.is-intro-skipped .wave-campaign__decor-shell,
+.wave-campaign.is-intro-skipped .wave-campaign__title-word,
+.wave-campaign.is-intro-skipped .wave-campaign__description-inner,
+.wave-campaign.is-intro-skipped .wave-campaign__stage {
+  transition: none !important;
+}
+
 /* Общие правила изображений товара. */
 .wave-campaign__visual {
   position: absolute;

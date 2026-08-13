@@ -41,6 +41,7 @@ from ..models import (
     WarehouseBatch,
     WarehouseBatchItem,
     WarehouseCounterparty,
+    WarehouseCounterpartyCard,
     WarehouseItem,
     WarehousePointsWeekClose,
     WarehouseShipmentOrder,
